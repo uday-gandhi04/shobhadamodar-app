@@ -1,9 +1,11 @@
 // src/components/business/LoginForm.jsx
 import { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { SyncContext } from '../../context/SyncContext';
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   const { login } = useContext(AuthContext);
   const { performBootstrapSync } = useContext(SyncContext);
   
@@ -20,11 +22,8 @@ const LoginForm = () => {
 
     const result = await login(employeeId, password);
     if (result.success) {
-      alert("Login Successful! Downloading shift data...");
-      
-      // 3. Trigger the offline database download!
-      await performBootstrapSync(result.token); 
-      
+      await performBootstrapSync(result.token);
+      navigate('/dashboard', { replace: true });
     } else {
       setError(result.message);
     }
