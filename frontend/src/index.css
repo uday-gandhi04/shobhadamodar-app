@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bpcl-navy: #1E3A8A;
+  --color-bpcl-gold: #FBBF24;
+  --color-bpcl-emerald: #059669;
+  --color-bpcl-emeraldHover: #047857;
+  --color-bpcl-surface: #F3F4F6;
+  
+  --color-fuel-petrol: #16A34A;
+  --color-fuel-diesel: #2563EB;
+  
+  --font-sans: "Inter", "Mukta", sans-serif;
+}
+
+body {
+  background-color: var(--color-bpcl-surface);
+  -webkit-font-smoothing: antialiased;
+}

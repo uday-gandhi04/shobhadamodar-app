@@ -1,0 +1,15 @@
+# /backend/.gitignore
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs and runtime output
+npm-debug.log*
+*.log
+logs/
+coverage/
+tmp/
+temp/
