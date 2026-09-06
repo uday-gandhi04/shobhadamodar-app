@@ -1,6 +1,7 @@
 // src/pages/Dashboard.jsx
 import { useEffect, useState, useContext } from 'react';
 import { IonPage, IonContent } from '@ionic/react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../context/AuthContext';
 import { dbService } from '../database/sqlite';
@@ -8,6 +9,7 @@ import { dbService } from '../database/sqlite';
 const Dashboard = () => {
   const { t } = useTranslation();
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
   
   const [rates, setRates] = useState(null);
   const [mpds, setMpds] = useState([]);
@@ -90,9 +92,16 @@ const Dashboard = () => {
               {/* MPD Cards */}
               <h2 className="text-lg font-bold text-gray-800 pt-2">Pump Layout</h2>
               {mpds.map((mpd) => (
-                <div key={mpd.mpd_id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                  <h3 className="font-bold text-bpcl-navy text-lg mb-4">{mpd.mpd_number}</h3>
-                  <div className="grid grid-cols-2 gap-3">
+                <div
+                  key={mpd.mpd_id}
+                  onClick={() => navigate(`/shift/${mpd.mpd_id}`)}
+                  className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 active:scale-[0.98] active:bg-gray-50 transition-all cursor-pointer"
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-bpcl-navy text-lg">{mpd.mpd_number}</h3>
+                    <span className="text-xs font-bold bg-gray-100 text-gray-500 px-3 py-1 rounded-full">Tap to start shift →</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pointer-events-none">
                     {mpd.nozzles.map((nozzle) => (
                       <div 
                         key={nozzle.nozzle_id} 
