@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prepare-sql-wasm": "node scripts/copy-sql-wasm.mjs",
+    "predev": "npm run prepare-sql-wasm",
     "dev": "vite",
+    "prebuild": "npm run prepare-sql-wasm",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -18,11 +21,13 @@
     "axios": "^1.20.0",
     "currency.js": "^2.0.4",
     "i18next": "^26.4.2",
+    "jeep-sqlite": "^2.8.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-i18next": "^17.0.13",
     "react-router": "^6.30.6",
-    "react-router-dom": "^6.30.6"
+    "react-router-dom": "^6.30.6",
+    "sql.js": "1.11.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

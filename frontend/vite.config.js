@@ -8,4 +8,7 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  optimizeDeps: {
+    exclude: ['jeep-sqlite'] // Tell Vite not to mangle the WebAssembly wrapper
+  }
 })
