@@ -1,0 +1,9 @@
+{
+  "login": {
+    "welcome": "Welcome Back",
+    "employeeId": "Employee ID",
+    "password": "Password",
+    "submit": "Login →",
+    "secure": "Secure • Reliable • Always Synced"
+  }
+}
