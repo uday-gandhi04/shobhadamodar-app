@@ -1,6 +1,6 @@
 // src/controllers/auth.controller.js
-import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
+import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 /**
  * Helper function to generate JWT Access Token
@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
  */
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    expiresIn: process.env.JWT_EXPIRES_IN || "15m",
   });
 };
 
@@ -26,13 +26,20 @@ export const loginUser = async (req, res, next) => {
     const user = await User.findOne({ employeeId: employeeId.toUpperCase() });
 
     if (!user || !user.isActive) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials or inactive account' });
+      return res
+        .status(401)
+        .json({
+          success: false,
+          message: "Invalid credentials or inactive account",
+        });
     }
 
     // Verify password using the method we built in the User model
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
     // Generate Token
@@ -44,9 +51,9 @@ export const loginUser = async (req, res, next) => {
       user: {
         _id: user._id,
         name: user.name,
+        employeeId: user.employeeId,
         role: user.role,
-        assignedMpdId: user.assignedMpdId,
-      }
+      },
     });
   } catch (error) {
     next(error);
@@ -60,22 +67,27 @@ export const loginUser = async (req, res, next) => {
  */
 export const seedManager = async (req, res, next) => {
   try {
-    const existingManager = await User.findOne({ role: 'MANAGER' });
+    const existingManager = await User.findOne({ role: "MANAGER" });
     if (existingManager) {
-      return res.status(400).json({ success: false, message: 'A manager already exists in the system.' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "A manager already exists in the system.",
+        });
     }
 
     const manager = await User.create({
-      name: 'Station Admin',
-      employeeId: 'ADMIN01',
-      password: 'admin_password_123', // Will be automatically hashed by Mongoose pre-save
-      role: 'MANAGER',
+      name: "Station Admin",
+      employeeId: "ADMIN01",
+      password: "admin_password_123", // Will be automatically hashed by Mongoose pre-save
+      role: "MANAGER",
     });
 
     res.status(201).json({
       success: true,
-      message: 'Initial manager account created successfully.',
-      data: { employeeId: manager.employeeId, role: manager.role }
+      message: "Initial manager account created successfully.",
+      data: { employeeId: manager.employeeId, role: manager.role },
     });
   } catch (error) {
     next(error);

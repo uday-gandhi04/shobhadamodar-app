@@ -1,9 +1,9 @@
 // src/models/Shift.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const readingEntrySchema = new mongoose.Schema({
   nozzleId: { type: String, required: true },
-  fuelType: { type: String, enum: ['PETROL', 'DIESEL'], required: true },
+  fuelType: { type: String, enum: ["PETROL", "DIESEL"], required: true },
   openingReading: { type: Number, required: true },
   closingReading: { type: Number, required: true },
   dispensedLitres: { type: Number, required: true },
@@ -20,7 +20,7 @@ const cashDenominationSchema = new mongoose.Schema({
 const udhariEntrySchema = new mongoose.Schema({
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Customer',
+    ref: "Customer",
     required: true,
   },
   amountPaise: { type: Number, required: true },
@@ -41,23 +41,36 @@ const shiftSchema = new mongoose.Schema(
     },
     shiftType: {
       type: String,
-      enum: ['MORNING', 'EVENING', 'NIGHT'],
+      enum: ["MORNING", "EVENING", "NIGHT"],
       required: true,
     },
     mpdId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Mpd',
+      ref: "Mpd",
       required: true,
     },
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     status: {
       type: String,
-      enum: ['OPEN', 'SUBMITTED', 'UNDER_REVIEW', 'FINALIZED'],
-      default: 'SUBMITTED',
+      enum: [
+        "OPEN",
+        "IN_PROGRESS",
+        "SUBMITTED",
+        "UNDER_REVIEW",
+        "FINALIZED",
+        "FORCE_CLOSED",
+      ],
+      default: "OPEN",
+    },
+    startedAt: {
+      type: Date,
+    },
+    submittedAt: {
+      type: Date,
     },
 
     // 1. Physical Fuel Accounting
@@ -79,22 +92,28 @@ const shiftSchema = new mongoose.Schema(
     differencePaise: { type: Number, required: true }, // Total Collected - Expected Sale
     reconciliationStatus: {
       type: String,
-      enum: ['MATCHED', 'SHORT', 'EXCESS'],
+      enum: ["MATCHED", "SHORT", "EXCESS"],
       required: true,
     },
 
     remarks: { type: String, trim: true },
-    finalizedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    finalizedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     finalizedAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Compound index to guarantee one active shift per MPD/shift slot
 shiftSchema.index(
-  { businessDate: 1, shiftType: 1, mpdId: 1 },
-  { unique: true }
+  {
+    employeeId: 1,
+    businessDate: 1,
+    status: 1,
+  },
+  {
+    name: 'employee_daily_shift_lookup',
+  }
 );
 
-const Shift = mongoose.model('Shift', shiftSchema);
+const Shift = mongoose.model("Shift", shiftSchema);
 export default Shift;
