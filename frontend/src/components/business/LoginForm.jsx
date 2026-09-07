@@ -15,7 +15,7 @@ const EyeIcon = ({ visible }) => (
   </svg>
 );
 
-const LoginForm = () => {
+const LoginForm = ({ role }) => {
   const { t } = useTranslation();
   const navigate = useNavigate()
   const { login } = useContext(AuthContext);
@@ -35,7 +35,12 @@ const LoginForm = () => {
     const result = await login(employeeId, password, rememberDevice);
     if (result.success) {
       await performBootstrapSync(result.token);
-      navigate('/dashboard', { replace: true });
+
+      if (role === 'MANAGER') {
+        navigate('/manager', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } else {
       setError(result.message);
     }

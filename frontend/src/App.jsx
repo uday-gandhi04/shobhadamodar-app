@@ -15,6 +15,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ShiftEntry from './pages/ShiftEntry';
 import Collections from './pages/Collections';
+import ManagerDashboard from './pages/ManagerDashboard';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { SyncProvider } from './context/SyncContext';
 
@@ -39,6 +40,12 @@ function App() {
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/manager" element={
+                <ProtectedRoute>
+                  <ManagerDashboard />
                 </ProtectedRoute>
               } />
 

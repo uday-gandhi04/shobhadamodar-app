@@ -56,6 +56,21 @@ export const bootstrapDevice = async (req, res, next) => {
   }
 };
 
+/**
+ * Fetches shifts for a business date.
+ * @route GET /api/sync/shifts
+ */
+export const getShifts = async (req, res, next) => {
+  try {
+    const targetDate = req.query.date || new Date().toISOString().split('T')[0];
+    const shifts = await Shift.find({ businessDate: targetDate }).sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, shifts });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 /**
  * Processes the end-of-shift payload, calculates financials, and finalizes the ledger.
