@@ -1,28 +1,88 @@
 const languages = [
   { code: 'en', label: 'EN' },
-  { code: 'hi', label: 'HI' },
-  { code: 'mr', label: 'MR' },
+  { code: 'hi', label: 'हिं' },
+  { code: 'mr', label: 'मरा' },
 ];
 
-const LanguageSwitcher = ({ language, onChange }) => (
-  <button
-    type="button"
-    onClick={onChange}
-    className="flex min-h-12 items-center gap-0.5 !rounded-[14px] border border-slate-200 bg-white p-1 text-[10px] font-extrabold tracking-[0.04em] text-slate-500 shadow-sm shadow-slate-200/70 transition hover:border-emerald-200 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bpcl-emerald"
-    style={{ borderRadius: '14px', WebkitAppearance: 'none' }}
-    aria-label={`Change language. Current language: ${language.toUpperCase()}`}
-  >
-    {languages.map(({ code, label }) => (
-      <span
-        key={code}
-        className={`grid h-8 min-w-8 place-items-center !rounded-[10px] px-1 transition-colors ${language === code ? 'bg-bpcl-emerald text-white shadow-sm shadow-emerald-950/15' : 'text-slate-500'}`}
-        style={{ borderRadius: '10px' }}
-      >
-        {label}
-      </span>
-    ))}
-    <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" className="mr-0.5 h-3 w-3 text-slate-400" stroke="currentColor" strokeWidth="2"><path d="m4 6 4 4 4-4" /></svg>
-  </button>
-);
+const LanguageSwitcher = ({ language, onChange }) => {
+  const currentLanguage = language?.split('-')[0] || 'en';
+
+  return (
+    <div
+      role="group"
+      aria-label="Language selection"
+      className="
+        flex
+        items-center
+        gap-0.5
+        rounded-[13px]
+        border
+        border-slate-200
+        bg-white
+        p-1
+        shadow-[0_4px_12px_rgba(15,23,42,0.06)]
+      "
+    >
+      {languages.map(({ code, label }) => {
+        const active = currentLanguage === code;
+
+        return (
+          <button
+            key={code}
+            type="button"
+            onClick={() => onChange(code)}
+            aria-pressed={active}
+            className="
+              group
+              relative
+              flex
+              min-h-[30px]
+              min-w-[30px]
+              items-center
+              justify-center
+              rounded-[9px]
+              bg-transparent
+              p-0
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-emerald-500
+              focus-visible:ring-offset-1
+            "
+          >
+            {/* Rounded active surface */}
+            {active && (
+              <span
+                className="
+                  absolute
+                  inset-0
+                  rounded-[9px]
+                  bg-bpcl-emerald
+                  shadow-sm
+                "
+              />
+            )}
+
+            {/* Label */}
+            <span
+              lang={code === 'en' ? 'en' : code}
+              className={[
+                'relative z-10',
+                'text-[9px]',
+                'font-semibold',
+                'leading-none',
+                'transition-colors duration-150',
+                active
+                  ? 'text-white'
+                  : 'text-slate-500 group-hover:text-slate-800',
+              ].join(' ')}
+            >
+              {label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 export default LanguageSwitcher;

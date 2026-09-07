@@ -1,19 +1,108 @@
 @import "tailwindcss";
 
+/* =========================================================
+   SHOBHADAMODAR PETROLEUM - GLOBAL DESIGN TOKENS
+   ========================================================= */
+
 @theme {
   --color-bpcl-navy: #1E3A8A;
   --color-bpcl-gold: #FBBF24;
-  --color-bpcl-emerald: #059669;
-  --color-bpcl-emeraldHover: #047857;
+
+  --color-bpcl-emerald: #047857;
+  --color-bpcl-emerald-hover: #065F46;
+
   --color-bpcl-surface: #F3F4F6;
-  
+
   --color-fuel-petrol: #16A34A;
   --color-fuel-diesel: #2563EB;
-  
-  --font-sans: "Inter", "Mukta", sans-serif;
+
+  --font-inter: "Inter", sans-serif;
+  --font-mukta: "Mukta", sans-serif;
 }
 
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+:root {
+  --font-primary: "Inter", sans-serif;
+  --font-devanagari: "Mukta", sans-serif;
+
+  --login-bg: #F3F4F6;
+  --login-surface: #FFFFFF;
+
+  --text-primary: #111827;
+  --text-secondary: #667085;
+  --text-muted: #98A2B3;
+
+  --brand-green: #047857;
+  --brand-green-hover: #065F46;
+}
+
+html,
+body,
+#root {
+  min-width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* English + numbers use Inter */
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-primary);
+}
+
+/* Global body */
 body {
-  background-color: var(--color-bpcl-surface);
+  background: var(--login-bg);
+  color: var(--text-primary);
+
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  text-rendering: optimizeLegibility;
+
+  font-feature-settings:
+    "cv02",
+    "cv03",
+    "cv04",
+    "cv11";
+}
+
+/* Hindi / Marathi */
+.font-devanagari,
+.lang-hi,
+.lang-mr,
+[lang="hi"],
+[lang="mr"] {
+  font-family: var(--font-devanagari);
+}
+
+/* Make headings consistently use the intended font */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-primary);
+}
+
+/* Prevent browser defaults from making controls look inconsistent */
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Better mobile tap behavior */
+button {
+  -webkit-tap-highlight-color: transparent;
 }

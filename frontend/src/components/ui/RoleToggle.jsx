@@ -1,28 +1,153 @@
 // src/components/ui/RoleToggle.jsx
+
+const PersonIcon = ({ active }) => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    className={`h-[17px] w-[17px] ${active ? 'text-white' : 'text-slate-500'}`}
+  >
+    <circle cx="12" cy="7" r="4" />
+    <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+  </svg>
+);
+
+const ManagerIcon = ({ active }) => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    className={`h-[17px] w-[17px] ${active ? 'text-white' : 'text-slate-500'}`}
+  >
+    <path d="M12 3 5 6v5c0 4.7 2.8 8.4 7 10 4.2-1.6 7-5.3 7-10V6l-7-3Z" />
+    <path d="M9.5 12h5M12 9.5v5" />
+  </svg>
+);
+
 const RoleToggle = ({ role, setRole }) => {
+  const employeeActive = role === 'EMPLOYEE';
+  const managerActive = role === 'MANAGER';
+
   return (
-    <div className="grid grid-cols-2 !rounded-[18px] border border-slate-200/90 bg-white p-1.5 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.32)]" style={{ borderRadius: '18px' }} role="tablist" aria-label="Select your role">
-      <button 
+    <div
+      role="tablist"
+      aria-label="Select your role"
+      className="
+        grid
+        grid-cols-2
+        gap-1
+        rounded-[16px]
+        border
+        border-slate-200
+        bg-[#edf2ee]
+        p-1
+        shadow-[0_4px_12px_rgba(15,23,42,0.05)]
+      "
+    >
+      {/* Employee */}
+      <button
         type="button"
+        role="tab"
+        aria-selected={employeeActive}
         onClick={() => setRole('EMPLOYEE')}
-        role="tab"
-        aria-selected={role === 'EMPLOYEE'}
-        className={`flex min-h-12 items-center justify-center gap-2 !rounded-[13px] px-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bpcl-emerald ${role === 'EMPLOYEE' ? 'bg-bpcl-emerald text-white shadow-md shadow-emerald-950/20 ring-1 ring-inset ring-emerald-950/10' : 'text-slate-700 hover:bg-emerald-50/70 hover:text-bpcl-emerald'}`}
-        style={{ borderRadius: '13px', WebkitAppearance: 'none' }}
+        className="
+          relative
+          flex
+          min-h-[46px]
+          items-center
+          justify-center
+          rounded-[12px]
+          bg-transparent
+          p-0
+          text-[14px]
+          font-semibold
+          transition-transform
+          duration-150
+          active:scale-[0.985]
+          focus-visible:outline-none
+          focus-visible:ring-2
+          focus-visible:ring-emerald-500
+          focus-visible:ring-offset-1
+          focus-visible:ring-offset-white
+        "
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="7" r="4" /></svg>
-        Employee
+        <span
+          className={[
+            'absolute inset-0 rounded-[12px] transition-all duration-200',
+            employeeActive
+              ? 'bg-[#047857] shadow-[0_4px_10px_rgba(4,120,87,0.20)]'
+              : 'bg-transparent',
+          ].join(' ')}
+        />
+
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          <PersonIcon active={employeeActive} />
+
+          <span
+            className={
+              employeeActive
+                ? 'text-white'
+                : 'text-slate-600'
+            }
+          >
+            Employee
+          </span>
+        </span>
       </button>
-      <button 
+
+      {/* Manager */}
+      <button
         type="button"
-        onClick={() => setRole('MANAGER')}
         role="tab"
-        aria-selected={role === 'MANAGER'}
-        className={`flex min-h-12 items-center justify-center gap-2 !rounded-[13px] px-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bpcl-emerald ${role === 'MANAGER' ? 'bg-bpcl-emerald text-white shadow-md shadow-emerald-950/20 ring-1 ring-inset ring-emerald-950/10' : 'text-slate-700 hover:bg-emerald-50/70 hover:text-bpcl-emerald'}`}
-        style={{ borderRadius: '13px', WebkitAppearance: 'none' }}
+        aria-selected={managerActive}
+        onClick={() => setRole('MANAGER')}
+        className="
+          relative
+          flex
+          min-h-[46px]
+          items-center
+          justify-center
+          rounded-[12px]
+          bg-transparent
+          p-0
+          text-[14px]
+          font-semibold
+          transition-transform
+          duration-150
+          active:scale-[0.985]
+          focus-visible:outline-none
+          focus-visible:ring-2
+          focus-visible:ring-emerald-500
+          focus-visible:ring-offset-1
+          focus-visible:ring-offset-white
+        "
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M12 3 4 7v5c0 4.5 3.1 7.8 8 9 4.9-1.2 8-4.5 8-9V7l-8-4Z" /><path d="M9 12h6M12 9v6" /></svg>
-        Manager
+        <span
+          className={[
+            'absolute inset-0 rounded-[12px] transition-all duration-200',
+            managerActive
+              ? 'bg-[#047857] shadow-[0_4px_10px_rgba(4,120,87,0.20)]'
+              : 'bg-transparent',
+          ].join(' ')}
+        />
+
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          <ManagerIcon active={managerActive} />
+
+          <span
+            className={
+              managerActive
+                ? 'text-white'
+                : 'text-slate-600'
+            }
+          >
+            Manager
+          </span>
+        </span>
       </button>
     </div>
   );
