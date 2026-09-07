@@ -60,8 +60,21 @@ const ShiftEntry = () => {
   };
 
   const handleProceed = () => {
-    // In the next step, we will route to a Cash Collection page
-    alert("Readings saved locally. Next up: Cash & UPI entry!");
+    let totalExpectedSale = 0;
+    nozzles.forEach(nozzle => {
+      const metrics = getNozzleMetrics(nozzle);
+      totalExpectedSale += parseFloat(metrics.expectedSale);
+    });
+
+    navigate('/collections', {
+      state: {
+        mpdId,
+        readings,
+        nozzles,
+        totalExpectedSale,
+        rates
+      }
+    });
   };
 
   return (

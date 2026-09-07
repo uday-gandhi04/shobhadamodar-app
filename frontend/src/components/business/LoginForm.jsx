@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../../context/AuthContext';
 import { SyncContext } from '../../context/SyncContext';
+import { useNavigate } from 'react-router-dom';
 
 const EyeIcon = ({ visible }) => (
   <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
@@ -16,6 +17,7 @@ const EyeIcon = ({ visible }) => (
 
 const LoginForm = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate()
   const { login } = useContext(AuthContext);
   const { performBootstrapSync } = useContext(SyncContext);
   const [employeeId, setEmployeeId] = useState('ADMIN01');
@@ -33,6 +35,7 @@ const LoginForm = () => {
     const result = await login(employeeId, password, rememberDevice);
     if (result.success) {
       await performBootstrapSync(result.token);
+      navigate('/dashboard', { replace: true });
     } else {
       setError(result.message);
     }

@@ -4,11 +4,13 @@ import { IonPage, IonContent } from '@ionic/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../context/AuthContext';
+import { SyncContext } from '../context/SyncContext';
 import { dbService } from '../database/sqlite';
 
 const Dashboard = () => {
   const { t } = useTranslation();
   const { user, logout } = useContext(AuthContext);
+  const { pushOfflineShifts } = useContext(SyncContext);
   const navigate = useNavigate();
   
   const [rates, setRates] = useState(null);
@@ -38,6 +40,9 @@ const Dashboard = () => {
         }));
 
         setMpds(mpdsWithNozzles);
+
+        // Attempt to upload pending shifts after the local dashboard data is ready.
+        pushOfflineShifts();
       } catch (error) {
         console.error("Error reading from local SQLite:", error);
       } finally {
@@ -46,7 +51,7 @@ const Dashboard = () => {
     };
 
     loadOfflineData();
-  }, []);
+  }, [pushOfflineShifts]);
 
   return (
     <IonPage>

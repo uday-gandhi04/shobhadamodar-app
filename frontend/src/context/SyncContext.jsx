@@ -81,8 +81,41 @@ export const SyncProvider = ({ children }) => {
     }
   };
 
+  // 3. Process the offline queue
+  const pushOfflineShifts = async () => {
+    if (!token || !isDbReady) return;
+
+    try {
+      const pendingRes = await dbService.executeQuery("SELECT * FROM pending_shifts WHERE sync_status = 'QUEUED'");
+      const pendingShifts = pendingRes.values || [];
+
+      if (pendingShifts.length === 0) return;
+
+      console.log(`Attempting to background-sync ${pendingShifts.length} offline shifts...`);
+
+      for (const shift of pendingShifts) {
+        try {
+          const payload = JSON.parse(shift.payload);
+          await api.post('/sync/submit', payload);
+
+          await dbService.executeRun('DELETE FROM pending_shifts WHERE idempotency_key = ?', [shift.idempotency_key]);
+          console.log(`Successfully synced offline shift: ${shift.idempotency_key}`);
+        } catch (error) {
+          if (error.response?.status === 400 && error.response?.data?.message?.includes('already logged')) {
+            await dbService.executeRun('DELETE FROM pending_shifts WHERE idempotency_key = ?', [shift.idempotency_key]);
+            console.log(`Removed duplicate offline shift: ${shift.idempotency_key}`);
+          } else {
+            console.error(`Failed to background-sync shift ${shift.idempotency_key}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error processing offline queue:', error);
+    }
+  };
+
   return (
-    <SyncContext.Provider value={{ isDbReady, syncStatus, performBootstrapSync }}>
+    <SyncContext.Provider value={{ isDbReady, syncStatus, performBootstrapSync, pushOfflineShifts }}>
       {children}
     </SyncContext.Provider>
   );

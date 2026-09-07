@@ -14,6 +14,7 @@ import '@ionic/react/css/typography.css';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ShiftEntry from './pages/ShiftEntry';
+import Collections from './pages/Collections';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { SyncProvider } from './context/SyncContext';
 
@@ -44,6 +45,12 @@ function App() {
               <Route path="/shift/:mpdId" element={
                 <ProtectedRoute>
                   <ShiftEntry />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/collections" element={
+                <ProtectedRoute>
+                  <Collections />
                 </ProtectedRoute>
               } />
               
