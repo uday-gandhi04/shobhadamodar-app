@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (employeeId, password) => {
+  const login = async (employeeId, password, persistSession = true) => {
     try {
       const response = await api.post('/auth/login', { employeeId, password });
       
@@ -31,9 +31,14 @@ export const AuthProvider = ({ children }) => {
       setToken(newToken);
       setUser(userData);
       
-      // Save to local storage for persistence across reloads
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(userData));
+      // Keep the session only when the employee explicitly opts in.
+      if (persistSession) {
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
       
       return { success: true, token: newToken };
     } catch (error) {

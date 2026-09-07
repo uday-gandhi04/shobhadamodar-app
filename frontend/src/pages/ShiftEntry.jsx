@@ -79,7 +79,7 @@ const ShiftEntry = () => {
       </IonHeader>
 
       <IonContent className="ion-padding" style={{ '--background': '#F3F4F6' }}>
-        <div className="max-w-md mx-auto pb-32">
+        <div className="max-w-md mx-auto pb-48">
           
           {isLoading ? (
             <p className="text-center text-gray-500 mt-10">Loading local data...</p>
