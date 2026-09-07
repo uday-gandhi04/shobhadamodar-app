@@ -5,5 +5,27 @@
     "password": "Password",
     "submit": "Login →",
     "secure": "Secure • Reliable • Always Synced"
+  },
+  "dashboard": {
+    "assignedPump": "Assigned Pump",
+    "todaySale": "Today's Sale",
+    "matched": "Matched",
+    "todayWork": "Today's Work",
+    "shiftProgress": "Your shift progress",
+    "quickActions": "Quick Actions",
+    "completeWork": "Complete your work faster",
+    "nozzleReading": "Nozzle Reading",
+    "recordReading": "Record Reading",
+    "cashCollection": "Cash Collection",
+    "moneyCollection": "Money Collection",
+    "dailyReconciliation": "Daily Reconciliation",
+    "reconciliation": "Reconciliation",
+    "viewReports": "View Reports",
+    "recentActivity": "Recent Activity",
+    "seeAll": "See all",
+    "nozzleSaved": "Nozzle reading saved",
+    "cashUpdated": "Cash collection updated",
+    "upiUpdated": "UPI collection updated",
+    "viewPumpDetails": "View pump details"
   }
 }

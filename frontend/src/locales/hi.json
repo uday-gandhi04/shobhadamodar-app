@@ -5,5 +5,27 @@
     "password": "पासवर्ड",
     "submit": "लॉग इन करें →",
     "secure": "सुरक्षित • विश्वसनीय • हमेशा सिंक"
+  },
+  "dashboard": {
+    "assignedPump": "आपका पंप",
+    "todaySale": "आज की बिक्री",
+    "matched": "मिलान सही है",
+    "todayWork": "आज का काम",
+    "shiftProgress": "आपकी शिफ्ट की प्रगति",
+    "quickActions": "त्वरित कार्य",
+    "completeWork": "अपना काम जल्दी पूरा करें",
+    "nozzleReading": "नोज़ल रीडिंग",
+    "recordReading": "रीडिंग दर्ज करें",
+    "cashCollection": "नकद संग्रह",
+    "moneyCollection": "राशि दर्ज करें",
+    "dailyReconciliation": "दिन का हिसाब",
+    "reconciliation": "मिलान",
+    "viewReports": "रिपोर्ट देखें",
+    "recentActivity": "हाल की गतिविधि",
+    "seeAll": "सभी देखें",
+    "nozzleSaved": "नोज़ल रीडिंग सेव की गई",
+    "cashUpdated": "नकद संग्रह अपडेट किया गया",
+    "upiUpdated": "UPI संग्रह अपडेट किया गया",
+    "viewPumpDetails": "पंप विवरण देखें"
   }
 }
