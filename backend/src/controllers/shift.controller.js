@@ -135,21 +135,47 @@ const calculateFinalResult = async (shift, finalReadings, collections) => {
 
 export const getAvailableMpds = async (req, res, next) => {
   try {
-    const businessDate = businessDateFromQuery(req.query.date);
     const [mpds, activeShifts] = await Promise.all([
-      Mpd.find({ isActive: true }).select('_id mpdNumber serialNumber nozzles').lean(),
-      Shift.find({ businessDate, status: 'IN_PROGRESS' }).select('mpdId').lean(),
+      Mpd.find({ isActive: true })
+        .select('_id mpdNumber serialNumber nozzles')
+        .lean(),
+
+      /*
+       * IMPORTANT:
+       *
+       * MPD availability depends only on whether
+       * the MPD currently has an IN_PROGRESS shift.
+       *
+       * Do NOT filter by businessDate here.
+       *
+       * A NIGHT shift started on Sep 8 remains active
+       * after midnight on Sep 9 until explicitly ended.
+       */
+      Shift.find({
+        status: 'IN_PROGRESS',
+      })
+        .select('mpdId')
+        .lean(),
     ]);
 
-    const lockedMpdIds = new Set(activeShifts.map((shift) => String(shift.mpdId)));
+    const lockedMpdIds = new Set(
+      activeShifts.map((shift) =>
+        String(shift.mpdId),
+      ),
+    );
 
     return res.status(200).json({
       success: true,
+
       data: mpds.map((mpd) => ({
         _id: mpd._id,
         mpdNumber: mpd.mpdNumber,
         serialNumber: mpd.serialNumber,
-        isAvailable: !lockedMpdIds.has(String(mpd._id)),
+
+        isAvailable:
+          !lockedMpdIds.has(
+            String(mpd._id),
+          ),
       })),
     });
   } catch (error) {

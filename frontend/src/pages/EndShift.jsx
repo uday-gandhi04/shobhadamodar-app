@@ -549,10 +549,33 @@ const EndShift = () => {
                 type="button"
                 disabled={!canContinue}
                 onClick={() => {
+                  const finalReadingsPayload = readings.map((reading) => {
+                    const nozzleId =
+                      reading.nozzleId ||
+                      reading.nozzle ||
+                      reading._id;
+
+                    const finalValue =
+                      finalReadings[nozzleId] ??
+                      formatReading(
+                        Number(
+                          reading.openingReading ??
+                            reading.opening ??
+                            0,
+                        ),
+                      );
+
+                    return {
+                      nozzleId,
+                      closingReading: Number(finalValue),
+                    };
+                  });
+
                   navigate("/collections", {
                     state: {
                       mode: "end-shift",
                       shiftId: shift?._id,
+                      finalReadings: finalReadingsPayload,
                     },
                   });
                 }}

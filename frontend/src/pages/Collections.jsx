@@ -46,15 +46,11 @@ const parseRupeesToPaise = (value) => {
 };
 
 const sanitizeMoneyInput = (value) => {
-  return value
-    .replace(/[^\d.]/g, "")
-    .replace(/(\..*)\./g, "$1");
+  return value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
 };
 
 const sanitizeNumberInput = (value) => {
-  return value
-    .replace(/[^\d.]/g, "")
-    .replace(/(\..*)\./g, "$1");
+  return value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
 };
 
 const formatOutstanding = (paise) => {
@@ -78,9 +74,7 @@ const Collections = () => {
   // Cash / UPI / Card
   // ---------------------------
 
-  const [cashCounts, setCashCounts] = useState(
-    createEmptyCounts(),
-  );
+  const [cashCounts, setCashCounts] = useState(createEmptyCounts());
 
   const [upi, setUpi] = useState("");
   const [card, setCard] = useState("");
@@ -108,26 +102,19 @@ const Collections = () => {
 
   const [vehicleNumber, setVehicleNumber] = useState("");
 
-  const [udhariFuelType, setUdhariFuelType] =
-    useState("DIESEL");
+  const [udhariFuelType, setUdhariFuelType] = useState("DIESEL");
 
-  const [udhariMode, setUdhariMode] =
-    useState("litres");
+  const [udhariMode, setUdhariMode] = useState("litres");
 
-  const [udhariLitres, setUdhariLitres] =
-    useState("");
+  const [udhariLitres, setUdhariLitres] = useState("");
 
-  const [udhariAmount, setUdhariAmount] =
-    useState("");
+  const [udhariAmount, setUdhariAmount] = useState("");
 
-  const [addingUdhari, setAddingUdhari] =
-    useState(false);
+  const [addingUdhari, setAddingUdhari] = useState(false);
 
-  const [udhariEntries, setUdhariEntries] =
-    useState([]);
+  const [udhariEntries, setUdhariEntries] = useState([]);
 
-  const [udhariError, setUdhariError] =
-    useState("");
+  const [udhariError, setUdhariError] = useState("");
 
   // ---------------------------
   // General state
@@ -137,8 +124,7 @@ const Collections = () => {
   const [saving, setSaving] = useState(false);
 
   const [error, setError] = useState("");
-  const [savedMessage, setSavedMessage] =
-    useState("");
+  const [savedMessage, setSavedMessage] = useState("");
 
   // ============================================================
   // LOAD CURRENT SHIFT
@@ -173,20 +159,11 @@ const Collections = () => {
 
         const counts = createEmptyCounts();
 
-        (
-          currentShift.cashCollections || []
-        ).forEach((item) => {
-          const denomination = Number(
-            item.denomination,
-          );
+        (currentShift.cashCollections || []).forEach((item) => {
+          const denomination = Number(item.denomination);
 
-          if (
-            DENOMINATIONS.includes(
-              denomination,
-            )
-          ) {
-            counts[denomination] =
-              Number(item.count) || 0;
+          if (DENOMINATIONS.includes(denomination)) {
+            counts[denomination] = Number(item.count) || 0;
           }
         });
 
@@ -198,25 +175,19 @@ const Collections = () => {
 
         setUpi(
           currentShift.totalUpiPaise
-            ? String(
-                currentShift.totalUpiPaise / 100,
-              )
+            ? String(currentShift.totalUpiPaise / 100)
             : "",
         );
 
         setCard(
           currentShift.totalCardPaise
-            ? String(
-                currentShift.totalCardPaise / 100,
-              )
+            ? String(currentShift.totalCardPaise / 100)
             : "",
         );
 
         setUdhari(
           currentShift.totalUdhariPaise
-            ? String(
-                currentShift.totalUdhariPaise / 100,
-              )
+            ? String(currentShift.totalUdhariPaise / 100)
             : "",
         );
 
@@ -225,43 +196,28 @@ const Collections = () => {
         // -------------------------
 
         try {
-          const rateResponse =
-            await getCurrentFuelRate(
-              currentShift.businessDate,
-            );
+          const rateResponse = await getCurrentFuelRate(
+            currentShift.businessDate,
+          );
 
-          const rates =
-            rateResponse?.data;
+          const rates = rateResponse?.data;
 
           if (rates && mounted) {
             setFuelRates({
-              PETROL: Number(
-                rates.petrolRatePaise || 0,
-              ),
-              DIESEL: Number(
-                rates.dieselRatePaise || 0,
-              ),
+              PETROL: Number(rates.petrolRatePaise || 0),
+              DIESEL: Number(rates.dieselRatePaise || 0),
             });
           }
         } catch (rateError) {
-          console.error(
-            "Unable to load fuel rates:",
-            rateError,
-          );
+          console.error("Unable to load fuel rates:", rateError);
         }
 
         // -------------------------
         // Existing Udhari entries
         // -------------------------
 
-        if (
-          Array.isArray(
-            currentShift.udhariEntries,
-          )
-        ) {
-          setUdhariEntries(
-            currentShift.udhariEntries,
-          );
+        if (Array.isArray(currentShift.udhariEntries)) {
+          setUdhariEntries(currentShift.udhariEntries);
         }
       } catch (err) {
         if (!mounted) return;
@@ -290,54 +246,32 @@ const Collections = () => {
   // ============================================================
 
   const totalCashPaise = useMemo(() => {
-    return DENOMINATIONS.reduce(
-      (total, denomination) => {
-        const count = Number(
-          cashCounts[denomination] || 0,
-        );
+    return DENOMINATIONS.reduce((total, denomination) => {
+      const count = Number(cashCounts[denomination] || 0);
 
-        return (
-          total +
-          denomination * count * 100
-        );
-      },
-      0,
-    );
+      return total + denomination * count * 100;
+    }, 0);
   }, [cashCounts]);
 
   // ============================================================
   // CASH HANDLERS
   // ============================================================
 
-  const changeCashCount = (
-    denomination,
-    delta,
-  ) => {
+  const changeCashCount = (denomination, delta) => {
     setCashCounts((current) => ({
       ...current,
-      [denomination]: Math.max(
-        0,
-        Number(
-          current[denomination] || 0,
-        ) + delta,
-      ),
+      [denomination]: Math.max(0, Number(current[denomination] || 0) + delta),
     }));
 
     setSavedMessage("");
   };
 
-  const updateCashCount = (
-    denomination,
-    value,
-  ) => {
-    const cleaned =
-      value.replace(/\D/g, "");
+  const updateCashCount = (denomination, value) => {
+    const cleaned = value.replace(/\D/g, "");
 
     setCashCounts((current) => ({
       ...current,
-      [denomination]: cleaned
-        ? Number(cleaned)
-        : 0,
+      [denomination]: cleaned ? Number(cleaned) : 0,
     }));
 
     setSavedMessage("");
@@ -348,26 +282,17 @@ const Collections = () => {
   // ============================================================
 
   const buildPayload = () => {
-    const cashBreakdown =
-      DENOMINATIONS.map(
-        (denomination) => ({
-          denomination,
-          count: Number(
-            cashCounts[denomination] || 0,
-          ),
-        }),
-      ).filter(
-        (item) => item.count > 0,
-      );
+    const cashBreakdown = DENOMINATIONS.map((denomination) => ({
+      denomination,
+      count: Number(cashCounts[denomination] || 0),
+    })).filter((item) => item.count > 0);
 
     return {
       cashBreakdown,
 
-      upiPaise:
-        parseRupeesToPaise(upi),
+      upiPaise: parseRupeesToPaise(upi),
 
-      cardPaise:
-        parseRupeesToPaise(card),
+      cardPaise: parseRupeesToPaise(card),
 
       /*
        * IMPORTANT:
@@ -379,10 +304,7 @@ const Collections = () => {
        * shift total here instead of using a
        * temporary Udhari input.
        */
-      udhariPaise:
-        Number(
-          shift?.totalUdhariPaise || 0,
-        ),
+      udhariPaise: Number(shift?.totalUdhariPaise || 0),
     };
   };
 
@@ -400,31 +322,34 @@ const Collections = () => {
       setError("");
       setSavedMessage("");
 
-      const response =
-        await updateCollections(
-          shift._id,
-          buildPayload(),
-        );
+      const response = await updateCollections(shift._id, buildPayload());
 
-      const updatedShift =
-        response?.data;
+      const updatedShift = response?.data;
 
       if (updatedShift) {
         setShift(updatedShift);
-
-        setUdhari(
-          updatedShift.totalUdhariPaise
-            ? String(
-                updatedShift.totalUdhariPaise /
-                  100,
-              )
-            : "",
-        );
       }
 
-      setSavedMessage(
-        "Collection saved successfully.",
-      );
+      /*
+       * Normal Cash Collection:
+       *
+       * Save → Dashboard
+       */
+      if (!isEndShift) {
+        navigate("/dashboard", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      /*
+       * End Shift:
+       * do NOT navigate here.
+       *
+       * Stage 2 uses handleReview().
+       */
+      setSavedMessage("Collection saved successfully.");
     } catch (err) {
       setError(
         err?.response?.data?.message ||
@@ -436,13 +361,87 @@ const Collections = () => {
     }
   };
 
+  const handleReview = async () => {
+    if (!shift?._id || saving) {
+      return;
+    }
+
+    /*
+     * Stage 1 data passed from EndShift.jsx
+     */
+    const finalReadings = location.state?.finalReadings || [];
+
+    if (finalReadings.length === 0) {
+      setError(
+        "Final nozzle readings are missing. Please go back and enter them.",
+      );
+
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError("");
+      setSavedMessage("");
+
+      /*
+       * First save the current collection state.
+       *
+       * This ensures the active shift contains
+       * the latest Cash / UPI / Card / Udhari values.
+       */
+      const collectionPayload = buildPayload();
+
+      const saveResponse = await updateCollections(
+        shift._id,
+        collectionPayload,
+      );
+
+      const updatedShift = saveResponse?.data;
+
+      if (updatedShift) {
+        setShift(updatedShift);
+      }
+
+      /*
+       * Move to Stage 3.
+       *
+       * We pass:
+       * - shift
+       * - final nozzle readings
+       * - current collection payload
+       *
+       * Review page will call previewEndShift().
+       */
+      navigate("/end-shift-review", {
+        state: {
+          shiftId: shift._id,
+
+          finalReadings,
+
+          collections: collectionPayload,
+
+          shift: updatedShift || shift,
+
+          mode: "end-shift",
+        },
+      });
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Unable to prepare final review.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ============================================================
   // UDHARI CUSTOMER SEARCH
   // ============================================================
 
-  const handleCustomerSearch = async (
-    value,
-  ) => {
+  const handleCustomerSearch = async (value) => {
     setCustomerSearch(value);
     setCustomerName(value);
     setSelectedCustomer(null);
@@ -458,44 +457,32 @@ const Collections = () => {
     try {
       setSearchingCustomers(true);
 
-      const response =
-        await searchCustomers(query);
+      const response = await searchCustomers(query);
 
-      setCustomerResults(
-        response?.data || [],
-      );
+      setCustomerResults(response?.data || []);
     } catch (err) {
       setCustomerResults([]);
 
       setUdhariError(
-        err?.response?.data?.message ||
-          "Unable to search customers.",
+        err?.response?.data?.message || "Unable to search customers.",
       );
     } finally {
       setSearchingCustomers(false);
     }
   };
 
-  const selectCustomer = (
-    customer,
-  ) => {
+  const selectCustomer = (customer) => {
     setSelectedCustomer(customer);
 
-    setCustomerName(
-      customer.name || "",
-    );
+    setCustomerName(customer.name || "");
 
-    setCustomerSearch(
-      customer.name || "",
-    );
+    setCustomerSearch(customer.name || "");
 
     /*
      * Vehicle number is only a suggestion.
      * Employee can change it for this transaction.
      */
-    setVehicleNumber(
-      customer.vehicleNumber || "",
-    );
+    setVehicleNumber(customer.vehicleNumber || "");
 
     setCustomerResults([]);
     setUdhariError("");
@@ -505,25 +492,16 @@ const Collections = () => {
   // UDHARI RATE / CALCULATION
   // ============================================================
 
-  const currentUdhariRatePaise =
-    Number(
-      fuelRates[udhariFuelType] || 0,
-    );
+  const currentUdhariRatePaise = Number(fuelRates[udhariFuelType] || 0);
 
   const calculatedUdhariAmount =
-    udhariLitres !== "" &&
-    currentUdhariRatePaise > 0
-      ? Math.round(
-          Number(udhariLitres) *
-            currentUdhariRatePaise,
-        )
+    udhariLitres !== "" && currentUdhariRatePaise > 0
+      ? Math.round(Number(udhariLitres) * currentUdhariRatePaise)
       : 0;
 
   const calculatedUdhariLitres =
-    udhariAmount !== "" &&
-    currentUdhariRatePaise > 0
-      ? Number(udhariAmount) /
-        currentUdhariRatePaise
+    udhariAmount !== "" && currentUdhariRatePaise > 0
+      ? Number(udhariAmount) / currentUdhariRatePaise
       : 0;
 
   // ============================================================
@@ -531,30 +509,21 @@ const Collections = () => {
   // ============================================================
 
   const handleAddUdhari = async () => {
-    if (
-      addingUdhari ||
-      !shift?._id
-    ) {
+    if (addingUdhari || !shift?._id) {
       return;
     }
 
     setUdhariError("");
 
-    const name =
-      selectedCustomer?.name ||
-      customerName.trim();
+    const name = selectedCustomer?.name || customerName.trim();
 
     if (name.length < 2) {
-      setUdhariError(
-        "Enter or select a customer name.",
-      );
+      setUdhariError("Enter or select a customer name.");
       return;
     }
 
     if (currentUdhariRatePaise <= 0) {
-      setUdhariError(
-        "Fuel rate is unavailable.",
-      );
+      setUdhariError("Fuel rate is unavailable.");
       return;
     }
 
@@ -565,146 +534,91 @@ const Collections = () => {
     // Entered in litres
     // -------------------------
 
-    if (
-      udhariMode === "litres"
-    ) {
-      litres = Number(
-        udhariLitres,
-      );
+    if (udhariMode === "litres") {
+      litres = Number(udhariLitres);
 
-      if (
-        !Number.isFinite(litres) ||
-        litres <= 0
-      ) {
-        setUdhariError(
-          "Enter a valid litre amount.",
-        );
+      if (!Number.isFinite(litres) || litres <= 0) {
+        setUdhariError("Enter a valid litre amount.");
         return;
       }
 
-      amountPaise =
-        Math.round(
-          litres *
-            currentUdhariRatePaise,
-        );
+      amountPaise = Math.round(litres * currentUdhariRatePaise);
     }
 
     // -------------------------
     // Entered in rupees
     // -------------------------
-
     else {
-      amountPaise =
-        parseRupeesToPaise(
-          udhariAmount,
-        );
+      amountPaise = parseRupeesToPaise(udhariAmount);
 
-      if (
-        !Number.isFinite(
-          amountPaise,
-        ) ||
-        amountPaise <= 0
-      ) {
-        setUdhariError(
-          "Enter a valid rupee amount.",
-        );
+      if (!Number.isFinite(amountPaise) || amountPaise <= 0) {
+        setUdhariError("Enter a valid rupee amount.");
         return;
       }
 
-      litres =
-        amountPaise /
-        currentUdhariRatePaise;
+      litres = amountPaise / currentUdhariRatePaise;
     }
 
     try {
       setAddingUdhari(true);
 
-      const response =
-        await addUdhariTransaction({
-          shiftId: shift._id,
+      const response = await addUdhariTransaction({
+        shiftId: shift._id,
 
-          customerId:
-            selectedCustomer?._id,
+        customerId: selectedCustomer?._id,
 
-          customerName: name,
+        customerName: name,
 
-          vehicleNumber:
-            vehicleNumber
-              .trim()
-              .toUpperCase() ||
-            undefined,
+        vehicleNumber: vehicleNumber.trim().toUpperCase() || undefined,
 
-          fuelType:
-            udhariFuelType,
+        fuelType: udhariFuelType,
 
-          litres,
+        litres,
 
-          amountPaise,
-        });
+        amountPaise,
+      });
 
-      const result =
-        response?.data;
+      const result = response?.data;
 
       /*
        * Add the newly-created transaction
        * to the current screen.
        */
-      const transaction =
-        result?.transaction;
+      const transaction = result?.transaction;
 
-      const customer =
-        result?.customer ||
-        selectedCustomer;
+      const customer = result?.customer || selectedCustomer;
 
-      setUdhariEntries(
-        (current) => [
-          ...current,
-          {
-            id:
-              transaction?._id ||
-              `${Date.now()}`,
+      setUdhariEntries((current) => [
+        ...current,
+        {
+          id: transaction?._id || `${Date.now()}`,
 
-            customerId:
-              customer?._id ||
-              selectedCustomer?._id ||
-              null,
+          customerId: customer?._id || selectedCustomer?._id || null,
 
-            customer: customer
-              ? {
-                  _id: customer._id,
-                  name: customer.name,
-                  outstandingBalance:
-                    customer.outstandingBalance,
-                }
-              : {
-                  name,
-                },
+          customer: customer
+            ? {
+                _id: customer._id,
+                name: customer.name,
+                outstandingBalance: customer.outstandingBalance,
+              }
+            : {
+                name,
+              },
 
-            vehicleNumber:
-              transaction?.vehicleNumber ||
-              vehicleNumber
-                .trim()
-                .toUpperCase() ||
-              null,
+          vehicleNumber:
+            transaction?.vehicleNumber ||
+            vehicleNumber.trim().toUpperCase() ||
+            null,
 
-            fuelType:
-              transaction?.fuelType ||
-              udhariFuelType,
+          fuelType: transaction?.fuelType || udhariFuelType,
 
-            litres:
-              transaction?.litres ??
-              litres,
+          litres: transaction?.litres ?? litres,
 
-            ratePaise:
-              transaction?.ratePaise ??
-              currentUdhariRatePaise,
+          ratePaise: transaction?.ratePaise ?? currentUdhariRatePaise,
 
-            amountPaise:
-              transaction?.amountPaise ??
-              amountPaise,
-          },
-        ],
-      );
+          amountPaise: transaction?.amountPaise ?? amountPaise,
+        },
+      ]);
 
       /*
        * Update the shift Udhari total.
@@ -713,41 +627,24 @@ const Collections = () => {
        * updated total. If not, add the new
        * amount locally.
        */
-      const updatedUdhariTotal =
-        Number(
-          result?.shift
-            ?.totalUdhariPaise ??
-            shift.totalUdhariPaise ??
-            0,
-        );
+      const updatedUdhariTotal = Number(
+        result?.shift?.totalUdhariPaise ?? shift.totalUdhariPaise ?? 0,
+      );
 
       const finalUdhariTotal =
-        result?.shift
-          ?.totalUdhariPaise != null
+        result?.shift?.totalUdhariPaise != null
           ? updatedUdhariTotal
-          : updatedUdhariTotal +
-            amountPaise;
+          : updatedUdhariTotal + amountPaise;
 
-      setUdhari(
-        String(
-          finalUdhariTotal / 100,
-        ),
-      );
+      setUdhari(String(finalUdhariTotal / 100));
 
       setShift((current) => ({
         ...current,
-        totalUdhariPaise:
-          finalUdhariTotal,
+        totalUdhariPaise: finalUdhariTotal,
         totalCollectedPaise:
-          Number(
-            current?.totalCashPaise || 0,
-          ) +
-          Number(
-            current?.totalUpiPaise || 0,
-          ) +
-          Number(
-            current?.totalCardPaise || 0,
-          ) +
+          Number(current?.totalCashPaise || 0) +
+          Number(current?.totalUpiPaise || 0) +
+          Number(current?.totalCardPaise || 0) +
           finalUdhariTotal,
       }));
 
@@ -761,14 +658,10 @@ const Collections = () => {
       setVehicleNumber("");
       setUdhariLitres("");
       setUdhariAmount("");
-      setSavedMessage(
-        "Udhari added successfully.",
-      );
+      setSavedMessage("Udhari added successfully.");
     } catch (err) {
       setUdhariError(
-        err?.response?.data?.message ||
-          err?.message ||
-          "Unable to add Udhari.",
+        err?.response?.data?.message || err?.message || "Unable to add Udhari.",
       );
     } finally {
       setAddingUdhari(false);
@@ -785,18 +678,15 @@ const Collections = () => {
         <IonContent
           fullscreen
           style={{
-            "--background":
-              "#F3F4F6",
+            "--background": "#F3F4F6",
           }}
         >
           <main className="mx-auto min-h-[100dvh] max-w-[480px] px-4 pt-6">
-
             <div className="h-6 w-36 animate-pulse rounded bg-slate-200" />
 
             <div className="mt-5 h-12 animate-pulse rounded-[16px] bg-white" />
 
             <div className="mt-4 h-[520px] animate-pulse rounded-[20px] bg-white" />
-
           </main>
         </IonContent>
       </IonPage>
@@ -812,26 +702,20 @@ const Collections = () => {
       <IonContent
         fullscreen
         style={{
-          "--background":
-            "#F3F4F6",
+          "--background": "#F3F4F6",
         }}
       >
         <main className="mx-auto min-h-[100dvh] max-w-[480px] px-4 pb-28 pt-[max(0.9rem,env(safe-area-inset-top))]">
-
           {/* ================================================= */}
           {/* HEADER */}
           {/* ================================================= */}
 
           <header className="flex items-center justify-between">
-
             <div className="flex items-center gap-3">
-
               <button
                 type="button"
                 onClick={() => {
-                  navigate(
-                    "/dashboard",
-                  );
+                  navigate("/dashboard");
                 }}
                 className="
                   grid
@@ -858,20 +742,15 @@ const Collections = () => {
 
               <div>
                 <h1 className="text-[18px] font-bold text-slate-900">
-                  {isEndShift
-                    ? "Final Money Count"
-                    : "Cash Collection"}
+                  {isEndShift ? "Final Money Count" : "Cash Collection"}
                 </h1>
 
                 <p className="text-[10px] text-slate-500">
                   {isEndShift
                     ? "Verify final collection"
-                    : shift?.mpdId
-                        ?.mpdNumber ||
-                      "MPD"}
+                    : shift?.mpdId?.mpdNumber || "MPD"}
                 </p>
               </div>
-
             </div>
 
             <button
@@ -889,7 +768,6 @@ const Collections = () => {
             >
               ⋮
             </button>
-
           </header>
 
           {/* ================================================= */}
@@ -897,26 +775,23 @@ const Collections = () => {
           {/* ================================================= */}
 
           <div className="mt-5 grid grid-cols-4 gap-1 rounded-[14px] bg-white p-1 shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
-
             {[
               ["cash", "Cash"],
               ["upi", "UPI"],
               ["card", "Card"],
               ["udhari", "Udhari"],
-            ].map(
-              ([value, label]) => {
-                const active =
-                  activeTab === value;
+            ].map(([value, label]) => {
+              const active = activeTab === value;
 
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => {
-                      setActiveTab(value);
-                      setSavedMessage("");
-                    }}
-                    className={`
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(value);
+                    setSavedMessage("");
+                  }}
+                  className={`
                       min-h-[38px]
                       rounded-[10px]
                       text-[11px]
@@ -928,27 +803,22 @@ const Collections = () => {
                           : "text-slate-500 hover:bg-slate-50"
                       }
                     `}
-                  >
-                    {label}
-                  </button>
-                );
-              },
-            )}
-
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* ================================================= */}
           {/* CASH TAB */}
           {/* ================================================= */}
 
-          {activeTab ===
-            "cash" && (
+          {activeTab === "cash" && (
             <>
               <div className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
                 <div className="flex h-[116px] items-center justify-center bg-gradient-to-b from-amber-50 to-emerald-50">
-
                   <div className="text-center">
-
                     <div className="text-[36px] font-bold text-[#047857]">
                       ₹
                     </div>
@@ -956,14 +826,11 @@ const Collections = () => {
                     <p className="mt-1 text-[10px] font-medium text-slate-500">
                       Cash collected so far
                     </p>
-
                   </div>
-
                 </div>
               </div>
 
               <div className="mt-4 flex items-center px-3">
-
                 <div className="w-[72px]" />
 
                 <div className="flex-1 text-center text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
@@ -973,31 +840,18 @@ const Collections = () => {
                 <div className="w-[82px] text-right text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                   Value
                 </div>
-
               </div>
 
               <section className="mt-2 rounded-[18px] bg-white p-2 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+                {DENOMINATIONS.map((denomination) => {
+                  const count = Number(cashCounts[denomination] || 0);
 
-                {DENOMINATIONS.map(
-                  (denomination) => {
-                    const count =
-                      Number(
-                        cashCounts[
-                          denomination
-                        ] || 0,
-                      );
+                  const valuePaise = denomination * count * 100;
 
-                    const valuePaise =
-                      denomination *
-                      count *
-                      100;
-
-                    return (
-                      <div
-                        key={
-                          denomination
-                        }
-                        className="
+                  return (
+                    <div
+                      key={denomination}
+                      className="
                           flex
                           min-h-[43px]
                           items-center
@@ -1005,28 +859,18 @@ const Collections = () => {
                           border-slate-50
                           last:border-b-0
                         "
-                      >
+                    >
+                      <div className="w-[72px] pl-2">
+                        <span className="text-[12px] font-semibold text-slate-700">
+                          ₹ {denomination}
+                        </span>
+                      </div>
 
-                        <div className="w-[72px] pl-2">
-                          <span className="text-[12px] font-semibold text-slate-700">
-                            ₹{" "}
-                            {
-                              denomination
-                            }
-                          </span>
-                        </div>
-
-                        <div className="flex flex-1 items-center justify-center gap-1.5">
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              changeCashCount(
-                                denomination,
-                                -1,
-                              )
-                            }
-                            className="
+                      <div className="flex flex-1 items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => changeCashCount(denomination, -1)}
+                          className="
                               grid
                               h-7
                               w-7
@@ -1039,24 +883,18 @@ const Collections = () => {
                               font-semibold
                               text-slate-500
                             "
-                          >
-                            −
-                          </button>
+                        >
+                          −
+                        </button>
 
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={count}
-                            onChange={(
-                              event,
-                            ) =>
-                              updateCashCount(
-                                denomination,
-                                event.target
-                                  .value,
-                              )
-                            }
-                            className="
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={count}
+                          onChange={(event) =>
+                            updateCashCount(denomination, event.target.value)
+                          }
+                          className="
                               h-7
                               w-[38px]
                               rounded-[7px]
@@ -1070,17 +908,12 @@ const Collections = () => {
                               outline-none
                               focus:border-[#047857]
                             "
-                          />
+                        />
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              changeCashCount(
-                                denomination,
-                                1,
-                              )
-                            }
-                            className="
+                        <button
+                          type="button"
+                          onClick={() => changeCashCount(denomination, 1)}
+                          className="
                               grid
                               h-7
                               w-7
@@ -1093,39 +926,29 @@ const Collections = () => {
                               font-semibold
                               text-slate-500
                             "
-                          >
-                            +
-                          </button>
-
-                        </div>
-
-                        <div className="w-[82px] pr-2 text-right">
-                          <span className="text-[11px] font-semibold text-slate-700">
-                            {formatCurrency(
-                              valuePaise,
-                            )}
-                          </span>
-                        </div>
-
+                        >
+                          +
+                        </button>
                       </div>
-                    );
-                  },
-                )}
+
+                      <div className="w-[82px] pr-2 text-right">
+                        <span className="text-[11px] font-semibold text-slate-700">
+                          {formatCurrency(valuePaise)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
 
                 <div className="mt-2 flex items-center justify-between rounded-[12px] bg-emerald-50 px-3 py-3">
-
                   <span className="text-[11px] font-semibold text-slate-600">
                     Total Cash
                   </span>
 
                   <span className="text-[17px] font-bold text-[#047857]">
-                    {formatCurrency(
-                      totalCashPaise,
-                    )}
+                    {formatCurrency(totalCashPaise)}
                   </span>
-
                 </div>
-
               </section>
             </>
           )}
@@ -1134,10 +957,8 @@ const Collections = () => {
           {/* UPI TAB */}
           {/* ================================================= */}
 
-          {activeTab ===
-            "upi" && (
+          {activeTab === "upi" && (
             <section className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-
               <p className="text-[16px] font-bold text-slate-900">
                 UPI Collection
               </p>
@@ -1147,13 +968,11 @@ const Collections = () => {
               </p>
 
               <div className="mt-5 rounded-[14px] border border-slate-200 bg-slate-50 px-3 py-3">
-
                 <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                   Total UPI
                 </p>
 
                 <div className="mt-1 flex items-center">
-
                   <span className="mr-2 text-[20px] font-bold text-slate-400">
                     ₹
                   </span>
@@ -1162,15 +981,8 @@ const Collections = () => {
                     type="text"
                     inputMode="decimal"
                     value={upi}
-                    onChange={(
-                      event,
-                    ) => {
-                      setUpi(
-                        sanitizeMoneyInput(
-                          event.target
-                            .value,
-                        ),
-                      );
+                    onChange={(event) => {
+                      setUpi(sanitizeMoneyInput(event.target.value));
 
                       setSavedMessage("");
                     }}
@@ -1185,11 +997,8 @@ const Collections = () => {
                       outline-none
                     "
                   />
-
                 </div>
-
               </div>
-
             </section>
           )}
 
@@ -1197,10 +1006,8 @@ const Collections = () => {
           {/* CARD TAB */}
           {/* ================================================= */}
 
-          {activeTab ===
-            "card" && (
+          {activeTab === "card" && (
             <section className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-
               <p className="text-[16px] font-bold text-slate-900">
                 Card / ATM Collection
               </p>
@@ -1210,13 +1017,11 @@ const Collections = () => {
               </p>
 
               <div className="mt-5 rounded-[14px] border border-slate-200 bg-slate-50 px-3 py-3">
-
                 <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                   Total Card / ATM
                 </p>
 
                 <div className="mt-1 flex items-center">
-
                   <span className="mr-2 text-[20px] font-bold text-slate-400">
                     ₹
                   </span>
@@ -1225,15 +1030,8 @@ const Collections = () => {
                     type="text"
                     inputMode="decimal"
                     value={card}
-                    onChange={(
-                      event,
-                    ) => {
-                      setCard(
-                        sanitizeMoneyInput(
-                          event.target
-                            .value,
-                        ),
-                      );
+                    onChange={(event) => {
+                      setCard(sanitizeMoneyInput(event.target.value));
 
                       setSavedMessage("");
                     }}
@@ -1248,11 +1046,8 @@ const Collections = () => {
                       outline-none
                     "
                   />
-
                 </div>
-
               </div>
-
             </section>
           )}
 
@@ -1260,13 +1055,10 @@ const Collections = () => {
           {/* UDHARI TAB */}
           {/* ================================================= */}
 
-          {activeTab ===
-            "udhari" && (
+          {activeTab === "udhari" && (
             <div className="mt-4 space-y-4">
-
               {/* Main Udhari form */}
               <section className="rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-
                 <div>
                   <p className="text-[16px] font-bold text-slate-900">
                     Udhari Collection
@@ -1279,25 +1071,16 @@ const Collections = () => {
 
                 {/* Customer */}
                 <div className="mt-5">
-
                   <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                     Customer Name
                   </label>
 
                   <div className="relative mt-2">
-
                     <input
                       type="text"
-                      value={
-                        customerSearch
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        handleCustomerSearch(
-                          event.target
-                            .value,
-                        )
+                      value={customerSearch}
+                      onChange={(event) =>
+                        handleCustomerSearch(event.target.value)
                       }
                       placeholder="Search customer..."
                       className="
@@ -1325,32 +1108,19 @@ const Collections = () => {
                       strokeWidth="2"
                       className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
                     >
-                      <circle
-                        cx="11"
-                        cy="11"
-                        r="7"
-                      />
+                      <circle cx="11" cy="11" r="7" />
                       <path d="m20 20-4-4" />
                     </svg>
 
                     {/* Search results */}
-                    {customerResults.length >
-                      0 && (
+                    {customerResults.length > 0 && (
                       <div className="absolute left-0 right-0 top-[54px] z-30 overflow-hidden rounded-[14px] border border-slate-100 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.14)]">
-
-                        {customerResults.map(
-                          (customer) => (
-                            <button
-                              key={
-                                customer._id
-                              }
-                              type="button"
-                              onClick={() =>
-                                selectCustomer(
-                                  customer,
-                                )
-                              }
-                              className="
+                        {customerResults.map((customer) => (
+                          <button
+                            key={customer._id}
+                            type="button"
+                            onClick={() => selectCustomer(customer)}
+                            className="
                                 flex
                                 w-full
                                 items-center
@@ -1363,40 +1133,30 @@ const Collections = () => {
                                 last:border-b-0
                                 hover:bg-slate-50
                               "
-                            >
+                          >
+                            <div>
+                              <p className="text-[12px] font-semibold text-slate-900">
+                                {customer.name}
+                              </p>
 
-                              <div>
-                                <p className="text-[12px] font-semibold text-slate-900">
-                                  {
-                                    customer.name
-                                  }
+                              {customer.vehicleNumber && (
+                                <p className="mt-0.5 text-[9px] text-slate-400">
+                                  {customer.vehicleNumber}
                                 </p>
+                              )}
+                            </div>
 
-                                {customer.vehicleNumber && (
-                                  <p className="mt-0.5 text-[9px] text-slate-400">
-                                    {
-                                      customer.vehicleNumber
-                                    }
-                                  </p>
-                                )}
-                              </div>
+                            <div className="text-right">
+                              <p className="text-[8px] font-semibold uppercase tracking-[0.04em] text-slate-400">
+                                Owes
+                              </p>
 
-                              <div className="text-right">
-                                <p className="text-[8px] font-semibold uppercase tracking-[0.04em] text-slate-400">
-                                  Owes
-                                </p>
-
-                                <p className="mt-0.5 text-[10px] font-bold text-slate-700">
-                                  {formatOutstanding(
-                                    customer.outstandingBalance,
-                                  )}
-                                </p>
-                              </div>
-
-                            </button>
-                          ),
-                        )}
-
+                              <p className="mt-0.5 text-[10px] font-bold text-slate-700">
+                                {formatOutstanding(customer.outstandingBalance)}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
                       </div>
                     )}
 
@@ -1405,22 +1165,16 @@ const Collections = () => {
                         Searching...
                       </p>
                     )}
-
                   </div>
-
                 </div>
 
                 {/* Selected customer */}
                 {selectedCustomer && (
                   <div className="mt-3 rounded-[13px] bg-emerald-50 px-3 py-3">
-
                     <div className="flex items-center justify-between gap-3">
-
                       <div>
                         <p className="text-[12px] font-bold text-slate-900">
-                          {
-                            selectedCustomer.name
-                          }
+                          {selectedCustomer.name}
                         </p>
 
                         <p className="mt-0.5 text-[9px] text-emerald-700">
@@ -1439,15 +1193,12 @@ const Collections = () => {
                           )}
                         </p>
                       </div>
-
                     </div>
-
                   </div>
                 )}
 
                 {/* Vehicle number */}
                 <div className="mt-4">
-
                   <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                     Vehicle Number
                     <span className="ml-1 font-normal normal-case">
@@ -1457,16 +1208,8 @@ const Collections = () => {
 
                   <input
                     type="text"
-                    value={
-                      vehicleNumber
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      setVehicleNumber(
-                        event.target.value,
-                      )
-                    }
+                    value={vehicleNumber}
+                    onChange={(event) => setVehicleNumber(event.target.value)}
                     placeholder="MH16AB1234"
                     className="
                       mt-2
@@ -1486,33 +1229,25 @@ const Collections = () => {
                       focus:bg-white
                     "
                   />
-
                 </div>
 
                 {/* Fuel type */}
                 <div className="mt-4">
-
                   <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                     Fuel Type
                   </p>
 
                   <div className="mt-2 grid grid-cols-2 gap-2">
-
                     <button
                       type="button"
-                      onClick={() =>
-                        setUdhariFuelType(
-                          "PETROL",
-                        )
-                      }
+                      onClick={() => setUdhariFuelType("PETROL")}
                       className={`
                         min-h-[42px]
                         rounded-[11px]
                         text-[11px]
                         font-semibold
                         ${
-                          udhariFuelType ===
-                          "PETROL"
+                          udhariFuelType === "PETROL"
                             ? "bg-[#047857] text-white"
                             : "border border-emerald-100 bg-emerald-50 text-emerald-700"
                         }
@@ -1523,19 +1258,14 @@ const Collections = () => {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setUdhariFuelType(
-                          "DIESEL",
-                        )
-                      }
+                      onClick={() => setUdhariFuelType("DIESEL")}
                       className={`
                         min-h-[42px]
                         rounded-[11px]
                         text-[11px]
                         font-semibold
                         ${
-                          udhariFuelType ===
-                          "DIESEL"
+                          udhariFuelType === "DIESEL"
                             ? "bg-blue-600 text-white"
                             : "border border-blue-100 bg-blue-50 text-blue-700"
                         }
@@ -1543,35 +1273,26 @@ const Collections = () => {
                     >
                       Diesel
                     </button>
-
                   </div>
-
                 </div>
 
                 {/* Enter litres / rupees */}
                 <div className="mt-4">
-
                   <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                     Enter
                   </p>
 
                   <div className="mt-2 grid grid-cols-2 gap-1 rounded-[12px] bg-slate-100 p-1">
-
                     <button
                       type="button"
-                      onClick={() =>
-                        setUdhariMode(
-                          "litres",
-                        )
-                      }
+                      onClick={() => setUdhariMode("litres")}
                       className={`
                         min-h-[36px]
                         rounded-[9px]
                         text-[10px]
                         font-semibold
                         ${
-                          udhariMode ===
-                          "litres"
+                          udhariMode === "litres"
                             ? "bg-white text-slate-900 shadow-sm"
                             : "text-slate-500"
                         }
@@ -1582,19 +1303,14 @@ const Collections = () => {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setUdhariMode(
-                          "amount",
-                        )
-                      }
+                      onClick={() => setUdhariMode("amount")}
                       className={`
                         min-h-[36px]
                         rounded-[9px]
                         text-[10px]
                         font-semibold
                         ${
-                          udhariMode ===
-                          "amount"
+                          udhariMode === "amount"
                             ? "bg-white text-slate-900 shadow-sm"
                             : "text-slate-500"
                         }
@@ -1602,16 +1318,12 @@ const Collections = () => {
                     >
                       Rupees
                     </button>
-
                   </div>
-
                 </div>
 
                 {/* Litres input */}
-                {udhariMode ===
-                  "litres" && (
+                {udhariMode === "litres" && (
                   <div className="mt-3">
-
                     <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                       Litres
                     </label>
@@ -1619,18 +1331,9 @@ const Collections = () => {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={
-                        udhariLitres
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        setUdhariLitres(
-                          sanitizeNumberInput(
-                            event.target
-                              .value,
-                          ),
-                        )
+                      value={udhariLitres}
+                      onChange={(event) =>
+                        setUdhariLitres(sanitizeNumberInput(event.target.value))
                       }
                       placeholder="30.00"
                       className="
@@ -1652,53 +1355,37 @@ const Collections = () => {
                     />
 
                     <div className="mt-2 flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2">
-                      <span className="text-[9px] text-slate-500">
-                        Rate
-                      </span>
+                      <span className="text-[9px] text-slate-500">Rate</span>
 
                       <span className="text-[11px] font-semibold text-slate-700">
-                        {currentUdhariRatePaise >
-                        0
-                          ? `₹${(
-                              currentUdhariRatePaise /
-                              100
-                            ).toFixed(
-                              2,
-                            )} / L`
+                        {currentUdhariRatePaise > 0
+                          ? `₹${(currentUdhariRatePaise / 100).toFixed(2)} / L`
                           : "—"}
                       </span>
                     </div>
 
                     <div className="mt-2 flex items-center justify-between rounded-[11px] bg-amber-50 px-3 py-2.5">
-
                       <span className="text-[9px] font-semibold text-slate-600">
                         Amount
                       </span>
 
                       <span className="text-[15px] font-bold text-slate-900">
                         {udhariLitres
-                          ? formatCurrency(
-                              calculatedUdhariAmount,
-                            )
+                          ? formatCurrency(calculatedUdhariAmount)
                           : "₹0.00"}
                       </span>
-
                     </div>
-
                   </div>
                 )}
 
                 {/* Amount input */}
-                {udhariMode ===
-                  "amount" && (
+                {udhariMode === "amount" && (
                   <div className="mt-3">
-
                     <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
                       Amount
                     </label>
 
                     <div className="mt-2 flex h-[50px] items-center rounded-[12px] border border-slate-200 bg-slate-50 px-3">
-
                       <span className="mr-2 text-[18px] font-bold text-slate-400">
                         ₹
                       </span>
@@ -1706,17 +1393,10 @@ const Collections = () => {
                       <input
                         type="text"
                         inputMode="decimal"
-                        value={
-                          udhariAmount
-                        }
-                        onChange={(
-                          event,
-                        ) =>
+                        value={udhariAmount}
+                        onChange={(event) =>
                           setUdhariAmount(
-                            sanitizeMoneyInput(
-                              event.target
-                                .value,
-                            ),
+                            sanitizeMoneyInput(event.target.value),
                           )
                         }
                         placeholder="2963.10"
@@ -1730,64 +1410,44 @@ const Collections = () => {
                           outline-none
                         "
                       />
-
                     </div>
 
                     <div className="mt-2 flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2">
-                      <span className="text-[9px] text-slate-500">
-                        Rate
-                      </span>
+                      <span className="text-[9px] text-slate-500">Rate</span>
 
                       <span className="text-[11px] font-semibold text-slate-700">
-                        {currentUdhariRatePaise >
-                        0
-                          ? `₹${(
-                              currentUdhariRatePaise /
-                              100
-                            ).toFixed(
-                              2,
-                            )} / L`
+                        {currentUdhariRatePaise > 0
+                          ? `₹${(currentUdhariRatePaise / 100).toFixed(2)} / L`
                           : "—"}
                       </span>
                     </div>
 
                     <div className="mt-2 flex items-center justify-between rounded-[11px] bg-emerald-50 px-3 py-2.5">
-
                       <span className="text-[9px] font-semibold text-slate-600">
                         Litres
                       </span>
 
                       <span className="text-[15px] font-bold text-[#047857]">
                         {udhariAmount
-                          ? `${calculatedUdhariLitres.toFixed(
-                              2,
-                            )} L`
+                          ? `${calculatedUdhariLitres.toFixed(2)} L`
                           : "0.00 L"}
                       </span>
-
                     </div>
-
                   </div>
                 )}
 
                 {/* Error */}
                 {udhariError && (
                   <div className="mt-4 rounded-[12px] bg-red-50 px-3 py-2.5 text-[10px] font-medium leading-4 text-red-700">
-                    {
-                      udhariError
-                    }
+                    {udhariError}
                   </div>
                 )}
 
                 {/* Add Udhari */}
                 <button
                   type="button"
-                  onClick={
-                    handleAddUdhari
-                  }
-                  disabled={
-                    addingUdhari
-                  }
+                  onClick={handleAddUdhari}
+                  disabled={addingUdhari}
                   className="
                     mt-5
                     flex
@@ -1807,23 +1467,17 @@ const Collections = () => {
                     disabled:opacity-60
                   "
                 >
-                  {addingUdhari
-                    ? "Adding..."
-                    : "+ Add Udhari"}
+                  {addingUdhari ? "Adding..." : "+ Add Udhari"}
                 </button>
-
               </section>
 
               {/* ================================================= */}
               {/* THIS SHIFT UDHARI */}
               {/* ================================================= */}
 
-              {udhariEntries.length >
-                0 && (
+              {udhariEntries.length > 0 && (
                 <section className="rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-
                   <div className="flex items-center justify-between">
-
                     <div>
                       <p className="text-[13px] font-bold text-slate-900">
                         This Shift
@@ -1835,95 +1489,60 @@ const Collections = () => {
                     </div>
 
                     <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-bold text-amber-700">
-                      {
-                        udhariEntries.length
-                      }{" "}
-                      entries
+                      {udhariEntries.length} entries
                     </span>
-
                   </div>
 
                   <div className="mt-3 space-y-2">
-
-                    {udhariEntries.map(
-                      (entry, index) => (
-                        <div
-                          key={
-                            entry.id ||
-                            `${entry.customerId}-${index}`
-                          }
-                          className="rounded-[14px] border border-slate-100 bg-slate-50 p-3"
-                        >
-
-                          <div className="flex items-start justify-between gap-3">
-
-                            <div className="min-w-0">
-
-                              <p className="truncate text-[12px] font-bold text-slate-900">
-                                {entry.customer
-                                  ?.name ||
-                                  entry.customerName ||
-                                  "Customer"}
-                              </p>
-
-                              <p className="mt-1 text-[9px] font-medium text-slate-500">
-                                {entry.fuelType ===
-                                "DIESEL"
-                                  ? "Diesel"
-                                  : "Petrol"}
-                                {" · "}
-                                {Number(
-                                  entry.litres ||
-                                    0,
-                                ).toFixed(
-                                  2,
-                                )}
-                                {" L"}
-                              </p>
-
-                              {entry.vehicleNumber && (
-                                <p className="mt-0.5 text-[9px] text-slate-400">
-                                  {
-                                    entry.vehicleNumber
-                                  }
-                                </p>
-                              )}
-
-                            </div>
-
-                            <p className="shrink-0 text-[13px] font-bold text-slate-900">
-                              {formatCurrency(
-                                entry.amountPaise,
-                              )}
+                    {udhariEntries.map((entry, index) => (
+                      <div
+                        key={entry.id || `${entry.customerId}-${index}`}
+                        className="rounded-[14px] border border-slate-100 bg-slate-50 p-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-[12px] font-bold text-slate-900">
+                              {entry.customer?.name ||
+                                entry.customerName ||
+                                "Customer"}
                             </p>
 
+                            <p className="mt-1 text-[9px] font-medium text-slate-500">
+                              {entry.fuelType === "DIESEL"
+                                ? "Diesel"
+                                : "Petrol"}
+                              {" · "}
+                              {Number(entry.litres || 0).toFixed(2)}
+                              {" L"}
+                            </p>
+
+                            {entry.vehicleNumber && (
+                              <p className="mt-0.5 text-[9px] text-slate-400">
+                                {entry.vehicleNumber}
+                              </p>
+                            )}
                           </div>
 
+                          <p className="shrink-0 text-[13px] font-bold text-slate-900">
+                            {formatCurrency(entry.amountPaise)}
+                          </p>
                         </div>
-                      ),
-                    )}
-
+                      </div>
+                    ))}
                   </div>
 
                   {/* Shift Udhari Total */}
                   <div className="mt-3 flex items-center justify-between rounded-[12px] bg-amber-50 px-3 py-3">
-
                     <span className="text-[10px] font-semibold text-slate-600">
                       Shift Udhari
                     </span>
 
                     <span className="text-[15px] font-bold text-amber-700">
-                      {formatCurrency(
-                        shift?.totalUdhariPaise ||
-                          0,
-                      )}
+                      {formatCurrency(shift?.totalUdhariPaise || 0)}
                     </span>
-
                   </div>
-
                 </section>
               )}
-
             </div>
           )}
 
@@ -1948,14 +1567,10 @@ const Collections = () => {
           {/* ================================================= */}
 
           <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-100 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
-
             <div className="mx-auto max-w-[480px]">
-
               <button
                 type="button"
-                onClick={
-                  handleSave
-                }
+                onClick={isEndShift ? handleReview : handleSave}
                 disabled={saving}
                 className="
                   flex
@@ -1981,11 +1596,8 @@ const Collections = () => {
                     ? "Save & Continue →"
                     : "Save Collection →"}
               </button>
-
             </div>
-
           </div>
-
         </main>
       </IonContent>
     </IonPage>
