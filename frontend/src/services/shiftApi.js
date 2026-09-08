@@ -36,7 +36,27 @@ export const endShift = async (shiftId, payload) => {
   return response.data;
 };
 
-export const searchCustomers = async (query) => {
+
+
+
+export const getCurrentFuelRate = async (
+  businessDate,
+) => {
+  const response = await api.get(
+    '/fuel-rates/current',
+    {
+      params: {
+        date: businessDate,
+      },
+    },
+  );
+
+  return response.data;
+};
+
+export const searchCustomers = async (
+  query,
+) => {
   const response = await api.get(
     '/customers/search',
     {

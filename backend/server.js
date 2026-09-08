@@ -10,6 +10,7 @@ import shiftRoutes from './src/routes/shift.routes.js';
 import userRoutes from './src/routes/user.routes.js';
 import customerRoutes from './src/routes/customer.routes.js';
 import udhariRoutes from './src/routes/udhari.routes.js';
+import fuelRateRoutes from './src/routes/fuelRate.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +37,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/customers',customerRoutes,);
 
 app.use('/api/udhari',udhariRoutes,);
+
+app.use('/api/fuel-rates', fuelRateRoutes);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
