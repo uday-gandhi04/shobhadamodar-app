@@ -40,7 +40,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await getCurrentShift(businessDate);
+      const response = await getCurrentShift();
       if (!response.data) {
         navigate('/select-mpd', { replace: true });
         return;

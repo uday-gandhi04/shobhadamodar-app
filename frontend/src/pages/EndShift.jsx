@@ -77,7 +77,7 @@ const EndShift = () => {
         setLoading(true);
         setError("");
 
-        const response = await getCurrentShift(getBusinessDate());
+        const response = await getCurrentShift();
 
         if (!mounted) return;
 
@@ -97,8 +97,25 @@ const EndShift = () => {
 
           if (!nozzleId) return;
 
+          const openingReading = Number(
+            reading.openingReading ?? reading.opening ?? 0,
+          );
+
+          const existingFinalReading =
+            reading.closingReading ?? reading.finalReading;
+
+          /*
+           * If no final reading has been entered yet,
+           * pre-fill it with the opening reading.
+           *
+           * This lets an unused nozzle remain unchanged.
+           */
           initialReadings[nozzleId] =
-            reading.closingReading ?? reading.finalReading ?? "";
+            existingFinalReading !== null &&
+            existingFinalReading !== undefined &&
+            existingFinalReading !== ""
+              ? String(existingFinalReading)
+              : formatReading(openingReading);
         });
 
         setFinalReadings(initialReadings);
@@ -331,17 +348,28 @@ const EndShift = () => {
                 const image =
                   fuelType === "DIESEL" ? dieselNozzleImage : petrolNozzleImage;
 
-                const currentValue = finalReadings[nozzleId] ?? "";
+                /*
+                 * Important:
+                 * Start final reading at the opening reading.
+                 *
+                 * This means an unused nozzle can simply be left
+                 * unchanged and will remain valid.
+                 */
+                const currentValue =
+                  finalReadings[nozzleId] !== undefined
+                    ? finalReadings[nozzleId]
+                    : formatReading(openingReading);
 
-                const litresDispensed = calculateLitresDispensed(
-                  openingReading,
-                  currentValue,
-                );
+                const numericFinalValue =
+                  currentValue === "" ? NaN : Number(currentValue);
+
+                const litresDispensed = Number.isFinite(numericFinalValue)
+                  ? calculateLitresDispensed(openingReading, numericFinalValue)
+                  : null;
 
                 const isInvalid =
-                  currentValue !== "" &&
-                  Number.isFinite(Number(currentValue)) &&
-                  Number(currentValue) < openingReading;
+                  Number.isFinite(numericFinalValue) &&
+                  numericFinalValue < openingReading;
 
                 const isDiesel = fuelType === "DIESEL";
 
@@ -358,7 +386,7 @@ const EndShift = () => {
         `}
                   >
                     <div className="flex min-h-[148px]">
-                      {/* LEFT — Nozzle */}
+                      {/* LEFT — Nozzle image */}
                       <div
                         className={`
               flex
@@ -410,9 +438,12 @@ const EndShift = () => {
 
                         {/* Final Reading */}
                         <div className="mt-2">
-                          <p className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                          <label
+                            htmlFor={`final-${nozzleId}`}
+                            className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400"
+                          >
                             Final Reading
-                          </p>
+                          </label>
 
                           <div className="mt-0.5 flex items-center gap-2">
                             <input
@@ -426,7 +457,6 @@ const EndShift = () => {
                                   event.target.value,
                                 )
                               }
-                              placeholder="0.00"
                               className={`
                     h-[31px]
                     min-w-0
@@ -437,12 +467,13 @@ const EndShift = () => {
                     px-2
                     text-[13px]
                     font-bold
+                    tracking-tight
                     text-slate-900
                     outline-none
                     transition
                     ${
                       isInvalid
-                        ? "border-red-300 bg-red-50"
+                        ? "border-red-300 bg-red-50 text-red-700"
                         : "border-slate-200 focus:border-[#047857] focus:ring-2 focus:ring-emerald-100"
                     }
                   `}
@@ -456,13 +487,13 @@ const EndShift = () => {
 
                         {/* Litres Dispensed */}
                         <div
-                          className="
+                          className={`
                 mt-2
                 rounded-[10px]
                 bg-yellow-50
                 px-2.5
                 py-1.5
-              "
+              `}
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -518,8 +549,12 @@ const EndShift = () => {
                 type="button"
                 disabled={!canContinue}
                 onClick={() => {
-                  // Stage 2 will be implemented next.
-                  console.log("Proceed to money collection");
+                  navigate("/collections", {
+                    state: {
+                      mode: "end-shift",
+                      shiftId: shift?._id,
+                    },
+                  });
                 }}
                 className="
                   flex

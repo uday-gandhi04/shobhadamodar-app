@@ -37,7 +37,7 @@ const SelectMpd = () => {
 
         // First check whether this employee already
         // has an active shift.
-        const currentResponse = await getCurrentShift(businessDate);
+        const currentResponse = await getCurrentShift();
 
         if (currentResponse?.data) {
           navigate('/dashboard', { replace: true });
