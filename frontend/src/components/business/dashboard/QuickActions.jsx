@@ -2,41 +2,156 @@ import { useTranslation } from 'react-i18next';
 
 const ActionIcon = ({ type }) => {
   const paths = {
-    nozzle: <><path d="M7 7h5a2 2 0 0 1 2 2v10H7V7Z" /><path d="M14 10h3l2 3v6h-5" /><path d="M9 4h3" /></>,
-    cash: <><rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M7 9h.01M17 15h.01" /></>,
-    end: <><path d="M12 3v10" /><path d="m8 9 4 4 4-4" /><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" /></>,
+    nozzle: (
+      <>
+        <path d="M7 7h5a2 2 0 0 1 2 2v10H7V7Z" />
+        <path d="M14 10h3l2 3v6h-5" />
+        <path d="M9 4h3" />
+      </>
+    ),
+
+    cash: (
+      <>
+        <rect x="3" y="6" width="18" height="12" rx="2" />
+        <circle cx="12" cy="12" r="3" />
+        <path d="M7 9h.01M17 15h.01" />
+      </>
+    ),
+
+    end: (
+      <>
+        <path d="M12 3v10" />
+        <path d="m8 9 4 4 4-4" />
+        <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+      </>
+    ),
   };
 
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" className="h-5 w-5">{paths[type]}</svg>;
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      {paths[type]}
+    </svg>
+  );
 };
 
 const ActionCard = ({ type, title, subtitle, onClick }) => (
-  <button type="button" onClick={onClick} className="group min-h-[118px] rounded-[20px] border border-slate-100 bg-white p-4 text-left shadow-[0_5px_18px_rgba(15,23,42,0.05)] transition-all active:scale-[0.985]">
-    <div className="grid h-10 w-10 place-items-center rounded-[13px] bg-emerald-50 text-[#047857] group-active:bg-emerald-100">
-      <ActionIcon type={type} />
+  <button
+    type="button"
+    onClick={onClick}
+    className="
+      group
+      min-h-[118px]
+      !rounded-[20px]
+      border
+      border-slate-100
+      bg-white
+      p-0
+      text-left
+      shadow-[0_5px_18px_rgba(15,23,42,0.05)]
+      transition-all
+      active:scale-[0.985]
+    "
+  >
+    <div className="h-full p-4 pl-5">
+      <div className="grid h-10 w-10 place-items-center rounded-[13px] bg-emerald-50 text-[#047857] group-active:bg-emerald-100">
+        <ActionIcon type={type} />
+      </div>
+
+      <p
+        lang="hi"
+        className="mt-4 font-devanagari text-[15px] font-semibold leading-tight text-slate-900"
+      >
+        {title}
+      </p>
+
+      <p className="mt-1 text-[10px] font-medium text-slate-400">
+        {subtitle}
+      </p>
     </div>
-    <p lang="hi" className="mt-4 font-devanagari text-[15px] font-semibold leading-tight text-slate-900">{title}</p>
-    <p className="mt-1 text-[10px] font-medium text-slate-400">{subtitle}</p>
   </button>
 );
 
-const QuickActions = ({ onNozzle, onCollection, onEndShift }) => {
+const QuickActions = ({
+  onNozzle,
+  onCollection,
+  onEndShift,
+}) => {
   const { t } = useTranslation();
-  const actions = [
-    { type: 'nozzle', title: t('employee.dashboard.nozzleReading'), subtitle: t('employee.dashboard.readOnly'), onClick: onNozzle },
-    { type: 'cash', title: t('employee.dashboard.cashCollection'), subtitle: t('employee.dashboard.updateAnytime'), onClick: onCollection },
-    { type: 'end', title: t('employee.dashboard.endShift'), subtitle: t('employee.dashboard.finalCheck'), onClick: onEndShift },
-  ];
 
   return (
     <section className="mt-7">
+      {/* Section heading */}
       <div className="mb-4">
-        <p className="text-[17px] font-semibold text-slate-900">{t('employee.dashboard.quickActions')}</p>
-        <p className="font-devanagari text-[13px] text-slate-500">{t('employee.dashboard.completeWork')}</p>
+        <p className="text-[17px] font-semibold text-slate-900">
+          {t('employee.dashboard.quickActions')}
+        </p>
+
+        <p className="font-devanagari text-[13px] text-slate-500">
+          {t('employee.dashboard.completeWork')}
+        </p>
       </div>
+
+      {/* Main actions */}
       <div className="grid grid-cols-2 gap-3">
-        {actions.map((action) => <ActionCard key={action.type} {...action} />)}
+        <ActionCard
+          type="nozzle"
+          title={t('employee.dashboard.nozzleReading')}
+          subtitle={t('employee.dashboard.readOnly')}
+          onClick={onNozzle}
+        />
+
+        <ActionCard
+          type="cash"
+          title={t('employee.dashboard.cashCollection')}
+          subtitle={t('employee.dashboard.updateAnytime')}
+          onClick={onCollection}
+        />
       </div>
+
+      {/* End Shift */}
+      <button
+        type="button"
+        onClick={onEndShift}
+        className="
+          mt-4
+          flex
+          min-h-[52px]
+          w-full
+          items-center
+          justify-center
+          !rounded-[18px]
+          bg-[#DC2626]
+          px-4
+          text-[14px]
+          font-semibold
+          text-white
+          shadow-[0_7px_18px_rgba(220,38,38,0.18)]
+          transition-all
+          active:scale-[0.985]
+          hover:bg-[#B91C1C]
+        "
+      >
+        <span>{t('employee.dashboard.endShift')}</span>
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="ml-2 h-4 w-4"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14" />
+          <path d="m13 6 6 6-6 6" />
+        </svg>
+      </button>
     </section>
   );
 };

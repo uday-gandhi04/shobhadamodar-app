@@ -49,7 +49,11 @@ const calculateCollections = (collections = {}) => {
 };
 
 const calculateFinalResult = async (shift, finalReadings, collections) => {
-  const rates = await FuelRate.findOne({ businessDate: shift.businessDate }).sort({ createdAt: -1 });
+  const rates = await FuelRate.findOne({
+    businessDate: { $lte: shift.businessDate },
+  }).sort({
+    businessDate: -1,
+  });
   if (!rates) {
     const error = new Error(`Fuel rates not found for ${shift.businessDate}.`);
     error.status = 400;
