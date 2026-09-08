@@ -8,6 +8,8 @@ import authRoutes from './src/routes/auth.routes.js';
 import syncRoutes from './src/routes/sync.routes.js';
 import shiftRoutes from './src/routes/shift.routes.js';
 import userRoutes from './src/routes/user.routes.js';
+import customerRoutes from './src/routes/customer.routes.js';
+import udhariRoutes from './src/routes/udhari.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +32,10 @@ app.use('/api/sync', syncRoutes);
 app.use('/api/shifts', shiftRoutes);
 
 app.use('/api/users', userRoutes);
+
+app.use('/api/customers',customerRoutes,);
+
+app.use('/api/udhari',udhariRoutes,);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {

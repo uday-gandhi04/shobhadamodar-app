@@ -163,7 +163,6 @@ export const getCurrentShift = async (req, res, next) => {
 
     const shift = await Shift.findOne({
       employeeId: req.user._id,
-      businessDate,
       status: 'IN_PROGRESS',
     })
       .populate('mpdId')

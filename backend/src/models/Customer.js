@@ -1,13 +1,5 @@
-// src/models/Customer.js
 import mongoose from 'mongoose';
 
-/**
- * @typedef {Object} Customer
- * @property {string} name - Name of the person or transport company
- * @property {string} vehicleNumber - Optional vehicle registration
- * @property {string} phoneNumber - Contact number
- * @property {number} outstandingBalance - Current credit balance strictly in integer paise (₹1 = 100 paise)
- */
 const customerSchema = new mongoose.Schema(
   {
     name: {
@@ -15,24 +7,49 @@ const customerSchema = new mongoose.Schema(
       required: [true, 'Customer name is required'],
       trim: true,
     },
+
     vehicleNumber: {
       type: String,
       trim: true,
       uppercase: true,
+      default: null,
     },
+
     phoneNumber: {
       type: String,
       trim: true,
+      default: null,
     },
+
     outstandingBalance: {
       type: Number,
       default: 0,
-      // Hard architectural constraint: Enforce integer (paise) storage at the schema level
-      set: (val) => Math.round(val),
+      min: 0,
+      set: (value) => Math.round(value),
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  },
 );
 
-const Customer = mongoose.model('Customer', customerSchema);
+/*
+ * Name search.
+ */
+customerSchema.index({
+  name: 1,
+});
+
+/*
+ * Optional vehicle lookup.
+ */
+customerSchema.index({
+  vehicleNumber: 1,
+});
+
+const Customer = mongoose.model(
+  'Customer',
+  customerSchema,
+);
+
 export default Customer;

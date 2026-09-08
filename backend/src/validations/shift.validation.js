@@ -51,3 +51,57 @@ export const updateCollectionsSchema = z.object({
 export const endShiftSchema = z.object({
   body: finalShiftBody,
 });
+
+const udhariBody = z.object({
+  shiftId: z.string().min(1),
+
+  customerId: z.string().min(1).optional(),
+
+  customerName: z
+    .string()
+    .trim()
+    .min(2)
+    .optional(),
+
+  vehicleNumber: z
+    .string()
+    .trim()
+    .max(20)
+    .optional(),
+
+  fuelType: z.enum([
+    'PETROL',
+    'DIESEL',
+  ]),
+
+  litres: z.coerce
+    .number()
+    .positive()
+    .optional(),
+
+  amountPaise: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional(),
+}).refine(
+  (data) =>
+    data.litres !== undefined ||
+    data.amountPaise !== undefined,
+  {
+    message:
+      'Enter either litres or amount.',
+  },
+).refine(
+  (data) =>
+    data.customerId ||
+    data.customerName,
+  {
+    message:
+      'Customer name is required for a new customer.',
+  },
+);
+
+export const addUdhariSchema = z.object({
+  body: udhariBody,
+});
