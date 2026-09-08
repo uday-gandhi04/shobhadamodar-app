@@ -1,51 +1,62 @@
-import { useEffect, useMemo, useState } from 'react';
-import { IonContent, IonPage } from '@ionic/react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useMemo, useState } from "react";
+import { IonContent, IonPage } from "@ionic/react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-import {
-  getCurrentShift,
-} from '../services/shiftApi';
+import { getCurrentShift } from "../services/shiftApi";
 
-import nozzleDispenserImage from '../assets/fuel/nozzle-dispenser.webp';
-import petrolNozzleImage from '../assets/fuel/petrol-nozzle.webp';
-import dieselNozzleImage from '../assets/fuel/diesel-nozzle.webp';
+import nozzleDispenserImage from "../assets/fuel/nozzle-dispenser.webp";
+import petrolNozzleImage from "../assets/fuel/petrol-nozzle.webp";
+import dieselNozzleImage from "../assets/fuel/diesel-nozzle.webp";
 
-import { getBusinessDate } from '../utils/businessDate';
+import { getBusinessDate } from "../utils/businessDate";
 
 const formatReading = (value) => {
-  if (value === null || value === undefined || value === '') {
-    return '0.00';
+  if (value === null || value === undefined || value === "") {
+    return "0.00";
   }
 
   const number = Number(value);
 
   if (!Number.isFinite(number)) {
-    return '0.00';
+    return "0.00";
   }
 
   return number.toFixed(2);
 };
 
+const calculateLitresDispensed = (opening, final) => {
+  const openingValue = Number(opening);
+  const finalValue = Number(final);
+
+  if (!Number.isFinite(openingValue) || !Number.isFinite(finalValue)) {
+    return null;
+  }
+
+  const litres = finalValue - openingValue;
+
+  if (litres < 0) {
+    return null;
+  }
+
+  return litres;
+};
+
 const getNozzleNumber = (nozzleId) => {
-  if (!nozzleId) return '';
+  if (!nozzleId) return "";
 
   const match = String(nozzleId).match(/\d+/);
   return match ? match[0] : String(nozzleId);
 };
 
 const getFuelType = (reading) => {
-  const fuel = String(
-    reading?.fuelType ||
-    reading?.fuel ||
-    ''
-  ).toUpperCase();
+  const fuel = String(reading?.fuelType || reading?.fuel || "").toUpperCase();
 
-  if (fuel.includes('DIESEL')) {
-    return 'DIESEL';
+  if (fuel.includes("DIESEL")) {
+    return "DIESEL";
   }
 
-  return 'PETROL';
+  return "PETROL";
 };
 
 const EndShift = () => {
@@ -54,7 +65,7 @@ const EndShift = () => {
 
   const [shift, setShift] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [finalReadings, setFinalReadings] = useState({});
 
@@ -64,7 +75,7 @@ const EndShift = () => {
     const loadShift = async () => {
       try {
         setLoading(true);
-        setError('');
+        setError("");
 
         const response = await getCurrentShift(getBusinessDate());
 
@@ -73,7 +84,7 @@ const EndShift = () => {
         const currentShift = response?.data || null;
 
         if (!currentShift) {
-          navigate('/dashboard', { replace: true });
+          navigate("/dashboard", { replace: true });
           return;
         }
 
@@ -82,17 +93,12 @@ const EndShift = () => {
         const initialReadings = {};
 
         (currentShift.readings || []).forEach((reading) => {
-          const nozzleId =
-            reading.nozzleId ||
-            reading.nozzle ||
-            reading._id;
+          const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
 
           if (!nozzleId) return;
 
           initialReadings[nozzleId] =
-            reading.closingReading ??
-            reading.finalReading ??
-            '';
+            reading.closingReading ?? reading.finalReading ?? "";
         });
 
         setFinalReadings(initialReadings);
@@ -101,8 +107,8 @@ const EndShift = () => {
 
         setError(
           err?.response?.data?.message ||
-          err?.message ||
-          'Unable to load shift readings.'
+            err?.message ||
+            "Unable to load shift readings.",
         );
       } finally {
         if (mounted) {
@@ -129,9 +135,7 @@ const EndShift = () => {
 
   const handleReadingChange = (nozzleId, value) => {
     // Allow only numbers and one decimal point.
-    const cleaned = value
-      .replace(/[^\d.]/g, '')
-      .replace(/(\..*)\./g, '$1');
+    const cleaned = value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
 
     setFinalReadings((current) => ({
       ...current,
@@ -139,27 +143,32 @@ const EndShift = () => {
     }));
   };
 
-  const canContinue = readings.length > 0 &&
+  const canContinue =
+    readings.length > 0 &&
     readings.every((reading) => {
-      const nozzleId =
-        reading.nozzleId ||
-        reading.nozzle ||
-        reading._id;
+      const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
 
       const value = finalReadings[nozzleId];
 
-      return value !== undefined &&
-        value !== '' &&
-        Number.isFinite(Number(value));
+      if (
+        value === undefined ||
+        value === "" ||
+        !Number.isFinite(Number(value))
+      ) {
+        return false;
+      }
+
+      const openingReading = Number(
+        reading.openingReading ?? reading.opening ?? 0,
+      );
+
+      return Number(value) >= openingReading;
     });
 
   if (loading) {
     return (
       <IonPage>
-        <IonContent
-          fullscreen
-          style={{ '--background': '#F3F4F6' }}
-        >
+        <IonContent fullscreen style={{ "--background": "#F3F4F6" }}>
           <main className="mx-auto min-h-[100dvh] max-w-[480px] px-4 pb-8 pt-[max(1rem,env(safe-area-inset-top))]">
             <div className="h-6 w-32 animate-pulse rounded bg-slate-200" />
 
@@ -176,17 +185,13 @@ const EndShift = () => {
 
   return (
     <IonPage>
-      <IonContent
-        fullscreen
-        style={{ '--background': '#F3F4F6' }}
-      >
+      <IonContent fullscreen style={{ "--background": "#F3F4F6" }}>
         <main className="mx-auto min-h-[100dvh] max-w-[480px] px-4 pb-28 pt-[max(0.9rem,env(safe-area-inset-top))]">
-
           {/* Header */}
           <header className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate("/dashboard")}
               className="grid h-9 w-9 place-items-center rounded-full bg-white text-slate-700 shadow-sm"
               aria-label="Back"
             >
@@ -215,7 +220,6 @@ const EndShift = () => {
           {/* Step indicator */}
           <div className="mt-5 rounded-[18px] bg-white p-3 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
             <div className="flex items-center">
-
               <div className="flex flex-1 items-center gap-2">
                 <div className="grid h-7 w-7 place-items-center rounded-full bg-[#047857] text-[11px] font-bold text-white">
                   1
@@ -226,9 +230,7 @@ const EndShift = () => {
                     Nozzle
                   </p>
 
-                  <p className="text-[9px] text-[#047857]">
-                    Current step
-                  </p>
+                  <p className="text-[9px] text-[#047857]">Current step</p>
                 </div>
               </div>
 
@@ -255,7 +257,6 @@ const EndShift = () => {
                   Review
                 </p>
               </div>
-
             </div>
           </div>
 
@@ -268,11 +269,11 @@ const EndShift = () => {
                 </p>
 
                 <h2 className="mt-1 text-[18px] font-semibold text-slate-900">
-                  {shift?.mpdId?.mpdNumber || 'MPD'}
+                  {shift?.mpdId?.mpdNumber || "MPD"}
                 </h2>
 
                 <p className="text-[10px] text-slate-500">
-                  {shift?.shiftType || ''}
+                  {shift?.shiftType || ""}
                 </p>
               </div>
 
@@ -294,7 +295,6 @@ const EndShift = () => {
 
           {/* Final readings */}
           <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
-
             <div className="mb-4">
               <h2 className="text-[15px] font-semibold text-slate-900">
                 Final nozzle readings
@@ -318,118 +318,103 @@ const EndShift = () => {
             <div className="space-y-3">
               {readings.map((reading) => {
                 const nozzleId =
-                  reading.nozzleId ||
-                  reading.nozzle ||
-                  reading._id;
+                  reading.nozzleId || reading.nozzle || reading._id;
 
                 const nozzleNumber = getNozzleNumber(nozzleId);
 
                 const fuelType = getFuelType(reading);
 
-                const openingReading =
-                  reading.openingReading ??
-                  reading.opening ??
-                  0;
+                const openingReading = Number(
+                  reading.openingReading ?? reading.opening ?? 0,
+                );
 
                 const image =
-                  fuelType === 'DIESEL'
-                    ? dieselNozzleImage
-                    : petrolNozzleImage;
+                  fuelType === "DIESEL" ? dieselNozzleImage : petrolNozzleImage;
 
-                const currentValue =
-                  finalReadings[nozzleId] ?? '';
+                const currentValue = finalReadings[nozzleId] ?? "";
+
+                const litresDispensed = calculateLitresDispensed(
+                  openingReading,
+                  currentValue,
+                );
+
+                const isInvalid =
+                  currentValue !== "" &&
+                  Number.isFinite(Number(currentValue)) &&
+                  Number(currentValue) < openingReading;
+
+                const isDiesel = fuelType === "DIESEL";
 
                 return (
                   <div
                     key={nozzleId}
                     className={`
-                      overflow-hidden
-                      rounded-[18px]
-                      border
-                      ${
-                        fuelType === 'DIESEL'
-                          ? 'border-blue-100'
-                          : 'border-emerald-100'
-                      }
-                      bg-white
-                    `}
+          overflow-hidden
+          rounded-[18px]
+          border
+          bg-white
+          shadow-[0_3px_12px_rgba(15,23,42,0.04)]
+          ${isDiesel ? "border-blue-100" : "border-emerald-100"}
+        `}
                   >
-                    <div className="flex items-center gap-3 p-3">
-
-                      {/* Nozzle image */}
+                    <div className="flex min-h-[148px]">
+                      {/* LEFT — Nozzle */}
                       <div
                         className={`
-                          flex
-                          h-[76px]
-                          w-[56px]
-                          shrink-0
-                          items-end
-                          justify-center
-                          overflow-hidden
-                          rounded-[13px]
-                          ${
-                            fuelType === 'DIESEL'
-                              ? 'bg-blue-50'
-                              : 'bg-emerald-50'
-                          }
-                        `}
+              flex
+              w-[72px]
+              shrink-0
+              items-center
+              justify-center
+              px-1
+              ${isDiesel ? "bg-blue-50" : "bg-emerald-50"}
+            `}
                       >
                         <img
                           src={image}
                           alt=""
                           aria-hidden="true"
-                          className="h-[72px] w-[45px] object-contain object-bottom"
+                          className="h-[140px] w-[64px] object-contain object-center"
                         />
                       </div>
 
-                      {/* Details */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[14px] font-semibold text-slate-900">
-                              N{nozzleNumber}
-                            </span>
+                      {/* RIGHT — Information */}
+                      <div className="min-w-0 flex-1 px-3 py-3">
+                        {/* Header */}
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-[15px] font-bold leading-none tracking-[-0.01em] text-slate-900">
+                            N{nozzleNumber} - {isDiesel ? "Diesel" : "Petrol"}
+                          </h3>
 
-                            <span
-                              className={`
-                                rounded-full
-                                px-2
-                                py-0.5
-                                text-[8px]
-                                font-semibold
-                                ${
-                                  fuelType === 'DIESEL'
-                                    ? 'bg-blue-50 text-blue-600'
-                                    : 'bg-emerald-50 text-emerald-700'
-                                }
-                              `}
-                            >
-                              {fuelType === 'DIESEL'
-                                ? 'Diesel'
-                                : 'Petrol'}
+                          <span className="text-[9px] font-semibold text-slate-500">
+                            Litres
+                          </span>
+                        </div>
+
+                        {/* Opening Reading */}
+                        <div className="mt-2">
+                          <p className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                            Opening Reading
+                          </p>
+
+                          <div className="mt-0.5 flex items-center justify-between">
+                            <p className="text-[13px] font-bold leading-none text-slate-800">
+                              {formatReading(openingReading)}
+                            </p>
+
+                            <span className="text-[10px] font-semibold text-slate-400">
+                              L
                             </span>
                           </div>
                         </div>
 
-                        <div className="mt-2 grid grid-cols-2 gap-3">
-                          <div>
-                            <p className="text-[8px] font-medium uppercase tracking-[0.04em] text-slate-400">
-                              Opening
-                            </p>
+                        {/* Final Reading */}
+                        <div className="mt-2">
+                          <p className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                            Final Reading
+                          </p>
 
-                            <p className="mt-0.5 text-[11px] font-semibold text-slate-700">
-                              {formatReading(openingReading)}
-                            </p>
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor={`final-${nozzleId}`}
-                              className="text-[8px] font-medium uppercase tracking-[0.04em] text-slate-400"
-                            >
-                              Final reading
-                            </label>
-
+                          <div className="mt-0.5 flex items-center gap-2">
                             <input
                               id={`final-${nozzleId}`}
                               type="text"
@@ -438,40 +423,92 @@ const EndShift = () => {
                               onChange={(event) =>
                                 handleReadingChange(
                                   nozzleId,
-                                  event.target.value
+                                  event.target.value,
                                 )
                               }
                               placeholder="0.00"
-                              className="
-                                mt-1
-                                h-9
-                                w-full
-                                rounded-[10px]
-                                border
-                                border-slate-200
-                                bg-slate-50
-                                px-2.5
-                                text-[12px]
-                                font-semibold
-                                text-slate-900
-                                outline-none
-                                transition
-                                focus:border-[#047857]
-                                focus:bg-white
-                                focus:ring-2
-                                focus:ring-emerald-100
-                              "
+                              className={`
+                    h-[31px]
+                    min-w-0
+                    flex-1
+                    rounded-[8px]
+                    border
+                    bg-white
+                    px-2
+                    text-[13px]
+                    font-bold
+                    text-slate-900
+                    outline-none
+                    transition
+                    ${
+                      isInvalid
+                        ? "border-red-300 bg-red-50"
+                        : "border-slate-200 focus:border-[#047857] focus:ring-2 focus:ring-emerald-100"
+                    }
+                  `}
                             />
+
+                            <span className="shrink-0 text-[10px] font-semibold text-slate-400">
+                              L
+                            </span>
                           </div>
                         </div>
-                      </div>
 
+                        {/* Litres Dispensed */}
+                        <div
+                          className="
+                mt-2
+                rounded-[10px]
+                bg-yellow-50
+                px-2.5
+                py-1.5
+              "
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-[7px] font-semibold text-slate-500">
+                                Litres Dispensed
+                              </p>
+
+                              <p
+                                className={`
+                      mt-0.5
+                      text-[15px]
+                      font-bold
+                      leading-none
+                      ${
+                        litresDispensed !== null
+                          ? isDiesel
+                            ? "text-blue-700"
+                            : "text-[#047857]"
+                          : "text-slate-400"
+                      }
+                    `}
+                              >
+                                {litresDispensed !== null
+                                  ? litresDispensed.toFixed(2)
+                                  : "—"}
+                              </p>
+                            </div>
+
+                            <span className="self-end text-[10px] font-semibold text-slate-400">
+                              L
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Validation */}
+                        {isInvalid && (
+                          <p className="mt-1 text-[8px] font-semibold leading-tight text-red-600">
+                            Final reading cannot be below opening.
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-
           </section>
 
           {/* Bottom action */}
@@ -482,7 +519,7 @@ const EndShift = () => {
                 disabled={!canContinue}
                 onClick={() => {
                   // Stage 2 will be implemented next.
-                  console.log('Proceed to money collection');
+                  console.log("Proceed to money collection");
                 }}
                 className="
                   flex
@@ -519,7 +556,6 @@ const EndShift = () => {
               </button>
             </div>
           </div>
-
         </main>
       </IonContent>
     </IonPage>
