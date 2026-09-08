@@ -13,6 +13,8 @@ import '@ionic/react/css/typography.css';
 /* Pages & Contexts */
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import SelectMpd from './pages/SelectMpd';
+import EndShift from './pages/EndShift';
 import ShiftEntry from './pages/ShiftEntry';
 import Collections from './pages/Collections';
 import ManagerDashboard from './pages/ManagerDashboard';
@@ -37,6 +39,12 @@ function App() {
             <IonRouterOutlet>
               <Route path="/login" element={<Login />} />
               
+              <Route path="/select-mpd" element={
+                <ProtectedRoute>
+                  <SelectMpd />
+                </ProtectedRoute>
+              } />
+
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -58,6 +66,12 @@ function App() {
               <Route path="/collections" element={
                 <ProtectedRoute>
                   <Collections />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/end-shift" element={
+                <ProtectedRoute>
+                  <EndShift />
                 </ProtectedRoute>
               } />
               

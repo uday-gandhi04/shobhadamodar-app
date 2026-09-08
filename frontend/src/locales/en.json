@@ -27,5 +27,85 @@
     "cashUpdated": "Cash collection updated",
     "upiUpdated": "UPI collection updated",
     "viewPumpDetails": "View pump details"
+  },
+  "employee": {
+    "selectMpd": {
+      "kicker": "SHIFT START",
+      "title": "Choose your MPD",
+      "subtitle": "Select the dispenser you will operate for this shift.",
+      "mpdLabel": "Available MPDs",
+      "available": "Available",
+      "inUse": "In use by another employee",
+      "shiftLabel": "Shift",
+      "start": "Start Shift →",
+      "starting": "Starting shift…",
+      "loadError": "Unable to load available MPDs.",
+      "startError": "Unable to start the shift."
+    },
+    "shifts": {
+      "morning": "Morning",
+      "evening": "Evening",
+      "night": "Night"
+    },
+    "dashboard": {
+      "currentShift": "Current Shift",
+      "active": "Active",
+      "started": "Started",
+      "nozzles": "Nozzles",
+      "todayWork": "Today’s Work",
+      "shiftProgress": "Your shift progress",
+      "nozzleReading": "Nozzle Reading",
+      "readOnly": "Read-only view",
+      "cashCollection": "Cash Collection",
+      "updateAnytime": "Update anytime",
+      "endShift": "End Shift",
+      "finalCheck": "Final check & result",
+      "quickActions": "Quick Actions",
+      "completeWork": "Complete your shift step by step",
+      "done": "Done",
+      "pending": "Pending"
+    },
+    "nozzles": {
+      "title": "Nozzle Reading",
+      "subtitle": "Current recorded readings for all four nozzles.",
+      "cumulative": "Cumulative reading",
+      "loadError": "Unable to load nozzle readings."
+    },
+    "collections": {
+      "title": "Cash Collection",
+      "currentTotal": "Current collection",
+      "saved": "Saved",
+      "editable": "Editable",
+      "cash": "Cash",
+      "cashTotal": "Cash total",
+      "other": "Other collection",
+      "save": "Save collection",
+      "saving": "Saving…",
+      "loadError": "Unable to load collections.",
+      "saveError": "Unable to save collections."
+    },
+    "endShift": {
+      "title": "End Shift",
+      "subtitle": "Enter the final readings and final money count.",
+      "finalNozzles": "Final nozzle readings",
+      "opening": "Opening",
+      "finalMoney": "Final money count",
+      "sameCollectionPage": "These are the final values for the same collection categories.",
+      "cashTotal": "Cash total",
+      "finalResult": "Final Result",
+      "sale": "Expected sale",
+      "collected": "Total collected",
+      "result": "Reconciliation",
+      "matched": "MATCHED",
+      "short": "SHORT",
+      "excess": "EXCESS",
+      "preview": "Check Final Result",
+      "calculating": "Calculating…",
+      "confirm": "End Shift",
+      "ending": "Ending shift…",
+      "loadError": "Unable to load the shift.",
+      "previewError": "Unable to calculate the final result.",
+      "endError": "Unable to end the shift."
+    }
   }
 }

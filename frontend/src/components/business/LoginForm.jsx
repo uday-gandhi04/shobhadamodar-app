@@ -79,10 +79,10 @@ const LoginForm = ({ role }) => {
       if (result.success) {
         await performBootstrapSync(result.token);
 
-        if (role === "MANAGER") {
+        if (result.user?.role === "MANAGER") {
           navigate("/manager", { replace: true });
         } else {
-          navigate("/dashboard", { replace: true });
+          navigate("/select-mpd", { replace: true });
         }
 
         return;

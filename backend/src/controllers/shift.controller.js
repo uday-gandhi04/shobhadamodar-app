@@ -1,50 +1,176 @@
 import Shift from '../models/Shift.js';
 import Mpd from '../models/Mpd.js';
+import FuelRate from '../models/FuelRate.js';
 
-/**
- * Return the employee's currently active shift for a business date.
- *
- * @route GET /api/shifts/current
- * @access Protected
- */
-export const getCurrentShift = async (req, res, next) => {
-  try {
-    const businessDate =
-      req.query.date ||
-      new Date().toISOString().split('T')[0];
+const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1];
 
-    const shift = await Shift.findOne({
-      employeeId: req.user._id,
-      businessDate,
-      status: {
-        $in: ['OPEN', 'IN_PROGRESS', 'SUBMITTED', 'UNDER_REVIEW'],
-      },
+const businessDateFromQuery = (value) => {
+  if (value) return value;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+};
+
+const normalizeCash = (cashBreakdown = []) => {
+  const counts = new Map(cashBreakdown.map((item) => [Number(item.denomination), Number(item.count)]));
+
+  return DENOMINATIONS
+    .map((denomination) => {
+      const count = counts.get(denomination) || 0;
+      return {
+        denomination,
+        count,
+        totalPaise: denomination * count * 100,
+      };
     })
-      .populate('mpdId')
-      .lean();
+    .filter((item) => item.count > 0);
+};
 
-    if (!shift) {
-      return res.status(200).json({
-        success: true,
-        data: null,
-      });
+const calculateCollections = (collections = {}) => {
+  const cashCollections = normalizeCash(collections.cashBreakdown);
+  const totalCashPaise = cashCollections.reduce((sum, item) => sum + item.totalPaise, 0);
+  const totalUpiPaise = Number(collections.upiPaise || 0);
+  const totalCardPaise = Number(collections.cardPaise || 0);
+  const totalUdhariPaise = Number(collections.udhariPaise || 0);
+  const totalCollectedPaise =
+    totalCashPaise + totalUpiPaise + totalCardPaise + totalUdhariPaise;
+
+  return {
+    cashCollections,
+    totalCashPaise,
+    totalUpiPaise,
+    totalCardPaise,
+    totalUdhariPaise,
+    totalCollectedPaise,
+  };
+};
+
+const calculateFinalResult = async (shift, finalReadings, collections) => {
+  const rates = await FuelRate.findOne({ businessDate: shift.businessDate }).sort({ createdAt: -1 });
+  if (!rates) {
+    const error = new Error(`Fuel rates not found for ${shift.businessDate}.`);
+    error.status = 400;
+    throw error;
+  }
+
+  const openingByNozzle = new Map(shift.readings.map((reading) => [reading.nozzleId, reading]));
+  const mpd = await Mpd.findById(shift.mpdId).lean();
+
+  if (!mpd) {
+    const error = new Error('MPD not found.');
+    error.status = 404;
+    throw error;
+  }
+
+  let expectedTotalSalePaise = 0;
+  let totalLitresPetrol = 0;
+  let totalLitresDiesel = 0;
+
+  const processedReadings = [];
+  const updatedNozzles = [];
+
+  for (const input of finalReadings) {
+    const opening = openingByNozzle.get(input.nozzleId);
+    const nozzle = mpd.nozzles.find((item) => item.nozzleId === input.nozzleId);
+
+    if (!opening || !nozzle) {
+      const error = new Error(`Nozzle ${input.nozzleId} is not part of this shift.`);
+      error.status = 400;
+      throw error;
     }
+
+    if (input.closingReading < opening.openingReading) {
+      const error = new Error(
+        `${nozzle.name}: closing reading cannot be less than opening reading.`,
+      );
+      error.status = 400;
+      throw error;
+    }
+
+    const dispensedLitres = Math.round((input.closingReading - opening.openingReading) * 100) / 100;
+    const ratePaise = nozzle.fuelType === 'PETROL' ? rates.petrolRatePaise : rates.dieselRatePaise;
+    const expectedSalePaise = Math.round(dispensedLitres * ratePaise);
+
+    if (nozzle.fuelType === 'PETROL') totalLitresPetrol += dispensedLitres;
+    if (nozzle.fuelType === 'DIESEL') totalLitresDiesel += dispensedLitres;
+    expectedTotalSalePaise += expectedSalePaise;
+
+    processedReadings.push({
+      nozzleId: nozzle.nozzleId,
+      fuelType: nozzle.fuelType,
+      openingReading: opening.openingReading,
+      closingReading: input.closingReading,
+      dispensedLitres,
+      ratePaise,
+      expectedSalePaise,
+    });
+
+    updatedNozzles.push({ nozzleId: nozzle.nozzleId, closingReading: input.closingReading });
+  }
+
+  const financials = calculateCollections(collections);
+  const differencePaise = financials.totalCollectedPaise - expectedTotalSalePaise;
+  const reconciliationStatus =
+    differencePaise === 0 ? 'MATCHED' : differencePaise < 0 ? 'SHORT' : 'EXCESS';
+
+  return {
+    mpd,
+    processedReadings,
+    updatedNozzles,
+    totalLitresPetrol,
+    totalLitresDiesel,
+    expectedTotalSalePaise,
+    differencePaise,
+    reconciliationStatus,
+    ...financials,
+  };
+};
+
+export const getAvailableMpds = async (req, res, next) => {
+  try {
+    const businessDate = businessDateFromQuery(req.query.date);
+    const [mpds, activeShifts] = await Promise.all([
+      Mpd.find({ isActive: true }).select('_id mpdNumber serialNumber nozzles').lean(),
+      Shift.find({ businessDate, status: 'IN_PROGRESS' }).select('mpdId').lean(),
+    ]);
+
+    const lockedMpdIds = new Set(activeShifts.map((shift) => String(shift.mpdId)));
 
     return res.status(200).json({
       success: true,
-      data: shift,
+      data: mpds.map((mpd) => ({
+        _id: mpd._id,
+        mpdNumber: mpd.mpdNumber,
+        serialNumber: mpd.serialNumber,
+        isAvailable: !lockedMpdIds.has(String(mpd._id)),
+      })),
     });
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * Start a new employee shift on a selected MPD.
- *
- * @route POST /api/shifts/start
- * @access Protected
- */
+export const getCurrentShift = async (req, res, next) => {
+  try {
+    const businessDate = businessDateFromQuery(req.query.date);
+
+    const shift = await Shift.findOne({
+      employeeId: req.user._id,
+      businessDate,
+      status: 'IN_PROGRESS',
+    })
+      .populate('mpdId')
+      .lean();
+
+    return res.status(200).json({ success: true, data: shift || null });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const startShift = async (req, res, next) => {
   try {
     if (req.user.role !== 'EMPLOYEE') {
@@ -55,60 +181,30 @@ export const startShift = async (req, res, next) => {
       });
     }
 
-    const {
-      businessDate,
-      shiftType,
-      mpdId,
-    } = req.body;
+    const { businessDate, shiftType, mpdId } = req.body;
 
-    /*
-     * Check employee lock.
-     */
-    const existingEmployeeShift = await Shift.findOne({
-      employeeId: req.user._id,
-      status: 'IN_PROGRESS',
-    });
+    const [existingEmployeeShift, existingMpdShift, mpd] = await Promise.all([
+      Shift.findOne({ employeeId: req.user._id, status: 'IN_PROGRESS' }),
+      Shift.findOne({ mpdId, status: 'IN_PROGRESS' }).populate('employeeId', 'name employeeId'),
+      Mpd.findOne({ _id: mpdId, isActive: true }),
+    ]);
 
     if (existingEmployeeShift) {
       return res.status(409).json({
         success: false,
-        message:
-          'You already have an active shift. End it before starting another shift.',
+        message: 'You already have an active shift. End it before starting another shift.',
         code: 'EMPLOYEE_ALREADY_ACTIVE',
-        data: {
-          shiftId: existingEmployeeShift._id,
-          mpdId: existingEmployeeShift.mpdId,
-        },
+        data: { shiftId: existingEmployeeShift._id, mpdId: existingEmployeeShift.mpdId },
       });
     }
-
-    /*
-     * Check MPD lock.
-     */
-    const existingMpdShift = await Shift.findOne({
-      mpdId,
-      status: 'IN_PROGRESS',
-    })
-      .populate('employeeId', 'name employeeId')
-      .lean();
 
     if (existingMpdShift) {
       return res.status(409).json({
         success: false,
-        message:
-          'This MPD is currently being operated by another employee.',
+        message: 'This MPD is currently being operated by another employee.',
         code: 'MPD_ALREADY_ACTIVE',
-        data: {
-          shiftId: existingMpdShift._id,
-          employee: existingMpdShift.employeeId,
-        },
       });
     }
-
-    const mpd = await Mpd.findOne({
-      _id: mpdId,
-      isActive: true,
-    });
 
     if (!mpd) {
       return res.status(404).json({
@@ -118,6 +214,14 @@ export const startShift = async (req, res, next) => {
       });
     }
 
+    const openingReadings = mpd.nozzles
+      .filter((nozzle) => nozzle.isActive !== false)
+      .map((nozzle) => ({
+        nozzleId: nozzle.nozzleId,
+        fuelType: nozzle.fuelType,
+        openingReading: nozzle.currentCumulativeReading,
+      }));
+
     const shift = await Shift.create({
       businessDate,
       shiftType,
@@ -125,50 +229,110 @@ export const startShift = async (req, res, next) => {
       employeeId: req.user._id,
       status: 'IN_PROGRESS',
       startedAt: new Date(),
+      readings: openingReadings,
     });
+
+    const populatedShift = await Shift.findById(shift._id).populate('mpdId').lean();
 
     return res.status(201).json({
       success: true,
       message: 'Shift started successfully.',
-      data: shift,
+      data: populatedShift,
     });
   } catch (error) {
-    /*
-     * Race-condition protection.
-     *
-     * Even if two requests pass the findOne checks simultaneously,
-     * MongoDB's unique partial indexes will allow only one to succeed.
-     */
     if (error.code === 11000) {
-      const duplicateField = Object.keys(
-        error.keyPattern || {},
-      )[0];
-
-      if (duplicateField === 'employeeId') {
-        return res.status(409).json({
-          success: false,
-          message:
-            'You already have an active shift.',
-          code: 'EMPLOYEE_ALREADY_ACTIVE',
-        });
-      }
-
-      if (duplicateField === 'mpdId') {
-        return res.status(409).json({
-          success: false,
-          message:
-            'This MPD is currently being operated by another employee.',
-          code: 'MPD_ALREADY_ACTIVE',
-        });
-      }
-
+      const duplicateField = Object.keys(error.keyPattern || {})[0];
       return res.status(409).json({
         success: false,
-        message: 'Shift could not be started because the resource is busy.',
-        code: 'SHIFT_CONFLICT',
+        message:
+          duplicateField === 'employeeId'
+            ? 'You already have an active shift.'
+            : 'This MPD is currently being operated by another employee.',
+        code:
+          duplicateField === 'employeeId'
+            ? 'EMPLOYEE_ALREADY_ACTIVE'
+            : 'MPD_ALREADY_ACTIVE',
       });
     }
 
+    next(error);
+  }
+};
+
+export const updateCollections = async (req, res, next) => {
+  try {
+    const shift = await Shift.findOne({
+      _id: req.params.id,
+      employeeId: req.user._id,
+      status: 'IN_PROGRESS',
+    });
+
+    if (!shift) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active shift not found.',
+        code: 'ACTIVE_SHIFT_NOT_FOUND',
+      });
+    }
+
+    const financials = calculateCollections(req.body);
+
+    shift.cashCollections = financials.cashCollections;
+    shift.totalCashPaise = financials.totalCashPaise;
+    shift.totalUpiPaise = financials.totalUpiPaise;
+    shift.totalCardPaise = financials.totalCardPaise;
+    shift.totalUdhariPaise = financials.totalUdhariPaise;
+    shift.totalCollectedPaise = financials.totalCollectedPaise;
+    shift.reconciliationStatus = 'PENDING';
+
+    await shift.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Collections saved successfully.',
+      data: shift,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const previewEndShift = async (req, res, next) => {
+  try {
+    const shift = await Shift.findOne({
+      _id: req.params.id,
+      employeeId: req.user._id,
+      status: 'IN_PROGRESS',
+    });
+
+    if (!shift) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active shift not found.',
+        code: 'ACTIVE_SHIFT_NOT_FOUND',
+      });
+    }
+
+    const result = await calculateFinalResult(shift, req.body.readings, req.body.collections);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        expectedTotalSalePaise: result.expectedTotalSalePaise,
+        totalCollectedPaise: result.totalCollectedPaise,
+        differencePaise: result.differencePaise,
+        reconciliationStatus: result.reconciliationStatus,
+        totalLitresPetrol: result.totalLitresPetrol,
+        totalLitresDiesel: result.totalLitresDiesel,
+        cashCollections: result.cashCollections,
+        totalCashPaise: result.totalCashPaise,
+        totalUpiPaise: result.totalUpiPaise,
+        totalCardPaise: result.totalCardPaise,
+        totalUdhariPaise: result.totalUdhariPaise,
+        readings: result.processedReadings,
+      },
+    });
+  } catch (error) {
     next(error);
   }
 };
@@ -197,15 +361,44 @@ export const endShift = async (req, res, next) => {
       });
     }
 
+    const result = await calculateFinalResult(shift, req.body.readings, req.body.collections);
+
+    shift.readings = result.processedReadings;
+    shift.cashCollections = result.cashCollections;
+    shift.totalLitresPetrol = result.totalLitresPetrol;
+    shift.totalLitresDiesel = result.totalLitresDiesel;
+    shift.expectedTotalSalePaise = result.expectedTotalSalePaise;
+    shift.totalCashPaise = result.totalCashPaise;
+    shift.totalUpiPaise = result.totalUpiPaise;
+    shift.totalCardPaise = result.totalCardPaise;
+    shift.totalUdhariPaise = result.totalUdhariPaise;
+    shift.totalCollectedPaise = result.totalCollectedPaise;
+    shift.differencePaise = result.differencePaise;
+    shift.reconciliationStatus = result.reconciliationStatus;
     shift.status = 'ENDED';
     shift.endedAt = new Date();
 
-    await shift.save();
+    for (const updated of result.updatedNozzles) {
+      const nozzle = result.mpd.nozzles.find((item) => item.nozzleId === updated.nozzleId);
+      if (nozzle) {
+        nozzle.currentCumulativeReading = updated.closingReading;
+      }
+    }
+
+    await Promise.all([shift.save(), Mpd.findByIdAndUpdate(result.mpd._id, { nozzles: result.mpd.nozzles })]);
 
     return res.status(200).json({
       success: true,
       message: 'Shift ended successfully.',
-      data: shift,
+      data: {
+        shiftId: shift._id,
+        status: shift.reconciliationStatus,
+        differencePaise: shift.differencePaise,
+        totalSalePaise: shift.expectedTotalSalePaise,
+        totalCollectedPaise: shift.totalCollectedPaise,
+        startedAt: shift.startedAt,
+        endedAt: shift.endedAt,
+      },
     });
   } catch (error) {
     next(error);

@@ -1,6 +1,4 @@
-// src/pages/Dashboard.jsx
-
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { IonPage, IonContent } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -8,143 +6,93 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getCurrentShift } from '../services/shiftApi';
 import { getBusinessDate } from '../utils/businessDate';
-
-import BottomNav from '../components/ui/BottomNav';
+import { useContext } from 'react';
 
 import DashboardHeader from '../components/business/dashboard/DashboardHeader';
 import ShiftCard from '../components/business/dashboard/ShiftCard';
 import ShiftProgress from '../components/business/dashboard/ShiftProgress';
 import QuickActions from '../components/business/dashboard/QuickActions';
-import RecentActivity from '../components/business/dashboard/RecentActivity';
+
+const formatDate = (date, language) => {
+  const locale = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
+  const [year, month, day] = date.split('-').map(Number);
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: 'Asia/Kolkata',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(Date.UTC(year, month - 1, day, 6)));
+};
 
 const Dashboard = () => {
   const { i18n } = useTranslation();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-
   const [currentShift, setCurrentShift] = useState(null);
-  const [isLoadingShift, setIsLoadingShift] = useState(true);
-  const [shiftError, setShiftError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const language = i18n.language?.split('-')[0] || 'en';
-  const isEnglish = language === 'en';
+  const businessDate = getBusinessDate();
 
-  const today = new Date();
-
-  const formattedDate = today.toLocaleDateString(
-    isEnglish ? 'en-IN' : language === 'mr' ? 'mr-IN' : 'hi-IN',
-    {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    },
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadCurrentShift = async () => {
-      try {
-        setIsLoadingShift(true);
-        setShiftError('');
-
-        const businessDate = getBusinessDate();
-        const response = await getCurrentShift(businessDate);
-
-        if (!cancelled) {
-          setCurrentShift(response.data);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error('Failed to load current shift:', error);
-          setShiftError(error.message || 'Unable to load your shift.');
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingShift(false);
-        }
+  const loadShift = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await getCurrentShift(businessDate);
+      if (!response.data) {
+        navigate('/select-mpd', { replace: true });
+        return;
       }
-    };
-
-    loadCurrentShift();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handlePrimaryAction = () => {
-    const mpdId = currentShift?.mpdId?._id || currentShift?.mpdId;
-
-    if (mpdId) {
-      navigate(`/shift/${mpdId}`);
+      setCurrentShift(response.data);
+    } catch (err) {
+      setError(err.message || 'Unable to load your shift.');
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadShift();
+  }, []);
+
+  const mpdId = currentShift?.mpdId?._id || currentShift?.mpdId;
+
   return (
     <IonPage>
-      <IonContent
-        fullscreen
-        style={{
-          '--background': '#F3F4F6',
-        }}
-      >
-        <main
-          className="
-            relative
-            mx-auto
-            min-h-[100dvh]
-            w-full
-            max-w-[480px]
-            overflow-hidden
-            bg-[#F3F4F6]
-            pb-28
-          "
-        >
-          <div className="px-5 pt-[max(1rem,env(safe-area-inset-top))]">
-            <DashboardHeader
-              user={user}
-              formattedDate={formattedDate}
-            />
+      <IonContent fullscreen style={{ '--background': '#F3F4F6' }}>
+        <main className="mx-auto min-h-[100dvh] w-full max-w-[480px] overflow-hidden bg-[#F3F4F6] px-5 pb-10 pt-[max(1rem,env(safe-area-inset-top))]">
+          <DashboardHeader
+            user={user}
+            formattedDate={formatDate(businessDate, language)}
+          />
 
-            {isLoadingShift ? (
-              <div className="mt-6 space-y-4">
-                <div className="h-[190px] animate-pulse rounded-[24px] bg-white" />
-                <div className="h-[150px] animate-pulse rounded-[24px] bg-white" />
-                <div className="h-[170px] animate-pulse rounded-[24px] bg-white" />
-              </div>
-            ) : (
-              <>
-                {shiftError && (
-                  <p className="mt-6 rounded-[14px] bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {shiftError}
-                  </p>
-                )}
+          {loading ? (
+            <div className="mt-6 space-y-4">
+              <div className="h-[190px] animate-pulse rounded-[24px] bg-white" />
+              <div className="h-[145px] animate-pulse rounded-[24px] bg-white" />
+              <div className="h-[155px] animate-pulse rounded-[24px] bg-white" />
+            </div>
+          ) : currentShift ? (
+            <>
+              <ShiftCard shift={currentShift} />
+              <ShiftProgress shift={currentShift} />
+              <QuickActions
+                onNozzle={() => navigate(`/shift/${mpdId}`)}
+                onCollection={() => navigate('/collections')}
+                onEndShift={() => navigate('/end-shift')}
+              />
+            </>
+          ) : null}
 
-                <ShiftCard
-                  shift={currentShift}
-                />
-
-                <ShiftProgress />
-
-                <QuickActions
-                  onNozzle={handlePrimaryAction}
-                  onCollection={() => {
-                    navigate('/collections');
-                  }}
-                  onReconciliation={handlePrimaryAction}
-                  onReports={() => {}}
-                />
-
-                <RecentActivity />
-              </>
-            )}
-          </div>
+          {error && (
+            <div className="mt-5 rounded-[14px] bg-red-50 px-4 py-3 text-[12px] font-medium text-red-700">
+              {error}
+            </div>
+          )}
         </main>
       </IonContent>
-
-      <BottomNav />
     </IonPage>
   );
 };

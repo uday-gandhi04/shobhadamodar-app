@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user');
       }
       
-      return { success: true, token: newToken };
+      return { success: true, token: newToken, user: userData };
     } catch (error) {
       return { 
         success: false, 

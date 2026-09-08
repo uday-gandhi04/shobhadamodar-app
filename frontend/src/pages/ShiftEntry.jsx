@@ -1,161 +1,77 @@
-// src/pages/ShiftEntry.jsx
-import { useState, useEffect } from 'react';
-import { IonPage, IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle } from '@ionic/react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { dbService } from '../database/sqlite';
+import { useEffect, useState } from 'react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons, IonBackButton } from '@ionic/react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getCurrentShift } from '../services/shiftApi';
+import { getBusinessDate } from '../utils/businessDate';
 
 const ShiftEntry = () => {
   const { mpdId } = useParams();
   const navigate = useNavigate();
-  
-  const [mpd, setMpd] = useState(null);
-  const [nozzles, setNozzles] = useState([]);
-  const [rates, setRates] = useState(null);
-  const [readings, setReadings] = useState({}); // Stores { nozzle_id: closingValue }
-  
-  const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
+  const [shift, setShift] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const loadShiftData = async () => {
+    const load = async () => {
       try {
-        // 1. Fetch the specific MPD
-        const mpdRes = await dbService.executeQuery('SELECT * FROM mpds WHERE mpd_id = ?', [mpdId]);
-        if (mpdRes.values.length > 0) setMpd(mpdRes.values[0]);
-
-        // 2. Fetch its Nozzles
-        const nozzleRes = await dbService.executeQuery('SELECT * FROM nozzles WHERE mpd_id = ?', [mpdId]);
-        setNozzles(nozzleRes.values || []);
-
-        // 3. Fetch Rates
-        const rateRes = await dbService.executeQuery('SELECT * FROM fuel_rates LIMIT 1');
-        if (rateRes.values.length > 0) setRates(rateRes.values[0]);
-
-      } catch (error) {
-        console.error("Failed to load shift data:", error);
+        const response = await getCurrentShift(getBusinessDate());
+        if (!response.data) {
+          navigate('/select-mpd', { replace: true });
+          return;
+        }
+        const assignedMpdId = response.data.mpdId?._id || response.data.mpdId;
+        if (String(assignedMpdId) !== String(mpdId)) {
+          navigate(`/shift/${assignedMpdId}`, { replace: true });
+          return;
+        }
+        setShift(response.data);
+      } catch (err) {
+        setError(err.message || t('employee.nozzles.loadError'));
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    
-    loadShiftData();
-  }, [mpdId]);
+    load();
+  }, [mpdId, navigate, t]);
 
-  // Handle Input Changes
-  const handleReadingChange = (nozzleId, value) => {
-    setReadings(prev => ({
-      ...prev,
-      [nozzleId]: parseFloat(value) || 0
-    }));
-  };
-
-  // Calculate live dispensing metrics
-  const getNozzleMetrics = (nozzle) => {
-    const closing = readings[nozzle.nozzle_id] || nozzle.current_reading;
-    const dispensed = Math.max(0, closing - nozzle.current_reading).toFixed(2);
-    
-    const ratePaise = nozzle.fuel_type === 'PETROL' ? rates?.petrol_paise : rates?.diesel_paise;
-    const expectedSale = ((dispensed * (ratePaise || 0)) / 100).toFixed(2);
-    
-    return { dispensed, expectedSale };
-  };
-
-  const handleProceed = () => {
-    let totalExpectedSale = 0;
-    nozzles.forEach(nozzle => {
-      const metrics = getNozzleMetrics(nozzle);
-      totalExpectedSale += parseFloat(metrics.expectedSale);
-    });
-
-    navigate('/collections', {
-      state: {
-        mpdId,
-        readings,
-        nozzles,
-        totalExpectedSale,
-        rates
-      }
-    });
-  };
+  const nozzles = shift?.mpdId?.nozzles || [];
 
   return (
     <IonPage>
-      {/* Native-feeling header with a back button */}
       <IonHeader className="ion-no-border">
         <IonToolbar style={{ '--background': '#ffffff' }}>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/dashboard" color="dark" text="" />
-          </IonButtons>
-          <IonTitle className="font-bold text-gray-800 text-lg">
-            {mpd ? `Shift: ${mpd.mpd_number}` : 'Loading...'}
-          </IonTitle>
+          <IonButtons slot="start"><IonBackButton defaultHref="/dashboard" color="dark" text="" /></IonButtons>
+          <IonTitle className="font-bold text-gray-800 text-lg">{t('employee.nozzles.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
 
       <IonContent className="ion-padding" style={{ '--background': '#F3F4F6' }}>
-        <div className="max-w-md mx-auto pb-48">
-          
-          {isLoading ? (
-            <p className="text-center text-gray-500 mt-10">Loading local data...</p>
-          ) : (
-            <div className="space-y-6 mt-4">
-              {nozzles.map(nozzle => {
-                const metrics = getNozzleMetrics(nozzle);
-                const isPetrol = nozzle.fuel_type === 'PETROL';
-                
-                return (
-                  <div key={nozzle.nozzle_id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className={`font-bold text-lg ${isPetrol ? 'text-fuel-petrol' : 'text-fuel-diesel'}`}>
-                        {nozzle.nozzle_id.toUpperCase()} • {nozzle.fuel_type}
-                      </h3>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-400 font-bold uppercase">Opening</p>
-                        <p className="font-semibold text-gray-700">{nozzle.current_reading}</p>
-                      </div>
-                    </div>
+        <div className="mx-auto max-w-md pb-10">
+          {loading ? <div className="mt-4 h-24 animate-pulse rounded-[20px] bg-white" /> : error ? <div className="mt-4 rounded-[14px] bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : (
+            <>
+              <div className="mt-3 rounded-[20px] bg-white p-5 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">{shift.mpdId.mpdNumber}</p>
+                <p className="mt-1 text-[13px] text-slate-500">{t('employee.nozzles.subtitle')}</p>
+              </div>
 
-                    <div className="mb-4">
-                      <label className="block text-xs font-bold text-gray-500 mb-1 ml-1 uppercase">Closing Reading</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder={nozzle.current_reading.toString()}
-                        onChange={(e) => handleReadingChange(nozzle.nozzle_id, e.target.value)}
-                        className={`w-full h-14 px-4 bg-gray-50 rounded-xl border-2 ${isPetrol ? 'focus:border-fuel-petrol' : 'focus:border-fuel-diesel'} focus:bg-white transition-all font-bold text-lg text-gray-800 outline-none`}
-                      />
-                    </div>
-
-                    {/* Live Calculation Output */}
-                    <div className="bg-gray-50 rounded-xl p-3 flex justify-between items-center border border-gray-100">
+              <div className="mt-4 space-y-3">
+                {nozzles.map((nozzle) => (
+                  <div key={nozzle.nozzleId} className="rounded-[20px] border border-slate-100 bg-white p-5 shadow-sm">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-gray-500 font-medium">Dispensed</p>
-                        <p className="font-bold text-gray-800">{metrics.dispensed} L</p>
+                        <p className={`text-[16px] font-bold ${nozzle.fuelType === 'PETROL' ? 'text-emerald-700' : 'text-slate-800'}`}>{nozzle.name}</p>
+                        <p className="mt-1 text-[11px] text-slate-400">{t('employee.nozzles.cumulative')}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500 font-medium">Expected Sale</p>
-                        <p className="font-bold text-bpcl-emerald">₹{metrics.expectedSale}</p>
-                      </div>
+                      <p className="text-[24px] font-bold tabular-nums text-slate-900">{Number(nozzle.currentCumulativeReading || 0).toFixed(2)}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
-
-        {/* Fixed Bottom Action Bar */}
-        {!isLoading && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 pb-8 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <div className="max-w-md mx-auto">
-              <button 
-                onClick={handleProceed}
-                className="w-full h-14 bg-bpcl-emerald text-white font-bold text-lg rounded-full active:scale-[0.98] transition-transform shadow-lg shadow-green-200"
-              >
-                Continue to Collections →
-              </button>
-            </div>
-          </div>
-        )}
       </IonContent>
     </IonPage>
   );

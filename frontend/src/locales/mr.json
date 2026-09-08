@@ -27,5 +27,85 @@
     "cashUpdated": "रोख रक्कम अपडेट केली",
     "upiUpdated": "UPI संग्रह अपडेट केला",
     "viewPumpDetails": "पंप तपशील पहा"
+  },
+  "employee": {
+    "selectMpd": {
+      "kicker": "शिफ्ट सुरू करा",
+      "title": "तुमचा MPD निवडा",
+      "subtitle": "या शिफ्टमध्ये तुम्ही ज्या डिस्पेंसरवर काम करणार आहात तो निवडा.",
+      "mpdLabel": "उपलब्ध MPD",
+      "available": "उपलब्ध",
+      "inUse": "दुसरा कर्मचारी वापरत आहे",
+      "shiftLabel": "शिफ्ट",
+      "start": "शिफ्ट सुरू करा →",
+      "starting": "शिफ्ट सुरू होत आहे…",
+      "loadError": "उपलब्ध MPD लोड करता आले नाहीत.",
+      "startError": "शिफ्ट सुरू करता आली नाही."
+    },
+    "shifts": {
+      "morning": "सकाळ",
+      "evening": "संध्याकाळ",
+      "night": "रात्र"
+    },
+    "dashboard": {
+      "currentShift": "सध्याची शिफ्ट",
+      "active": "सक्रिय",
+      "started": "सुरू",
+      "nozzles": "नोजल",
+      "todayWork": "आजचे काम",
+      "shiftProgress": "तुमच्या शिफ्टची प्रगती",
+      "nozzleReading": "नोजल रीडिंग",
+      "readOnly": "फक्त पाहण्यासाठी",
+      "cashCollection": "रोकड संकलन",
+      "updateAnytime": "कधीही अपडेट करा",
+      "endShift": "शिफ्ट समाप्त करा",
+      "finalCheck": "अंतिम तपासणी व निकाल",
+      "quickActions": "त्वरित कामे",
+      "completeWork": "तुमची शिफ्ट टप्प्याटप्प्याने पूर्ण करा",
+      "done": "पूर्ण",
+      "pending": "बाकी"
+    },
+    "nozzles": {
+      "title": "नोजल रीडिंग",
+      "subtitle": "चारही नोजलची सध्याची नोंदवलेली रीडिंग.",
+      "cumulative": "एकूण रीडिंग",
+      "loadError": "नोजल रीडिंग लोड करता आली नाही."
+    },
+    "collections": {
+      "title": "रोकड संकलन",
+      "currentTotal": "सध्याचे संकलन",
+      "saved": "सेव्ह केले",
+      "editable": "अपडेट करता येईल",
+      "cash": "रोकड",
+      "cashTotal": "एकूण रोकड",
+      "other": "इतर संकलन",
+      "save": "संकलन सेव्ह करा",
+      "saving": "सेव्ह होत आहे…",
+      "loadError": "संकलन लोड करता आले नाही.",
+      "saveError": "संकलन सेव्ह करता आले नाही."
+    },
+    "endShift": {
+      "title": "शिफ्ट समाप्त करा",
+      "subtitle": "अंतिम नोजल रीडिंग आणि अंतिम रक्कम भरा.",
+      "finalNozzles": "अंतिम नोजल रीडिंग",
+      "opening": "ओपनिंग",
+      "finalMoney": "अंतिम रक्कम",
+      "sameCollectionPage": "हीच अंतिम संकलन मूल्ये असतील.",
+      "cashTotal": "एकूण रोकड",
+      "finalResult": "अंतिम निकाल",
+      "sale": "अपेक्षित विक्री",
+      "collected": "एकूण संकलन",
+      "result": "ताळमेळ",
+      "matched": "जुळले",
+      "short": "कमी",
+      "excess": "जास्त",
+      "preview": "अंतिम निकाल तपासा",
+      "calculating": "गणना होत आहे…",
+      "confirm": "शिफ्ट समाप्त करा",
+      "ending": "शिफ्ट समाप्त होत आहे…",
+      "loadError": "शिफ्ट लोड करता आली नाही.",
+      "previewError": "अंतिम निकाल काढता आला नाही.",
+      "endError": "शिफ्ट समाप्त करता आली नाही."
+    }
   }
 }
