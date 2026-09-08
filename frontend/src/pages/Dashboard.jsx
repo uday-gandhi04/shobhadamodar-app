@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { AuthContext } from '../context/AuthContext';
-import { SyncContext } from '../context/SyncContext';
-import { dbService } from '../database/sqlite';
+import { getCurrentShift } from '../services/shiftApi';
+import { getBusinessDate } from '../utils/businessDate';
 
 import BottomNav from '../components/ui/BottomNav';
 
@@ -20,13 +20,11 @@ import RecentActivity from '../components/business/dashboard/RecentActivity';
 const Dashboard = () => {
   const { i18n } = useTranslation();
   const { user } = useContext(AuthContext);
-  const { pushOfflineShifts } = useContext(SyncContext);
   const navigate = useNavigate();
 
-  const [rates, setRates] = useState(null);
-  const [mpds, setMpds] = useState([]);
-  const [selectedMpd, setSelectedMpd] = useState('MPD 1');
-  const [isLoading, setIsLoading] = useState(true);
+  const [currentShift, setCurrentShift] = useState(null);
+  const [isLoadingShift, setIsLoadingShift] = useState(true);
+  const [shiftError, setShiftError] = useState('');
 
   const language = i18n.language?.split('-')[0] || 'en';
   const isEnglish = language === 'en';
@@ -44,60 +42,44 @@ const Dashboard = () => {
   );
 
   useEffect(() => {
-    const loadOfflineData = async () => {
+    let cancelled = false;
+
+    const loadCurrentShift = async () => {
       try {
-        const rateRes = await dbService.executeQuery(
-          'SELECT * FROM fuel_rates ORDER BY business_date DESC LIMIT 1',
-        );
+        setIsLoadingShift(true);
+        setShiftError('');
 
-        if (rateRes.values?.length) {
-          setRates(rateRes.values[0]);
+        const businessDate = getBusinessDate();
+        const response = await getCurrentShift(businessDate);
+
+        if (!cancelled) {
+          setCurrentShift(response.data);
         }
-
-        const mpdRes = await dbService.executeQuery(
-          'SELECT * FROM mpds',
-        );
-
-        const loadedMpds = mpdRes.values || [];
-
-        const mpdsWithNozzles = await Promise.all(
-          loadedMpds.map(async (mpd) => {
-            const nozzleRes = await dbService.executeQuery(
-              'SELECT * FROM nozzles WHERE mpd_id = ?',
-              [mpd.mpd_id],
-            );
-
-            return {
-              ...mpd,
-              nozzles: nozzleRes.values || [],
-            };
-          }),
-        );
-
-        setMpds(mpdsWithNozzles);
-
-        await pushOfflineShifts();
       } catch (error) {
-        // Existing app uses local-first behavior.
-        // Keep the screen usable even if local data fails.
-        console.error('Error loading dashboard data:', error);
+        if (!cancelled) {
+          console.error('Failed to load current shift:', error);
+          setShiftError(error.message || 'Unable to load your shift.');
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoadingShift(false);
+        }
       }
     };
 
-    loadOfflineData();
-  }, [pushOfflineShifts]);
+    loadCurrentShift();
 
-  const selectedMpdData =
-    mpds.find(
-      (mpd) => mpd.mpd_number === selectedMpd || mpd.name === selectedMpd,
-    ) || mpds[0] || null;
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handlePrimaryAction = () => {
-    if (!selectedMpdData) return;
+    const mpdId = currentShift?.mpdId?._id || currentShift?.mpdId;
 
-    navigate(`/shift/${selectedMpdData.mpd_id}`);
+    if (mpdId) {
+      navigate(`/shift/${mpdId}`);
+    }
   };
 
   return (
@@ -126,7 +108,7 @@ const Dashboard = () => {
               formattedDate={formattedDate}
             />
 
-            {isLoading ? (
+            {isLoadingShift ? (
               <div className="mt-6 space-y-4">
                 <div className="h-[190px] animate-pulse rounded-[24px] bg-white" />
                 <div className="h-[150px] animate-pulse rounded-[24px] bg-white" />
@@ -134,31 +116,24 @@ const Dashboard = () => {
               </div>
             ) : (
               <>
+                {shiftError && (
+                  <p className="mt-6 rounded-[14px] bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {shiftError}
+                  </p>
+                )}
+
                 <ShiftCard
-                  mpds={mpds}
-                  selectedMpd={selectedMpd}
-                  setSelectedMpd={setSelectedMpd}
-                  mpd={selectedMpdData}
-                  rates={rates}
-                  onClick={handlePrimaryAction}
+                  shift={currentShift}
                 />
 
                 <ShiftProgress />
 
                 <QuickActions
-                  onNozzle={() => {
-                    if (selectedMpdData) {
-                      navigate(`/shift/${selectedMpdData.mpd_id}`);
-                    }
-                  }}
+                  onNozzle={handlePrimaryAction}
                   onCollection={() => {
                     navigate('/collections');
                   }}
-                  onReconciliation={() => {
-                    if (selectedMpdData) {
-                      navigate(`/shift/${selectedMpdData.mpd_id}`);
-                    }
-                  }}
+                  onReconciliation={handlePrimaryAction}
                   onReports={() => {}}
                 />
 

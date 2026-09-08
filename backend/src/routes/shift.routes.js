@@ -1,6 +1,7 @@
 import express from 'express';
 
 import {
+  endShift,
   getCurrentShift,
   startShift,
 } from '../controllers/shift.controller.js';
@@ -28,6 +29,12 @@ router.post(
   protect,
   validate(startShiftSchema),
   startShift
+);
+
+router.post(
+  '/:id/end',
+  protect,
+  endShift,
 );
 
 export default router;

@@ -47,36 +47,60 @@ export const getCurrentShift = async (req, res, next) => {
  */
 export const startShift = async (req, res, next) => {
   try {
+    if (req.user.role !== 'EMPLOYEE') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only employees can start shifts.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const {
       businessDate,
       shiftType,
       mpdId,
     } = req.body;
 
-    if (req.user.role !== 'EMPLOYEE') {
-      return res.status(403).json({
+    /*
+     * Check employee lock.
+     */
+    const existingEmployeeShift = await Shift.findOne({
+      employeeId: req.user._id,
+      status: 'IN_PROGRESS',
+    });
+
+    if (existingEmployeeShift) {
+      return res.status(409).json({
         success: false,
-        message: 'Only employees can start employee shifts.',
-        code: 'FORBIDDEN',
+        message:
+          'You already have an active shift. End it before starting another shift.',
+        code: 'EMPLOYEE_ALREADY_ACTIVE',
+        data: {
+          shiftId: existingEmployeeShift._id,
+          mpdId: existingEmployeeShift.mpdId,
+        },
       });
     }
 
-    const existingShift = await Shift.findOne({
-      employeeId: req.user._id,
-      businessDate,
-      status: {
-        $in: ['OPEN', 'IN_PROGRESS'],
-      },
-    });
+    /*
+     * Check MPD lock.
+     */
+    const existingMpdShift = await Shift.findOne({
+      mpdId,
+      status: 'IN_PROGRESS',
+    })
+      .populate('employeeId', 'name employeeId')
+      .lean();
 
-    if (existingShift) {
+    if (existingMpdShift) {
       return res.status(409).json({
         success: false,
-        message: 'You already have an active shift.',
-        code: 'ACTIVE_SHIFT_EXISTS',
+        message:
+          'This MPD is currently being operated by another employee.',
+        code: 'MPD_ALREADY_ACTIVE',
         data: {
-          shiftId: existingShift._id,
-          mpdId: existingShift.mpdId,
+          shiftId: existingMpdShift._id,
+          employee: existingMpdShift.employeeId,
         },
       });
     }
@@ -97,43 +121,93 @@ export const startShift = async (req, res, next) => {
     const shift = await Shift.create({
       businessDate,
       shiftType,
-      mpdId: mpd._id,
+      mpdId,
       employeeId: req.user._id,
       status: 'IN_PROGRESS',
       startedAt: new Date(),
-
-      readings: [],
-
-      totalLitresPetrol: 0,
-      totalLitresDiesel: 0,
-      expectedTotalSalePaise: 0,
-
-      cashCollections: [],
-      totalCashPaise: 0,
-      totalUpiPaise: 0,
-      totalCardPaise: 0,
-
-      udhariEntries: [],
-      totalUdhariPaise: 0,
-
-      totalCollectedPaise: 0,
-      differencePaise: 0,
-      reconciliationStatus: 'MATCHED',
     });
 
     return res.status(201).json({
       success: true,
+      message: 'Shift started successfully.',
       data: shift,
     });
   } catch (error) {
+    /*
+     * Race-condition protection.
+     *
+     * Even if two requests pass the findOne checks simultaneously,
+     * MongoDB's unique partial indexes will allow only one to succeed.
+     */
     if (error.code === 11000) {
+      const duplicateField = Object.keys(
+        error.keyPattern || {},
+      )[0];
+
+      if (duplicateField === 'employeeId') {
+        return res.status(409).json({
+          success: false,
+          message:
+            'You already have an active shift.',
+          code: 'EMPLOYEE_ALREADY_ACTIVE',
+        });
+      }
+
+      if (duplicateField === 'mpdId') {
+        return res.status(409).json({
+          success: false,
+          message:
+            'This MPD is currently being operated by another employee.',
+          code: 'MPD_ALREADY_ACTIVE',
+        });
+      }
+
       return res.status(409).json({
         success: false,
-        message: 'A shift already exists for this MPD and shift slot.',
-        code: 'SHIFT_ALREADY_EXISTS',
+        message: 'Shift could not be started because the resource is busy.',
+        code: 'SHIFT_CONFLICT',
       });
     }
 
+    next(error);
+  }
+};
+
+export const endShift = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'EMPLOYEE') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only employees can end their shifts.',
+        code: 'FORBIDDEN',
+      });
+    }
+
+    const shift = await Shift.findOne({
+      _id: req.params.id,
+      employeeId: req.user._id,
+      status: 'IN_PROGRESS',
+    });
+
+    if (!shift) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active shift not found.',
+        code: 'ACTIVE_SHIFT_NOT_FOUND',
+      });
+    }
+
+    shift.status = 'ENDED';
+    shift.endedAt = new Date();
+
+    await shift.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Shift ended successfully.',
+      data: shift,
+    });
+  } catch (error) {
     next(error);
   }
 };

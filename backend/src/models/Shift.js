@@ -1,119 +1,187 @@
-// src/models/Shift.js
-import mongoose from "mongoose";
+// backend/src/models/Shift.js
 
-const readingEntrySchema = new mongoose.Schema({
-  nozzleId: { type: String, required: true },
-  fuelType: { type: String, enum: ["PETROL", "DIESEL"], required: true },
-  openingReading: { type: Number, required: true },
-  closingReading: { type: Number, required: true },
-  dispensedLitres: { type: Number, required: true },
-  ratePaise: { type: Number, required: true },
-  expectedSalePaise: { type: Number, required: true },
-});
-
-const cashDenominationSchema = new mongoose.Schema({
-  denomination: { type: Number, required: true }, // 500, 200, 100, 50, 20, 10, 5, 2, 1
-  count: { type: Number, required: true, min: 0 },
-  totalPaise: { type: Number, required: true },
-});
-
-const udhariEntrySchema = new mongoose.Schema({
-  customerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Customer",
-    required: true,
-  },
-  amountPaise: { type: Number, required: true },
-});
+import mongoose from 'mongoose';
 
 const shiftSchema = new mongoose.Schema(
   {
-    idempotencyKey: {
-      type: String,
-      unique: true,
-      sparse: true,
-      index: true,
-    },
     businessDate: {
-      type: String, // 'YYYY-MM-DD'
+      type: String,
       required: true,
-      index: true,
     },
+
     shiftType: {
       type: String,
-      enum: ["MORNING", "EVENING", "NIGHT"],
+      enum: ['MORNING', 'EVENING', 'NIGHT'],
       required: true,
     },
+
     mpdId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Mpd",
+      ref: 'MPD',
       required: true,
+      index: true,
     },
+
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
+      index: true,
     },
+
     status: {
       type: String,
       enum: [
-        "OPEN",
-        "IN_PROGRESS",
-        "SUBMITTED",
-        "UNDER_REVIEW",
-        "FINALIZED",
-        "FORCE_CLOSED",
+        'IN_PROGRESS',
+        'ENDED',
+        'SUBMITTED',
+        'UNDER_REVIEW',
+        'FINALIZED',
+        'FORCE_CLOSED',
       ],
-      default: "OPEN",
+      default: 'IN_PROGRESS',
+      required: true,
+      index: true,
     },
+
     startedAt: {
       type: Date,
-    },
-    submittedAt: {
-      type: Date,
-    },
-
-    // 1. Physical Fuel Accounting
-    readings: [readingEntrySchema],
-    totalLitresPetrol: { type: Number, default: 0 },
-    totalLitresDiesel: { type: Number, default: 0 },
-    expectedTotalSalePaise: { type: Number, required: true },
-
-    // 2. Collections Breakdown
-    cashCollections: [cashDenominationSchema],
-    totalCashPaise: { type: Number, default: 0 },
-    totalUpiPaise: { type: Number, default: 0 },
-    totalCardPaise: { type: Number, default: 0 },
-    udhariEntries: [udhariEntrySchema],
-    totalUdhariPaise: { type: Number, default: 0 },
-    totalCollectedPaise: { type: Number, required: true },
-
-    // 3. Reconciliation
-    differencePaise: { type: Number, required: true }, // Total Collected - Expected Sale
-    reconciliationStatus: {
-      type: String,
-      enum: ["MATCHED", "SHORT", "EXCESS"],
       required: true,
     },
 
-    remarks: { type: String, trim: true },
-    finalizedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    finalizedAt: { type: Date },
+    endedAt: {
+      type: Date,
+      default: null,
+    },
+
+    submittedAt: {
+      type: Date,
+      default: null,
+    },
+
+    finalizedAt: {
+      type: Date,
+      default: null,
+    },
+
+    finalizedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+
+    readings: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
+
+    cashCollections: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
+
+    udhariEntries: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
+
+    totalLitresPetrol: {
+      type: Number,
+      default: 0,
+    },
+
+    totalLitresDiesel: {
+      type: Number,
+      default: 0,
+    },
+
+    expectedTotalSalePaise: {
+      type: Number,
+      default: 0,
+    },
+
+    totalCashPaise: {
+      type: Number,
+      default: 0,
+    },
+
+    totalUpiPaise: {
+      type: Number,
+      default: 0,
+    },
+
+    totalCardPaise: {
+      type: Number,
+      default: 0,
+    },
+
+    totalUdhariPaise: {
+      type: Number,
+      default: 0,
+    },
+
+    totalCollectedPaise: {
+      type: Number,
+      default: 0,
+    },
+
+    differencePaise: {
+      type: Number,
+      default: 0,
+    },
+
+    reconciliationStatus: {
+      type: String,
+      enum: ['MATCHED', 'SHORT', 'EXCESS', 'PENDING'],
+      default: 'PENDING',
+    },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
-// Compound index to guarantee one active shift per MPD/shift slot
+/**
+ * IMPORTANT:
+ *
+ * Only ONE active shift may exist for an employee.
+ */
 shiftSchema.index(
+  { employeeId: 1 },
   {
-    employeeId: 1,
-    businessDate: 1,
-    status: 1,
+    unique: true,
+    partialFilterExpression: {
+      status: 'IN_PROGRESS',
+    },
+    name: 'one_active_shift_per_employee',
   },
-  {
-    name: 'employee_daily_shift_lookup',
-  }
 );
 
-const Shift = mongoose.model("Shift", shiftSchema);
+/**
+ * IMPORTANT:
+ *
+ * Only ONE employee may operate an MPD at a time.
+ */
+shiftSchema.index(
+  { mpdId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: 'IN_PROGRESS',
+    },
+    name: 'one_active_shift_per_mpd',
+  },
+);
+
+/**
+ * Historical lookup.
+ */
+shiftSchema.index({
+  businessDate: 1,
+  mpdId: 1,
+  shiftType: 1,
+});
+
+const Shift = mongoose.model('Shift', shiftSchema);
+
 export default Shift;
