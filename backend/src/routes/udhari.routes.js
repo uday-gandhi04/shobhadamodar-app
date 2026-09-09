@@ -2,6 +2,7 @@ import express from 'express';
 
 import {
   addUdhariTransaction,
+  deleteUdhariTransaction,
 } from '../controllers/udhari.controller.js';
 
 import {
@@ -23,6 +24,12 @@ router.post(
   protect,
   validate(addUdhariSchema),
   addUdhariTransaction,
+);
+
+router.delete(
+  '/:transactionId',
+  protect,
+  deleteUdhariTransaction,
 );
 
 export default router;

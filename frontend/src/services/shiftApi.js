@@ -77,3 +77,11 @@ export const addUdhariTransaction = async (
 
   return response.data;
 };
+
+export const deleteUdhariTransaction = async (transactionId) => {
+  const response = await api.delete(
+    `/udhari/${transactionId}`,
+  );
+
+  return response.data;
+};

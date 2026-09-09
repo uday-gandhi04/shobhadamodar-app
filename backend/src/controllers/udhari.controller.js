@@ -222,7 +222,8 @@ export const addUdhariTransaction =
           /*
            * 6. Create immutable transaction.
            */
-          await UdhariTransaction.create(
+          const [createdTransaction] =
+            await UdhariTransaction.create(
             [
               {
                 customerId:
@@ -257,7 +258,7 @@ export const addUdhariTransaction =
             {
               session,
             },
-          );
+            );
 
           /*
            * 7. Increase customer's balance atomically.
@@ -288,6 +289,8 @@ export const addUdhariTransaction =
             ).session(session);
 
           shiftUpdate.udhariEntries.push({
+            transactionId:
+              createdTransaction._id,
             customerId:
               customer._id,
             amountPaise:
@@ -321,6 +324,8 @@ export const addUdhariTransaction =
 
           req.createdCustomer =
             customer;
+          req.createdTransaction =
+            createdTransaction;
           req.updatedShift =
             shiftUpdate;
         },
@@ -334,18 +339,131 @@ export const addUdhariTransaction =
           customer:
             req.createdCustomer,
           transaction: {
-            fuelType,
-            litres: finalLitres,
-            ratePaise,
-            amountPaise:
-              finalAmountPaise,
-            vehicleNumber:
-              vehicleNumber
-                ?.trim()
-                ?.toUpperCase() ||
-              null,
+            ...req.createdTransaction.toObject(),
           },
-          shiftId: shift._id,
+          shift: req.updatedShift,
+        },
+      });
+    } catch (error) {
+      next(error);
+    } finally {
+      await session.endSession();
+    }
+  };
+
+export const deleteUdhariTransaction =
+  async (req, res, next) => {
+    if (!mongoose.isValidObjectId(req.params.transactionId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Udhari transaction ID.',
+      });
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+      let reversedTransaction;
+      let updatedCustomer;
+      let updatedShift;
+
+      await session.withTransaction(async () => {
+        const transaction =
+          await UdhariTransaction.findOne({
+            _id: req.params.transactionId,
+            employeeId: req.user._id,
+          }).session(session);
+
+        if (!transaction) {
+          const error = new Error(
+            'Udhari transaction not found or not owned by this employee.',
+          );
+          error.status = 404;
+          throw error;
+        }
+
+        const amountPaise = Number(transaction.amountPaise);
+
+        if (!Number.isInteger(amountPaise) || amountPaise <= 0) {
+          const error = new Error(
+            'Udhari transaction has an invalid amount.',
+          );
+          error.status = 409;
+          throw error;
+        }
+
+        const shift = await Shift.findOne({
+          _id: transaction.shiftId,
+          employeeId: req.user._id,
+          status: 'IN_PROGRESS',
+          totalUdhariPaise: { $gte: amountPaise },
+          'udhariEntries.transactionId': transaction._id,
+        }).session(session);
+
+        if (!shift) {
+          const error = new Error(
+            'Udhari can only be removed from its current active shift.',
+          );
+          error.status = 409;
+          throw error;
+        }
+
+        const customer = await Customer.findOneAndUpdate(
+          {
+            _id: transaction.customerId,
+            outstandingBalance: { $gte: amountPaise },
+          },
+          { $inc: { outstandingBalance: -amountPaise } },
+          { new: true, session },
+        );
+
+        if (!customer) {
+          const error = new Error(
+            'Customer balance cannot safely be reversed.',
+          );
+          error.status = 409;
+          throw error;
+        }
+
+        shift.udhariEntries = shift.udhariEntries.filter(
+          (entry) =>
+            String(entry.transactionId) !==
+            String(transaction._id),
+        );
+        shift.totalUdhariPaise -= amountPaise;
+        shift.totalCollectedPaise =
+          shift.totalCashPaise +
+          shift.totalUpiPaise +
+          shift.totalCardPaise +
+          shift.totalUdhariPaise;
+        shift.reconciliationStatus = 'PENDING';
+        await shift.save({ session });
+
+        const deleteResult =
+          await UdhariTransaction.deleteOne({
+            _id: transaction._id,
+          }).session(session);
+
+        if (deleteResult.deletedCount !== 1) {
+          const error = new Error(
+            'Udhari transaction was already removed.',
+          );
+          error.status = 409;
+          throw error;
+        }
+
+        reversedTransaction = transaction.toObject();
+        updatedCustomer = customer;
+        updatedShift = shift;
+      });
+
+      return res.json({
+        success: true,
+        message: 'Udhari removed successfully.',
+        data: {
+          transaction: reversedTransaction,
+          customer: updatedCustomer,
+          shift: updatedShift,
         },
       });
     } catch (error) {
