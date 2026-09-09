@@ -18,15 +18,6 @@ const CashCollection = ({ cashCounts, onCashCountsChange, onSavedMessage }) => {
     }, 0);
   }, [cashCounts]);
 
-  const changeCashCount = (denomination, delta) => {
-    onCashCountsChange((current) => ({
-      ...current,
-      [denomination]: Math.max(0, Number(current[denomination] || 0) + delta),
-    }));
-
-    onSavedMessage("");
-  };
-
   const updateCashCount = (denomination, value) => {
     const cleaned = value.replace(/\D/g, "");
 
@@ -74,7 +65,8 @@ const CashCollection = ({ cashCounts, onCashCountsChange, onSavedMessage }) => {
             <div
               key={denomination}
               className="
-                  flex
+                  grid
+                  grid-cols-5
                   min-h-[43px]
                   items-center
                   border-b
@@ -82,78 +74,45 @@ const CashCollection = ({ cashCounts, onCashCountsChange, onSavedMessage }) => {
                   last:border-b-0
                 "
             >
-              <div className="w-[72px] pl-2">
-                <span className="text-[12px] font-semibold text-slate-700">
+              <div className="text-center">
+                <span className="text-[13px] font-semibold text-slate-700">
                   ₹ {denomination}
                 </span>
               </div>
 
-              <div className="flex flex-1 items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => changeCashCount(denomination, -1)}
-                  className="
-                      grid
-                      h-7
-                      w-7
-                      place-items-center
-                      rounded-[8px]
-                      border
-                      border-slate-200
-                      bg-slate-50
-                      text-[14px]
-                      font-semibold
-                      text-slate-500
-                    "
-                >
-                  −
-                </button>
+              <span className="place-self-center text-[16px] font-bold leading-none text-slate-600">
+                ×
+              </span>
 
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={count}
-                  onChange={(event) =>
-                    updateCashCount(denomination, event.target.value)
-                  }
-                  className="
-                      h-7
-                      w-[38px]
-                      rounded-[7px]
-                      border
-                      border-slate-200
-                      bg-white
-                      text-center
-                      text-[11px]
-                      font-semibold
-                      text-slate-800
-                      outline-none
-                      focus:border-[#047857]
-                    "
-                />
+              <input
+                type="text"
+                inputMode="numeric"
+                value={count}
+                onChange={(event) =>
+                  updateCashCount(denomination, event.target.value)
+                }
+                className="
+                    h-7
+                    w-[42px]
+                    justify-self-center
+                    rounded-[7px]
+                    border
+                    border-slate-200
+                    bg-white
+                    text-center
+                    text-[11px]
+                    font-semibold
+                    text-slate-800
+                    outline-none
+                    focus:border-[#047857]
+                  "
+              />
 
-                <button
-                  type="button"
-                  onClick={() => changeCashCount(denomination, 1)}
-                  className="
-                      grid
-                      h-7
-                      w-7
-                      place-items-center
-                      rounded-[8px]
-                      border
-                      border-slate-200
-                      bg-slate-50
-                      text-[14px]
-                      font-semibold
-                      text-slate-500
-                    "
-                >
-                  +
-                </button>
-              </div>
+              <span className="place-self-center text-[16px] font-bold leading-none text-slate-600">
+                =
+              </span>
 
-              <div className="w-[82px] pr-2 text-right">
+              <div className="text-center">
                 <span className="text-[11px] font-semibold text-slate-700">
                   {formatCurrency(valuePaise)}
                 </span>

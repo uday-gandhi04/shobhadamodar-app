@@ -17,119 +17,143 @@ const NozzleReadingCard = ({
   const image = isDiesel ? dieselNozzleImage : petrolNozzleImage;
   const nozzleLabel = nozzle.number || nozzle.nozzleNumber;
 
+  const accentText = isDiesel ? "text-blue-700" : "text-[#047857]";
+  const accentBorder = isDiesel
+    ? "border-blue-100"
+    : "border-emerald-100";
+  const imageBackground = isDiesel ? "bg-blue-50" : "bg-emerald-50";
+
   return (
     <div
       className={`
-          overflow-hidden
-          rounded-[18px]
-          border
-          bg-white
-          shadow-[0_3px_12px_rgba(15,23,42,0.04)]
-          ${isDiesel ? "border-blue-100" : "border-emerald-100"}
-        `}
+        overflow-hidden
+        rounded-[18px]
+        border
+        bg-white
+        shadow-[0_3px_14px_rgba(15,23,42,0.05)]
+        ${accentBorder}
+      `}
     >
-      <div className="flex min-h-[148px]">
+      <div className="grid min-h-[132px] grid-cols-[76px_minmax(0,1fr)]">
+        {/* LEFT — NOZZLE IMAGE */}
         <div
           className={`
-              flex
-              w-[72px]
-              shrink-0
-              items-center
-              justify-center
-              px-1
-              ${isDiesel ? "bg-blue-50" : "bg-emerald-50"}
-            `}
+            flex
+            items-center
+            justify-center
+            ${imageBackground}
+          `}
         >
           <img
             src={image}
             alt=""
             aria-hidden="true"
-            className="h-[140px] w-[64px] object-contain object-center"
+            className="h-[128px] w-[60px] object-contain object-center"
           />
         </div>
 
-        <div className="min-w-0 flex-1 px-3 py-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[15px] font-bold leading-none tracking-[-0.01em] text-slate-900">
+        {/* RIGHT — DETAILS */}
+        <div className="min-w-0 px-3.5 py-3">
+          {/* HEADER */}
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="truncate text-[16px] font-semibold leading-none tracking-[-0.02em] text-slate-900">
               N{nozzleLabel} - {isDiesel ? "Diesel" : "Petrol"}
             </h3>
 
-            <span className="text-[9px] font-semibold text-slate-500">
+            <span className="shrink-0 text-[9px] font-semibold text-slate-400">
               Litres
             </span>
           </div>
 
+          {/* CURRENT / READ-ONLY VARIANT */}
           {variant === "current" ? (
-            <div className="mt-3">
-              <p className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                Cumulative Reading
-              </p>
+            <div className="grid grid-cols-[1fr_auto] items-center gap-x-3">
+              <div>
+                <p className="text-[8px] font-semibold uppercase tracking-[0.06em] text-slate-400">
+                  Cumulative Reading
+                </p>
 
-              <div className="mt-1 flex items-center justify-between">
-                <p className="text-[18px] font-bold leading-none text-slate-800">
+                <p
+                  className={`
+                    mt-1
+                    text-[18px]
+                    font-bold
+                    leading-none
+                    tracking-[-0.02em]
+                    ${accentText}
+                  `}
+                >
                   {formatReading(currentReading)}
                 </p>
-
-                <span className="text-[10px] font-semibold text-slate-400">
-                  L
-                </span>
               </div>
+
+              <span className="self-end pb-0.5 text-[10px] font-semibold text-slate-400">
+                L
+              </span>
             </div>
           ) : (
-            <>
-              <div className="mt-2">
-                <p className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+            /* END SHIFT VARIANT */
+            <div className="space-y-2">
+              {/* OPENING */}
+              <div className="grid grid-cols-[108px_minmax(0,1fr)] items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-500">
                   Opening Reading
-                </p>
+                </span>
 
-                <div className="mt-0.5 flex items-center justify-between">
-                  <p className="text-[13px] font-bold leading-none text-slate-800">
+                <div className="flex min-w-0 items-center justify-end gap-1">
+                  <span className="truncate text-[14px] font-semibold leading-none text-slate-800">
                     {formatReading(openingReading)}
-                  </p>
+                  </span>
 
-                  <span className="text-[10px] font-semibold text-slate-400">
+                  <span className="shrink-0 text-[10px] font-semibold text-slate-400">
                     L
                   </span>
                 </div>
               </div>
 
-              <div className="mt-2">
+              {/* FINAL */}
+              <div className="grid grid-cols-[108px_minmax(0,1fr)] items-center gap-2">
                 <label
                   htmlFor={`final-${nozzle.id}`}
-                  className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400"
+                  className="text-[10px] font-bold text-slate-500"
                 >
                   Final Reading
                 </label>
 
-                <div className="mt-0.5 flex items-center gap-2">
+                <div className="flex min-w-0 items-center justify-end gap-1">
                   <input
                     id={`final-${nozzle.id}`}
                     type="text"
                     inputMode="decimal"
                     value={finalReading}
                     onChange={(event) =>
-                      onFinalReadingChange(nozzle.id, event.target.value)
+                      onFinalReadingChange(
+                        nozzle.id,
+                        event.target.value,
+                      )
                     }
                     className={`
-                    h-[31px]
-                    min-w-0
-                    flex-1
-                    rounded-[8px]
-                    border
-                    bg-white
-                    px-2
-                    text-[13px]
-                    font-bold
-                    tracking-tight
-                    text-slate-900
-                    outline-none
-                    transition
-                    ${
-                      isInvalid
-                        ? "border-red-300 bg-red-50 text-red-700"
-                        : "border-slate-200 focus:border-[#047857] focus:ring-2 focus:ring-emerald-100"
-                    }
-                  `}
+                      h-[30px]
+                      min-w-0
+                      w-full
+                      rounded-[8px]
+                      border
+                      bg-white
+                      px-2
+                      text-right
+                      text-[14px]
+                      font-semibold
+                      leading-none
+                      tracking-tight
+                      text-slate-900
+                      outline-none
+                      transition
+                      ${
+                        isInvalid
+                          ? "border-red-300 bg-red-50 text-red-700 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                          : "border-slate-200 bg-slate-50 focus:border-[#047857] focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                      }
+                    `}
                   />
 
                   <span className="shrink-0 text-[10px] font-semibold text-slate-400">
@@ -138,46 +162,54 @@ const NozzleReadingCard = ({
                 </div>
               </div>
 
-              <div className="mt-2 rounded-[10px] bg-yellow-50 px-2.5 py-1.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[7px] font-semibold text-slate-500">
-                      Litres Dispensed
-                    </p>
+              {/* LITRES DISPENSED */}
+              <div
+                className={`
+                  mt-1
+                  grid
+                  grid-cols-[108px_minmax(0,1fr)]
+                  items-center
+                  gap-2
+                  rounded-[9px]
+                  bg-slate-50
+                  py-1.5
+                `}
+              >
+                <span className="text-[10px] font-semibold text-slate-500">
+                  Litres Dispensed
+                </span>
 
-                    <p
-                      className={`
-                      mt-0.5
-                      text-[15px]
+                <div className="flex min-w-0 items-center justify-end gap-1">
+                  <span
+                    className={`
+                      text-[14px]
                       font-bold
                       leading-none
                       ${
                         litresDispensed !== null
-                          ? isDiesel
-                            ? "text-blue-700"
-                            : "text-[#047857]"
+                          ? accentText
                           : "text-slate-400"
                       }
                     `}
-                    >
-                      {litresDispensed !== null
-                        ? litresDispensed.toFixed(2)
-                        : "\u2014"}
-                    </p>
-                  </div>
+                  >
+                    {litresDispensed !== null
+                      ? litresDispensed.toFixed(2)
+                      : "—"}
+                  </span>
 
-                  <span className="self-end text-[10px] font-semibold text-slate-400">
+                  <span className="text-[10px] font-semibold text-slate-400">
                     L
                   </span>
                 </div>
               </div>
 
+              {/* VALIDATION */}
               {isInvalid && (
-                <p className="mt-1 text-[8px] font-semibold leading-tight text-red-600">
+                <p className="pt-0.5 text-[8px] font-semibold leading-tight text-red-600">
                   Final reading cannot be below opening.
                 </p>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>

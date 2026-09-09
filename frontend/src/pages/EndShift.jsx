@@ -305,14 +305,14 @@ const EndShift = () => {
               </p>
             </div>
 
-            {/* Nozzle overview image */}
+            {/* Nozzle overview image
             <div className="mb-4 flex justify-center rounded-[16px] bg-slate-50 px-3 py-4">
               <img
                 src={nozzleDispenserImage}
                 alt="Four fuel nozzles"
                 className="w-full object-contain"
               />
-            </div>
+            </div> */}
 
             {/* Nozzle cards */}
             <NozzleReadingList

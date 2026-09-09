@@ -11,7 +11,7 @@ import { useContext } from 'react';
 import DashboardHeader from '../components/business/dashboard/DashboardHeader';
 import ShiftCard from '../components/business/dashboard/ShiftCard';
 import ShiftProgress from '../components/business/dashboard/ShiftProgress';
-import QuickActions from '../components/business/dashboard/QuickActions';
+import QuickActions, { EndShiftButton } from '../components/business/dashboard/QuickActions';
 
 const formatDate = (date, language) => {
   const locale = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';
@@ -77,12 +77,12 @@ const Dashboard = () => {
           ) : currentShift ? (
             <>
               <ShiftCard shift={currentShift} />
-              <ShiftProgress shift={currentShift} />
               <QuickActions
                 onNozzle={() => navigate(`/shift/${mpdId}`)}
                 onCollection={() => navigate('/collections')}
-                onEndShift={() => navigate('/end-shift')}
               />
+              <ShiftProgress shift={currentShift} />
+              <EndShiftButton onClick={() => navigate('/end-shift')} />
             </>
           ) : null}
 

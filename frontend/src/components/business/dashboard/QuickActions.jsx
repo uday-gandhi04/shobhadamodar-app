@@ -78,27 +78,38 @@ const ActionCard = ({ type, title, subtitle, onClick }) => (
   </button>
 );
 
-const QuickActions = ({
-  onNozzle,
-  onCollection,
-  onEndShift,
-}) => {
+export const EndShiftButton = ({ onClick }) => {
+  const { t } = useTranslation();
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mt-4 flex min-h-[52px] w-full items-center justify-center !rounded-[18px] bg-[#DC2626] px-4 text-[14px] font-semibold text-white shadow-[0_7px_18px_rgba(220,38,38,0.18)] transition-all active:scale-[0.985] hover:bg-[#B91C1C]"
+    >
+      <span>{t('employee.dashboard.endShift')}</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-2 h-4 w-4" aria-hidden="true">
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    </button>
+  );
+};
+
+const QuickActions = ({ onNozzle, onCollection }) => {
   const { t } = useTranslation();
 
   return (
     <section className="mt-7">
-      {/* Section heading */}
       <div className="mb-4">
         <p className="text-[17px] font-semibold text-slate-900">
           {t('employee.dashboard.quickActions')}
         </p>
-
         <p className="font-devanagari text-[13px] text-slate-500">
           {t('employee.dashboard.completeWork')}
         </p>
       </div>
 
-      {/* Main actions */}
       <div className="grid grid-cols-2 gap-3">
         <ActionCard
           type="nozzle"
@@ -106,7 +117,6 @@ const QuickActions = ({
           subtitle={t('employee.dashboard.readOnly')}
           onClick={onNozzle}
         />
-
         <ActionCard
           type="cash"
           title={t('employee.dashboard.cashCollection')}
@@ -114,44 +124,6 @@ const QuickActions = ({
           onClick={onCollection}
         />
       </div>
-
-      {/* End Shift */}
-      <button
-        type="button"
-        onClick={onEndShift}
-        className="
-          mt-4
-          flex
-          min-h-[52px]
-          w-full
-          items-center
-          justify-center
-          !rounded-[18px]
-          bg-[#DC2626]
-          px-4
-          text-[14px]
-          font-semibold
-          text-white
-          shadow-[0_7px_18px_rgba(220,38,38,0.18)]
-          transition-all
-          active:scale-[0.985]
-          hover:bg-[#B91C1C]
-        "
-      >
-        <span>{t('employee.dashboard.endShift')}</span>
-
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className="ml-2 h-4 w-4"
-          aria-hidden="true"
-        >
-          <path d="M5 12h14" />
-          <path d="m13 6 6 6-6 6" />
-        </svg>
-      </button>
     </section>
   );
 };

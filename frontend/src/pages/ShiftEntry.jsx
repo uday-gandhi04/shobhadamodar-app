@@ -75,13 +75,13 @@ const ShiftEntry = () => {
                 </p>
               </div>
 
-              <div className="mt-4 flex justify-center rounded-[16px] bg-slate-50 px-3 py-4">
+              {/* <div className="mt-4 flex justify-center rounded-[16px] bg-slate-50 px-3 py-4">
                 <img
                   src={nozzleDispenserImage}
                   alt={t('employee.nozzles.overviewAlt')}
                   className="w-full object-contain"
                 />
-              </div>
+              </div> */}
 
               <div className="mt-4">
                 <NozzleReadingList
