@@ -246,7 +246,13 @@ const Collections = () => {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => navigate("/dashboard")}
+                onClick={() =>
+                  navigate(isEndShift ? "/end-shift" : "/dashboard", {
+                    state: isEndShift
+                      ? { finalReadings: location.state?.finalReadings }
+                      : undefined,
+                  })
+                }
                 className="grid h-9 w-9 place-items-center rounded-full bg-white text-slate-700 shadow-sm"
                 aria-label="Back"
               >
@@ -281,6 +287,54 @@ const Collections = () => {
               ⋮
             </button>
           </header>
+
+          {isEndShift && (
+            <div className="mt-5 rounded-[18px] bg-white p-3 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
+              <div className="flex items-center">
+                <div className="flex flex-1 items-center gap-2">
+                  <div className="grid h-7 w-7 place-items-center rounded-full bg-[#047857] text-[11px] font-bold text-white">
+                    1
+                  </div>
+
+                  <div>
+                    <p className="text-[11px] font-semibold text-slate-900">
+                      Nozzle
+                    </p>
+
+                    <p className="text-[9px] text-slate-400">Completed</p>
+                  </div>
+                </div>
+
+                <div className="h-px w-8 bg-slate-200" />
+
+                <div className="flex items-center gap-2 px-2">
+                  <div className="grid h-7 w-7 place-items-center rounded-full bg-[#047857] text-[11px] font-bold text-white">
+                    2
+                  </div>
+
+                  <div>
+                    <p className="text-[11px] font-semibold text-slate-900">
+                      Money
+                    </p>
+
+                    <p className="text-[9px] text-[#047857]">Current step</p>
+                  </div>
+                </div>
+
+                <div className="h-px w-8 bg-slate-200" />
+
+                <div className="flex items-center gap-2">
+                  <div className="grid h-7 w-7 place-items-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-400">
+                    3
+                  </div>
+
+                  <p className="hidden text-[11px] font-medium text-slate-400 sm:block">
+                    Review
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mt-5 grid grid-cols-4 gap-1 rounded-[14px] bg-white p-1 shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
             {[

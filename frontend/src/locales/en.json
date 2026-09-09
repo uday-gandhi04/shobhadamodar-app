@@ -69,6 +69,7 @@
       "title": "Nozzle Reading",
       "subtitle": "Current recorded readings for all four nozzles.",
       "cumulative": "Cumulative reading",
+      "overviewAlt": "Four fuel nozzles",
       "loadError": "Unable to load nozzle readings."
     },
     "collections": {

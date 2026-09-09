@@ -1,29 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { getCurrentShift } from "../services/shiftApi";
+import NozzleReadingList from "../components/business/nozzle/NozzleReadingList";
+import {
+  formatReading,
+  getFuelType,
+  getNozzleNumber,
+} from "../components/business/nozzle/nozzleUtils";
 
 import nozzleDispenserImage from "../assets/fuel/nozzle-dispenser.webp";
-import petrolNozzleImage from "../assets/fuel/petrol-nozzle.webp";
-import dieselNozzleImage from "../assets/fuel/diesel-nozzle.webp";
-
-import { getBusinessDate } from "../utils/businessDate";
-
-const formatReading = (value) => {
-  if (value === null || value === undefined || value === "") {
-    return "0.00";
-  }
-
-  const number = Number(value);
-
-  if (!Number.isFinite(number)) {
-    return "0.00";
-  }
-
-  return number.toFixed(2);
-};
 
 const calculateLitresDispensed = (opening, final) => {
   const openingValue = Number(opening);
@@ -42,26 +29,9 @@ const calculateLitresDispensed = (opening, final) => {
   return litres;
 };
 
-const getNozzleNumber = (nozzleId) => {
-  if (!nozzleId) return "";
-
-  const match = String(nozzleId).match(/\d+/);
-  return match ? match[0] : String(nozzleId);
-};
-
-const getFuelType = (reading) => {
-  const fuel = String(reading?.fuelType || reading?.fuel || "").toUpperCase();
-
-  if (fuel.includes("DIESEL")) {
-    return "DIESEL";
-  }
-
-  return "PETROL";
-};
-
 const EndShift = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
   const [shift, setShift] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -118,6 +88,12 @@ const EndShift = () => {
               : formatReading(openingReading);
         });
 
+        (location.state?.finalReadings || []).forEach((reading) => {
+          if (reading?.nozzleId) {
+            initialReadings[reading.nozzleId] = String(reading.closingReading);
+          }
+        });
+
         setFinalReadings(initialReadings);
       } catch (err) {
         if (!mounted) return;
@@ -139,7 +115,7 @@ const EndShift = () => {
     return () => {
       mounted = false;
     };
-  }, [navigate]);
+  }, [location.state, navigate]);
 
   const readings = useMemo(() => {
     return [...(shift?.readings || [])].sort((a, b) => {
@@ -182,6 +158,34 @@ const EndShift = () => {
       return Number(value) >= openingReading;
     });
 
+  const nozzleCardReadings = readings.map((reading) => {
+    const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
+    const openingReading = Number(
+      reading.openingReading ?? reading.opening ?? 0,
+    );
+    const currentValue =
+      finalReadings[nozzleId] !== undefined
+        ? finalReadings[nozzleId]
+        : formatReading(openingReading);
+    const numericFinalValue = currentValue === "" ? NaN : Number(currentValue);
+    const litresDispensed = Number.isFinite(numericFinalValue)
+      ? calculateLitresDispensed(openingReading, numericFinalValue)
+      : null;
+
+    return {
+      nozzle: {
+        id: nozzleId,
+        number: getNozzleNumber(nozzleId),
+        fuelType: getFuelType(reading),
+      },
+      openingReading,
+      finalReading: currentValue,
+      litresDispensed,
+      isInvalid:
+        Number.isFinite(numericFinalValue) && numericFinalValue < openingReading,
+    };
+  });
+
   if (loading) {
     return (
       <IonPage>
@@ -209,7 +213,8 @@ const EndShift = () => {
             <button
               type="button"
               onClick={() => navigate("/dashboard")}
-              className="grid h-9 w-9 place-items-center rounded-full bg-white text-slate-700 shadow-sm"
+              className="grid h-9 w-9 place-items-center rounded-[12px] bg-white text-slate-700 shadow-sm"
+              style={{ borderRadius: "12px", overflow: "hidden" }}
               aria-label="Back"
             >
               <svg
@@ -277,32 +282,6 @@ const EndShift = () => {
             </div>
           </div>
 
-          {/* Shift info */}
-          <section className="mt-4 rounded-[18px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                  Current Shift
-                </p>
-
-                <h2 className="mt-1 text-[18px] font-semibold text-slate-900">
-                  {shift?.mpdId?.mpdNumber || "MPD"}
-                </h2>
-
-                <p className="text-[10px] text-slate-500">
-                  {shift?.shiftType || ""}
-                </p>
-              </div>
-
-              <img
-                src={nozzleDispenserImage}
-                alt=""
-                aria-hidden="true"
-                className="h-[78px] w-[125px] object-contain"
-              />
-            </div>
-          </section>
-
           {/* Error */}
           {error && (
             <div className="mt-4 rounded-[14px] border border-red-100 bg-red-50 px-4 py-3 text-[12px] font-medium text-red-700">
@@ -317,6 +296,10 @@ const EndShift = () => {
                 Final nozzle readings
               </h2>
 
+              <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                {shift?.mpdId?.mpdNumber || "MPD"} · {shift?.shiftType || ""}
+              </p>
+
               <p className="mt-1 text-[10px] leading-4 text-slate-500">
                 Enter the final totalizer reading for each nozzle.
               </p>
@@ -327,219 +310,16 @@ const EndShift = () => {
               <img
                 src={nozzleDispenserImage}
                 alt="Four fuel nozzles"
-                className="h-[150px] w-full max-w-[280px] object-contain"
+                className="w-full object-contain"
               />
             </div>
 
             {/* Nozzle cards */}
-            <div className="space-y-3">
-              {readings.map((reading) => {
-                const nozzleId =
-                  reading.nozzleId || reading.nozzle || reading._id;
-
-                const nozzleNumber = getNozzleNumber(nozzleId);
-
-                const fuelType = getFuelType(reading);
-
-                const openingReading = Number(
-                  reading.openingReading ?? reading.opening ?? 0,
-                );
-
-                const image =
-                  fuelType === "DIESEL" ? dieselNozzleImage : petrolNozzleImage;
-
-                /*
-                 * Important:
-                 * Start final reading at the opening reading.
-                 *
-                 * This means an unused nozzle can simply be left
-                 * unchanged and will remain valid.
-                 */
-                const currentValue =
-                  finalReadings[nozzleId] !== undefined
-                    ? finalReadings[nozzleId]
-                    : formatReading(openingReading);
-
-                const numericFinalValue =
-                  currentValue === "" ? NaN : Number(currentValue);
-
-                const litresDispensed = Number.isFinite(numericFinalValue)
-                  ? calculateLitresDispensed(openingReading, numericFinalValue)
-                  : null;
-
-                const isInvalid =
-                  Number.isFinite(numericFinalValue) &&
-                  numericFinalValue < openingReading;
-
-                const isDiesel = fuelType === "DIESEL";
-
-                return (
-                  <div
-                    key={nozzleId}
-                    className={`
-          overflow-hidden
-          rounded-[18px]
-          border
-          bg-white
-          shadow-[0_3px_12px_rgba(15,23,42,0.04)]
-          ${isDiesel ? "border-blue-100" : "border-emerald-100"}
-        `}
-                  >
-                    <div className="flex min-h-[148px]">
-                      {/* LEFT — Nozzle image */}
-                      <div
-                        className={`
-              flex
-              w-[72px]
-              shrink-0
-              items-center
-              justify-center
-              px-1
-              ${isDiesel ? "bg-blue-50" : "bg-emerald-50"}
-            `}
-                      >
-                        <img
-                          src={image}
-                          alt=""
-                          aria-hidden="true"
-                          className="h-[140px] w-[64px] object-contain object-center"
-                        />
-                      </div>
-
-                      {/* RIGHT — Information */}
-                      <div className="min-w-0 flex-1 px-3 py-3">
-                        {/* Header */}
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-[15px] font-bold leading-none tracking-[-0.01em] text-slate-900">
-                            N{nozzleNumber} - {isDiesel ? "Diesel" : "Petrol"}
-                          </h3>
-
-                          <span className="text-[9px] font-semibold text-slate-500">
-                            Litres
-                          </span>
-                        </div>
-
-                        {/* Opening Reading */}
-                        <div className="mt-2">
-                          <p className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                            Opening Reading
-                          </p>
-
-                          <div className="mt-0.5 flex items-center justify-between">
-                            <p className="text-[13px] font-bold leading-none text-slate-800">
-                              {formatReading(openingReading)}
-                            </p>
-
-                            <span className="text-[10px] font-semibold text-slate-400">
-                              L
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Final Reading */}
-                        <div className="mt-2">
-                          <label
-                            htmlFor={`final-${nozzleId}`}
-                            className="text-[7px] font-semibold uppercase tracking-[0.05em] text-slate-400"
-                          >
-                            Final Reading
-                          </label>
-
-                          <div className="mt-0.5 flex items-center gap-2">
-                            <input
-                              id={`final-${nozzleId}`}
-                              type="text"
-                              inputMode="decimal"
-                              value={currentValue}
-                              onChange={(event) =>
-                                handleReadingChange(
-                                  nozzleId,
-                                  event.target.value,
-                                )
-                              }
-                              className={`
-                    h-[31px]
-                    min-w-0
-                    flex-1
-                    rounded-[8px]
-                    border
-                    bg-white
-                    px-2
-                    text-[13px]
-                    font-bold
-                    tracking-tight
-                    text-slate-900
-                    outline-none
-                    transition
-                    ${
-                      isInvalid
-                        ? "border-red-300 bg-red-50 text-red-700"
-                        : "border-slate-200 focus:border-[#047857] focus:ring-2 focus:ring-emerald-100"
-                    }
-                  `}
-                            />
-
-                            <span className="shrink-0 text-[10px] font-semibold text-slate-400">
-                              L
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Litres Dispensed */}
-                        <div
-                          className={`
-                mt-2
-                rounded-[10px]
-                bg-yellow-50
-                px-2.5
-                py-1.5
-              `}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-[7px] font-semibold text-slate-500">
-                                Litres Dispensed
-                              </p>
-
-                              <p
-                                className={`
-                      mt-0.5
-                      text-[15px]
-                      font-bold
-                      leading-none
-                      ${
-                        litresDispensed !== null
-                          ? isDiesel
-                            ? "text-blue-700"
-                            : "text-[#047857]"
-                          : "text-slate-400"
-                      }
-                    `}
-                              >
-                                {litresDispensed !== null
-                                  ? litresDispensed.toFixed(2)
-                                  : "—"}
-                              </p>
-                            </div>
-
-                            <span className="self-end text-[10px] font-semibold text-slate-400">
-                              L
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Validation */}
-                        {isInvalid && (
-                          <p className="mt-1 text-[8px] font-semibold leading-tight text-red-600">
-                            Final reading cannot be below opening.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <NozzleReadingList
+              variant="end-shift"
+              readings={nozzleCardReadings}
+              onFinalReadingChange={handleReadingChange}
+            />
           </section>
 
           {/* Bottom action */}
@@ -598,6 +378,7 @@ const EndShift = () => {
                   disabled:text-slate-400
                   disabled:shadow-none
                 "
+                style={{ borderRadius: "15px", overflow: "hidden" }}
               >
                 Next: Money Collection
                 <svg

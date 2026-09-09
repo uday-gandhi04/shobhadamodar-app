@@ -4,6 +4,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getCurrentShift } from '../services/shiftApi';
 import { getBusinessDate } from '../utils/businessDate';
+import NozzleReadingList from '../components/business/nozzle/NozzleReadingList';
+import {
+  getFuelType,
+  getNozzleNumber,
+} from '../components/business/nozzle/nozzleUtils';
+import nozzleDispenserImage from '../assets/fuel/nozzle-dispenser.webp';
 
 const ShiftEntry = () => {
   const { mpdId } = useParams();
@@ -37,6 +43,14 @@ const ShiftEntry = () => {
   }, [mpdId, navigate, t]);
 
   const nozzles = shift?.mpdId?.nozzles || [];
+  const nozzleReadings = nozzles.map((nozzle) => ({
+    nozzle: {
+      id: nozzle.nozzleId,
+      number: getNozzleNumber(nozzle.nozzleId || nozzle.name),
+      fuelType: getFuelType(nozzle),
+    },
+    currentReading: nozzle.currentCumulativeReading,
+  }));
 
   return (
     <IonPage>
@@ -51,23 +65,29 @@ const ShiftEntry = () => {
         <div className="mx-auto max-w-md pb-10">
           {loading ? <div className="mt-4 h-24 animate-pulse rounded-[20px] bg-white" /> : error ? <div className="mt-4 rounded-[14px] bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : (
             <>
-              <div className="mt-3 rounded-[20px] bg-white p-5 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">{shift.mpdId.mpdNumber}</p>
-                <p className="mt-1 text-[13px] text-slate-500">{t('employee.nozzles.subtitle')}</p>
+              <div className="mt-3 rounded-[20px] bg-white p-4 shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
+                <h2 className="text-[15px] font-semibold text-slate-900">
+                  {shift.mpdId.mpdNumber}
+                </h2>
+
+                <p className="mt-1 text-[10px] leading-4 text-slate-500">
+                  {t('employee.nozzles.subtitle')}
+                </p>
               </div>
 
-              <div className="mt-4 space-y-3">
-                {nozzles.map((nozzle) => (
-                  <div key={nozzle.nozzleId} className="rounded-[20px] border border-slate-100 bg-white p-5 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className={`text-[16px] font-bold ${nozzle.fuelType === 'PETROL' ? 'text-emerald-700' : 'text-slate-800'}`}>{nozzle.name}</p>
-                        <p className="mt-1 text-[11px] text-slate-400">{t('employee.nozzles.cumulative')}</p>
-                      </div>
-                      <p className="text-[24px] font-bold tabular-nums text-slate-900">{Number(nozzle.currentCumulativeReading || 0).toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="mt-4 flex justify-center rounded-[16px] bg-slate-50 px-3 py-4">
+                <img
+                  src={nozzleDispenserImage}
+                  alt={t('employee.nozzles.overviewAlt')}
+                  className="w-full object-contain"
+                />
+              </div>
+
+              <div className="mt-4">
+                <NozzleReadingList
+                  variant="current"
+                  readings={nozzleReadings}
+                />
               </div>
             </>
           )}
