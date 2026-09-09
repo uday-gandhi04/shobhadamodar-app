@@ -33,19 +33,35 @@ const SelectMpd = () => {
         setLoading(true);
         setError('');
 
-        const businessDate = getBusinessDate();
-
-        // First check whether this employee already
-        // has an active shift.
+        /*
+         * First check whether this employee
+         * currently has an active shift.
+         *
+         * This is independent of business date.
+         */
         const currentResponse = await getCurrentShift();
 
-        if (currentResponse?.data) {
-          navigate('/dashboard', { replace: true });
+        if (!mounted) return;
+
+        const currentShift = currentResponse?.data || null;
+
+        /*
+         * Active shift exists:
+         * employee should go directly to dashboard.
+         */
+        if (currentShift) {
+          navigate('/dashboard', {
+            replace: true,
+          });
+
           return;
         }
 
-        // Get MPDs currently available for assignment.
-        const response = await getAvailableMpds(businessDate);
+        /*
+         * No active shift:
+         * load MPDs currently available.
+         */
+        const response = await getAvailableMpds();
 
         if (!mounted) return;
 
@@ -53,18 +69,27 @@ const SelectMpd = () => {
 
         setMpds(availableMpds);
 
+        /*
+         * Automatically select the first
+         * available MPD.
+         */
         const firstAvailable = availableMpds.find(
-          (mpd) => mpd.isAvailable
+          (mpd) => mpd.isAvailable,
         );
 
         setSelectedMpd(firstAvailable?._id || '');
       } catch (err) {
         if (!mounted) return;
 
+        console.error(
+          '[SelectMpd] Failed to load shift options:',
+          err,
+        );
+
         setError(
           err?.response?.data?.message ||
-          err?.message ||
-          t('employee.selectMpd.loadError')
+            err?.message ||
+            t('employee.selectMpd.loadError'),
         );
       } finally {
         if (mounted) {
@@ -112,11 +137,13 @@ const SelectMpd = () => {
       // availability check and start request.
       if (status === 409) {
         try {
-          const response = await getAvailableMpds(getBusinessDate());
-          setMpds(response?.data || []);
+          const response = await getAvailableMpds();
+          const refreshedMpds = response?.data || [];
 
-          const refreshedSelection = (response?.data || []).find(
-            (mpd) => mpd.isAvailable
+          setMpds(refreshedMpds);
+
+          const refreshedSelection = refreshedMpds.find(
+            (mpd) => mpd.isAvailable,
           );
 
           setSelectedMpd(refreshedSelection?._id || '');

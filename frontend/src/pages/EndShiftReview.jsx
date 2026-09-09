@@ -2,15 +2,10 @@ import { useEffect, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import {
-  previewEndShift,
-  endShift,
-} from "../services/shiftApi";
+import { previewEndShift, endShift } from "../services/shiftApi";
 
 const formatMoney = (paise) => {
-  return `₹${(
-    Number(paise || 0) / 100
-  ).toLocaleString("en-IN", {
+  return `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -20,23 +15,15 @@ const EndShiftReview = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const {
-    shiftId,
-    finalReadings,
-    collections,
-  } = location.state || {};
+  const { shiftId, finalReadings, collections } = location.state || {};
 
-  const [preview, setPreview] =
-    useState(null);
+  const [preview, setPreview] = useState(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [ending, setEnding] =
-    useState(false);
+  const [ending, setEnding] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -50,13 +37,8 @@ const EndShiftReview = () => {
         return;
       }
 
-      if (
-        !Array.isArray(finalReadings) ||
-        finalReadings.length === 0
-      ) {
-        setError(
-          "Final nozzle readings are missing.",
-        );
+      if (!Array.isArray(finalReadings) || finalReadings.length === 0) {
+        setError("Final nozzle readings are missing.");
         setLoading(false);
         return;
       }
@@ -65,28 +47,20 @@ const EndShiftReview = () => {
         setLoading(true);
         setError("");
 
-        const response =
-          await previewEndShift(
-            shiftId,
-            {
-              readings:
-                finalReadings,
+        const response = await previewEndShift(shiftId, {
+          readings: finalReadings,
 
-              collections:
-                collections || {
-                  cashBreakdown: [],
-                  upiPaise: 0,
-                  cardPaise: 0,
-                  udhariPaise: 0,
-                },
-            },
-          );
+          collections: collections || {
+            cashBreakdown: [],
+            upiPaise: 0,
+            cardPaise: 0,
+            udhariPaise: 0,
+          },
+        });
 
         if (!mounted) return;
 
-        setPreview(
-          response?.data || null,
-        );
+        setPreview(response?.data || null);
       } catch (err) {
         if (!mounted) return;
 
@@ -107,12 +81,7 @@ const EndShiftReview = () => {
     return () => {
       mounted = false;
     };
-  }, [
-    shiftId,
-    navigate,
-    finalReadings,
-    collections,
-  ]);
+  }, [shiftId, navigate, finalReadings, collections]);
 
   const handleEndShift = async () => {
   if (!shiftId || !preview || ending) {
@@ -126,21 +95,20 @@ const EndShiftReview = () => {
     await endShift(shiftId, {
       readings: finalReadings,
 
-      collections:
-        collections || {
-          cashBreakdown: [],
-          upiPaise: 0,
-          cardPaise: 0,
-          udhariPaise: 0,
-        },
+      collections: collections || {
+        cashBreakdown: [],
+        upiPaise: 0,
+        cardPaise: 0,
+        udhariPaise: 0,
+      },
     });
 
-    // Shift is now ENDED.
-    // Employee remains logged in and can
-    // immediately choose their next MPD/shift.
-    navigate("/select-mpd", {
-      replace: true,
-    });
+    /*
+     * Shift ended successfully.
+     * Keep employee logged in, but start the next
+     * screen from a clean Select MPD state.
+     */
+    window.location.replace("/select-mpd");
   } catch (err) {
     setError(
       err?.response?.data?.message ||
@@ -152,42 +120,31 @@ const EndShiftReview = () => {
   }
 };
 
-  const status =
-    preview?.reconciliationStatus;
+  const status = preview?.reconciliationStatus;
 
-  const difference =
-    Number(
-      preview?.differencePaise || 0,
-    );
+  const difference = Number(preview?.differencePaise || 0);
 
   return (
     <IonPage>
       <IonContent
         fullscreen
         style={{
-          "--background":
-            "#F3F4F6",
+          "--background": "#F3F4F6",
         }}
       >
         <main className="mx-auto min-h-[100dvh] max-w-[480px] px-4 pb-32 pt-[max(0.9rem,env(safe-area-inset-top))]">
-
           {/* Header */}
           <header className="flex items-center gap-3">
-
             <button
               type="button"
               onClick={() =>
-                navigate(
-                  "/collections",
-                  {
-                    state: {
-                      mode:
-                        "end-shift",
-                      shiftId,
-                      finalReadings,
-                    },
+                navigate("/collections", {
+                  state: {
+                    mode: "end-shift",
+                    shiftId,
+                    finalReadings,
                   },
-                )
+                })
               }
               className="
                 grid
@@ -221,14 +178,11 @@ const EndShiftReview = () => {
                 Check everything before ending
               </p>
             </div>
-
           </header>
 
           {/* Step indicator */}
           <div className="mt-5 rounded-[18px] bg-white p-3 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-
             <div className="flex items-center justify-between">
-
               <div className="flex items-center gap-2">
                 <div className="grid h-7 w-7 place-items-center rounded-full bg-emerald-100 text-[11px] font-bold text-[#047857]">
                   ✓
@@ -262,7 +216,6 @@ const EndShiftReview = () => {
                   Review
                 </span>
               </div>
-
             </div>
           </div>
 
@@ -283,234 +236,169 @@ const EndShiftReview = () => {
           )}
 
           {/* Result */}
-          {!loading &&
-            preview && (
-              <>
+          {!loading && preview && (
+            <>
+              {/* Main result */}
+              <section className="mt-4 rounded-[22px] bg-slate-900 p-5 text-white shadow-[0_10px_28px_rgba(15,23,42,0.16)]">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                  Final Result
+                </p>
 
-                {/* Main result */}
-                <section className="mt-4 rounded-[22px] bg-slate-900 p-5 text-white shadow-[0_10px_28px_rgba(15,23,42,0.16)]">
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[9px] text-slate-400">Expected Sale</p>
 
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-                    Final Result
-                  </p>
-
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-
-                    <div>
-                      <p className="text-[9px] text-slate-400">
-                        Expected Sale
-                      </p>
-
-                      <p className="mt-1 text-[20px] font-bold">
-                        {formatMoney(
-                          preview.expectedTotalSalePaise,
-                        )}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-[9px] text-slate-400">
-                        Total Collected
-                      </p>
-
-                      <p className="mt-1 text-[20px] font-bold">
-                        {formatMoney(
-                          preview.totalCollectedPaise,
-                        )}
-                      </p>
-                    </div>
-
+                    <p className="mt-1 text-[20px] font-bold">
+                      {formatMoney(preview.expectedTotalSalePaise)}
+                    </p>
                   </div>
 
-                  <div
-                    className={`
+                  <div>
+                    <p className="text-[9px] text-slate-400">Total Collected</p>
+
+                    <p className="mt-1 text-[20px] font-bold">
+                      {formatMoney(preview.totalCollectedPaise)}
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className={`
                       mt-5
                       rounded-[16px]
                       p-4
                       ${
-                        status ===
-                        "MATCHED"
+                        status === "MATCHED"
                           ? "bg-emerald-500/15"
-                          : status ===
-                            "SHORT"
+                          : status === "SHORT"
                             ? "bg-rose-500/15"
                             : "bg-amber-500/15"
                       }
                     `}
-                  >
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-slate-400">
-                      Reconciliation
-                    </p>
+                >
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-slate-400">
+                    Reconciliation
+                  </p>
 
-                    <p
-                      className={`
+                  <p
+                    className={`
                         mt-1
                         text-[25px]
                         font-bold
                         ${
-                          status ===
-                          "MATCHED"
+                          status === "MATCHED"
                             ? "text-emerald-300"
-                            : status ===
-                              "SHORT"
+                            : status === "SHORT"
                               ? "text-rose-300"
                               : "text-amber-300"
                         }
                       `}
-                    >
-                      {status ===
-                      "MATCHED"
-                        ? "MATCHED"
-                        : status ===
-                          "SHORT"
-                          ? `SHORT ${formatMoney(
-                              Math.abs(
-                                difference,
-                              ),
-                            )}`
-                          : `EXCESS ${formatMoney(
-                              difference,
-                            )}`}
+                  >
+                    {status === "MATCHED"
+                      ? "MATCHED"
+                      : status === "SHORT"
+                        ? `SHORT ${formatMoney(Math.abs(difference))}`
+                        : `EXCESS ${formatMoney(difference)}`}
+                  </p>
+                </div>
+              </section>
+
+              {/* Breakdown */}
+              <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
+                <h2 className="text-[14px] font-bold text-slate-900">
+                  Collection Breakdown
+                </h2>
+
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-slate-500">Cash</span>
+
+                    <span className="text-[12px] font-bold text-slate-800">
+                      {formatMoney(preview.totalCashPaise)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-slate-500">UPI</span>
+
+                    <span className="text-[12px] font-bold text-slate-800">
+                      {formatMoney(preview.totalUpiPaise)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-slate-500">
+                      Card / ATM
+                    </span>
+
+                    <span className="text-[12px] font-bold text-slate-800">
+                      {formatMoney(preview.totalCardPaise)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-slate-500">Udhari</span>
+
+                    <span className="text-[12px] font-bold text-slate-800">
+                      {formatMoney(preview.totalUdhariPaise)}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] font-semibold text-slate-700">
+                        Total
+                      </span>
+
+                      <span className="text-[15px] font-bold text-[#047857]">
+                        {formatMoney(preview.totalCollectedPaise)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Fuel summary */}
+              <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
+                <h2 className="text-[14px] font-bold text-slate-900">
+                  Fuel Dispensed
+                </h2>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-[14px] bg-emerald-50 p-3">
+                    <p className="text-[9px] font-semibold text-emerald-700">
+                      Petrol
+                    </p>
+
+                    <p className="mt-1 text-[17px] font-bold text-emerald-800">
+                      {Number(preview.totalLitresPetrol || 0).toFixed(2)} L
                     </p>
                   </div>
 
-                </section>
+                  <div className="rounded-[14px] bg-blue-50 p-3">
+                    <p className="text-[9px] font-semibold text-blue-700">
+                      Diesel
+                    </p>
 
-                {/* Breakdown */}
-                <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-
-                  <h2 className="text-[14px] font-bold text-slate-900">
-                    Collection Breakdown
-                  </h2>
-
-                  <div className="mt-4 space-y-3">
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500">
-                        Cash
-                      </span>
-
-                      <span className="text-[12px] font-bold text-slate-800">
-                        {formatMoney(
-                          preview.totalCashPaise,
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500">
-                        UPI
-                      </span>
-
-                      <span className="text-[12px] font-bold text-slate-800">
-                        {formatMoney(
-                          preview.totalUpiPaise,
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500">
-                        Card / ATM
-                      </span>
-
-                      <span className="text-[12px] font-bold text-slate-800">
-                        {formatMoney(
-                          preview.totalCardPaise,
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500">
-                        Udhari
-                      </span>
-
-                      <span className="text-[12px] font-bold text-slate-800">
-                        {formatMoney(
-                          preview.totalUdhariPaise,
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="border-t border-slate-100 pt-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-semibold text-slate-700">
-                          Total
-                        </span>
-
-                        <span className="text-[15px] font-bold text-[#047857]">
-                          {formatMoney(
-                            preview.totalCollectedPaise,
-                          )}
-                        </span>
-                      </div>
-                    </div>
-
+                    <p className="mt-1 text-[17px] font-bold text-blue-800">
+                      {Number(preview.totalLitresDiesel || 0).toFixed(2)} L
+                    </p>
                   </div>
-
-                </section>
-
-                {/* Fuel summary */}
-                <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-
-                  <h2 className="text-[14px] font-bold text-slate-900">
-                    Fuel Dispensed
-                  </h2>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-
-                    <div className="rounded-[14px] bg-emerald-50 p-3">
-                      <p className="text-[9px] font-semibold text-emerald-700">
-                        Petrol
-                      </p>
-
-                      <p className="mt-1 text-[17px] font-bold text-emerald-800">
-                        {Number(
-                          preview.totalLitresPetrol ||
-                            0,
-                        ).toFixed(2)}{" "}
-                        L
-                      </p>
-                    </div>
-
-                    <div className="rounded-[14px] bg-blue-50 p-3">
-                      <p className="text-[9px] font-semibold text-blue-700">
-                        Diesel
-                      </p>
-
-                      <p className="mt-1 text-[17px] font-bold text-blue-800">
-                        {Number(
-                          preview.totalLitresDiesel ||
-                            0,
-                        ).toFixed(2)}{" "}
-                        L
-                      </p>
-                    </div>
-
-                  </div>
-
-                </section>
-
-              </>
-            )}
-
+                </div>
+              </section>
+            </>
+          )}
         </main>
 
         {/* Final button */}
-        {!loading &&
-          preview && (
-            <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-100 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
-
-              <div className="mx-auto max-w-[480px]">
-
-                <button
-                  type="button"
-                  disabled={ending}
-                  onClick={
-                    handleEndShift
-                  }
-                  className="
+        {!loading && preview && (
+          <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-100 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
+            <div className="mx-auto max-w-[480px]">
+              <button
+                type="button"
+                disabled={ending}
+                onClick={handleEndShift}
+                className="
                     flex
                     min-h-[54px]
                     w-full
@@ -527,17 +415,12 @@ const EndShiftReview = () => {
                     disabled:cursor-not-allowed
                     disabled:opacity-60
                   "
-                >
-                  {ending
-                    ? "Ending Shift..."
-                    : "End Shift"}
-                </button>
-
-              </div>
-
+              >
+                {ending ? "Ending Shift..." : "End Shift"}
+              </button>
             </div>
-          )}
-
+          </div>
+        )}
       </IonContent>
     </IonPage>
   );
