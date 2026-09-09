@@ -1,6 +1,7 @@
 import Shift from '../models/Shift.js';
 import Mpd from '../models/Mpd.js';
 import FuelRate from '../models/FuelRate.js';
+import UdhariTransaction from '../models/UdhariTransaction.js';
 
 const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1];
 
@@ -193,6 +194,28 @@ export const getCurrentShift = async (req, res, next) => {
     })
       .populate('mpdId')
       .lean();
+
+    if (shift) {
+      const transactions = await UdhariTransaction.find({
+        shiftId: shift._id,
+      })
+        .populate('customerId', 'name outstandingBalance')
+        .sort({ createdAt: 1 })
+        .lean();
+
+      shift.udhariEntries = transactions.map((transaction) => ({
+        id: transaction._id,
+        transactionId: transaction._id,
+        customerId: transaction.customerId?._id,
+        customer: transaction.customerId,
+        customerName: transaction.customerId?.name,
+        vehicleNumber: transaction.vehicleNumber,
+        fuelType: transaction.fuelType,
+        litres: transaction.litres,
+        ratePaise: transaction.ratePaise,
+        amountPaise: transaction.amountPaise,
+      }));
+    }
 
     return res.status(200).json({ success: true, data: shift || null });
   } catch (error) {

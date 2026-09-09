@@ -293,6 +293,8 @@ export const addUdhariTransaction =
               createdTransaction._id,
             customerId:
               customer._id,
+            customerName:
+              customer.name,
             amountPaise:
               finalAmountPaise,
             fuelType,

@@ -262,10 +262,15 @@ const UdhariCollection = ({
       const customer =
         result?.customer || selectedCustomer;
 
+      if (!transaction?._id) {
+        throw new Error(
+          "Udhari response did not include a transaction ID.",
+        );
+      }
+
       const newEntry = {
-        id:
-          transaction?._id ||
-          `${Date.now()}`,
+        id: transaction._id,
+        transactionId: transaction._id,
 
         customerId:
           customer?._id ||
@@ -1024,7 +1029,7 @@ const UdhariCollection = ({
                           {entry.customer
                             ?.name ||
                             entry.customerName ||
-                            "Customer"}
+                            ""}
                         </p>
 
                         <p className="mt-1 text-[9px] font-medium text-slate-500">
