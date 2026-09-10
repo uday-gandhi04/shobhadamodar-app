@@ -80,6 +80,7 @@ const Dashboard = () => {
               <QuickActions
                 onNozzle={() => navigate(`/shift/${mpdId}`)}
                 onCollection={() => navigate('/collections')}
+                onExpense={() => navigate("/expenses")}
               />
               <ShiftProgress shift={currentShift} />
               <EndShiftButton onClick={() => navigate('/end-shift')} />

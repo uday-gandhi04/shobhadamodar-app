@@ -21,6 +21,7 @@ import ManagerDashboard from "./pages/ManagerDashboard";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { SyncProvider } from "./context/SyncContext";
 import EndShiftReview from "./pages/EndShiftReview";
+import Expenses from "./pages/Expenses";
 setupIonicReact();
 
 // Wrapper to prevent unauthenticated users from seeing the dashboard
@@ -80,6 +81,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Collections />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/expenses"
+                element={
+                  <ProtectedRoute>
+                    <Expenses />
                   </ProtectedRoute>
                 }
               />

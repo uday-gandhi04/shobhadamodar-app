@@ -18,6 +18,13 @@ const ActionIcon = ({ type }) => {
       </>
     ),
 
+    expense: (
+      <>
+        <path d="M12 3v18" />
+        <path d="M17 7.5C16.2 6.5 14.8 6 13 6h-2a3 3 0 0 0 0 6h2a3 3 0 0 1 0 6h-2c-1.8 0-3.2-.5-4-1.5" />
+      </>
+    ),
+
     end: (
       <>
         <path d="M12 3v10" />
@@ -96,7 +103,7 @@ export const EndShiftButton = ({ onClick }) => {
   );
 };
 
-const QuickActions = ({ onNozzle, onCollection }) => {
+const QuickActions = ({ onNozzle, onCollection, onExpense }) => {
   const { t } = useTranslation();
 
   return (
@@ -122,6 +129,12 @@ const QuickActions = ({ onNozzle, onCollection }) => {
           title={t('employee.dashboard.cashCollection')}
           subtitle={t('employee.dashboard.updateAnytime')}
           onClick={onCollection}
+        />
+        <ActionCard
+          type="expense"
+          title={t('employee.dashboard.expenses')}
+          subtitle={t('employee.dashboard.recordExpense')}
+          onClick={onExpense}
         />
       </div>
     </section>

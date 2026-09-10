@@ -58,6 +58,8 @@
       "readOnly": "Read-only view",
       "cashCollection": "Cash Collection",
       "updateAnytime": "Update anytime",
+      "expenses": "Expenses",
+      "recordExpense": "Business spending",
       "endShift": "End Shift",
       "finalCheck": "Final check & result",
       "quickActions": "Quick Actions",

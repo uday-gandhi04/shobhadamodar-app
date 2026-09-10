@@ -11,6 +11,7 @@ import userRoutes from './src/routes/user.routes.js';
 import customerRoutes from './src/routes/customer.routes.js';
 import udhariRoutes from './src/routes/udhari.routes.js';
 import fuelRateRoutes from './src/routes/fuelRate.routes.js';
+import expenseRoutes from './src/routes/expense.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,8 @@ app.use('/api/customers',customerRoutes,);
 app.use('/api/udhari',udhariRoutes,);
 
 app.use('/api/fuel-rates', fuelRateRoutes);
+
+app.use('/api/expenses', expenseRoutes);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
