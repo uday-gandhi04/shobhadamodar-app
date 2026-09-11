@@ -78,7 +78,7 @@ export const getShifts = async (req, res, next) => {
  */
 export const submitShift = async (req, res, next) => {
   try {
-    const { idempotencyKey, businessDate, shiftType, mpdId, readings, collections } = req.body;
+    const { idempotencyKey, businessDate, mpdId, readings, collections } = req.body;
     const employeeId = req.user._id;
 
     // 1. Idempotency Check: Prevent duplicate submissions if network drops
@@ -180,7 +180,6 @@ export const submitShift = async (req, res, next) => {
     const shift = await Shift.create({
       idempotencyKey,
       businessDate,
-      shiftType,
       mpdId,
       employeeId,
       status: 'SUBMITTED',

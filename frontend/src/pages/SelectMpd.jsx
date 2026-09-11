@@ -19,7 +19,6 @@ const SelectMpd = () => {
 
   const [mpds, setMpds] = useState([]);
   const [selectedMpd, setSelectedMpd] = useState('');
-  const [shiftType, setShiftType] = useState('MORNING');
 
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -117,7 +116,6 @@ const SelectMpd = () => {
 
       await startShift({
         businessDate,
-        shiftType,
         mpdId: selectedMpd,
       });
 
@@ -277,48 +275,6 @@ const SelectMpd = () => {
                   )}
                 </div>
 
-                {/* Shift selection */}
-                <p className="mt-7 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate-500">
-                  {t('employee.selectMpd.shiftLabel')}
-                </p>
-
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {[
-                    [
-                      'MORNING',
-                      t('employee.shifts.morning'),
-                    ],
-                    [
-                      'EVENING',
-                      t('employee.shifts.evening'),
-                    ],
-                    [
-                      'NIGHT',
-                      t('employee.shifts.night'),
-                    ],
-                  ].map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      disabled={starting}
-                      onClick={() => setShiftType(value)}
-                      className={`
-                        min-h-[46px]
-                        rounded-[12px]
-                        border
-                        text-[12px]
-                        font-semibold
-                        transition
-                        ${shiftType === value
-                          ? 'border-[#047857] bg-[#047857] text-white'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                        }
-                      `}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
               </section>
 
               {/* Error */}

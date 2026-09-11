@@ -26,12 +26,6 @@ const shiftSchema = new mongoose.Schema(
   {
     businessDate: { type: String, required: true },
 
-    shiftType: {
-      type: String,
-      enum: ['MORNING', 'EVENING', 'NIGHT'],
-      required: true,
-    },
-
     mpdId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Mpd',
@@ -101,7 +95,7 @@ shiftSchema.index(
   },
 );
 
-shiftSchema.index({ businessDate: 1, mpdId: 1, shiftType: 1 });
+shiftSchema.index({ businessDate: 1, mpdId: 1 });
 
 const Shift = mongoose.model('Shift', shiftSchema);
 

@@ -1,16 +1,13 @@
-import { useState } from 'react';
-import { IonContent, IonPage } from '@ionic/react';
-import { useTranslation } from 'react-i18next';
+import { IonContent, IonPage } from "@ionic/react";
+import { useTranslation } from "react-i18next";
 
-import LoginWelcome from '../components/business/LoginWelcome';
-import LoginForm from '../components/business/LoginForm';
-import LoginStationVisual from '../components/business/LoginStationVisual';
-import LanguageSwitcher from '../components/ui/LanguageSwitcher';
-import RoleToggle from '../components/ui/RoleToggle';
+import LoginWelcome from "../components/business/LoginWelcome";
+import LoginForm from "../components/business/LoginForm";
+import LoginStationVisual from "../components/business/LoginStationVisual";
+import LanguageSwitcher from "../components/ui/LanguageSwitcher";
 
 const Login = () => {
   const { i18n } = useTranslation();
-  const [role, setRole] = useState('EMPLOYEE');
 
   const changeLanguage = (language) => {
     i18n.changeLanguage(language);
@@ -21,7 +18,7 @@ const Login = () => {
       <IonContent
         fullscreen
         style={{
-          '--background': '#F5F7F6',
+          "--background": "#F5F7F6",
         }}
       >
         <main
@@ -40,7 +37,7 @@ const Login = () => {
             pt-[max(1rem,env(safe-area-inset-top))]
           "
         >
-          {/* very subtle ambient background */}
+          {/* Subtle ambient background */}
           <div
             aria-hidden="true"
             className="
@@ -122,18 +119,10 @@ const Login = () => {
             />
           </header>
 
-          {/* Main */}
+          {/* Login */}
           <section className="relative z-10 pt-7">
             <LoginWelcome />
-
-            <div className="mt-6">
-              <RoleToggle
-                role={role}
-                setRole={setRole}
-              />
-            </div>
-
-            <LoginForm role={role} />
+            <LoginForm />
           </section>
 
           {/* Security assurance */}
@@ -174,7 +163,7 @@ const Login = () => {
             </span>
 
             <p className="text-[9px] font-medium text-slate-500">
-              {i18n.t('login.secure')}
+              {i18n.t("login.secure")}
             </p>
           </section>
 

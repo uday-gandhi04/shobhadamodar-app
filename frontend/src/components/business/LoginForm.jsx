@@ -57,8 +57,8 @@ const LoginForm = ({ role }) => {
   const { login } = useContext(AuthContext);
   const { performBootstrapSync } = useContext(SyncContext);
 
-  const [employeeId, setEmployeeId] = useState("ADMIN01");
-  const [password, setPassword] = useState("admin_password_123");
+  const [employeeId, setEmployeeId] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberDevice, setRememberDevice] = useState(true);
 
   const [error, setError] = useState("");

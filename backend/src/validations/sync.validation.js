@@ -5,7 +5,6 @@ export const submitShiftSchema = z.object({
   body: z.object({
     idempotencyKey: z.string({ required_error: 'Idempotency key is required' }),
     businessDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD format'),
-    shiftType: z.enum(['MORNING', 'EVENING', 'NIGHT']),
     mpdId: z.string(),
     
     readings: z.array(

@@ -236,7 +236,7 @@ export const startShift = async (req, res, next) => {
       });
     }
 
-    const { businessDate, shiftType, mpdId } = req.body;
+    const { businessDate, mpdId } = req.body;
 
     const [existingEmployeeShift, existingMpdShift, mpd] = await Promise.all([
       Shift.findOne({ employeeId: req.user._id, status: 'IN_PROGRESS' }),
@@ -279,7 +279,6 @@ export const startShift = async (req, res, next) => {
 
     const shift = await Shift.create({
       businessDate,
-      shiftType,
       mpdId,
       employeeId: req.user._id,
       status: 'IN_PROGRESS',

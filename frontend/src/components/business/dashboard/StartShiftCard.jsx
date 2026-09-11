@@ -8,12 +8,14 @@ const StartShiftCard = ({ mpds, onStarted }) => {
   const { t } = useTranslation();
 
   const [selectedMpd, setSelectedMpd] = useState(
-    mpds?.[0]?._id || mpds?.[0]?.mpd_id || '',
+    mpds?.[0]?._id ||
+      mpds?.[0]?.mpd_id ||
+      '',
   );
 
-  const [shiftType, setShiftType] = useState('MORNING');
+  const [isStarting, setIsStarting] =
+    useState(false);
 
-  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState('');
 
   const handleStart = async () => {
@@ -28,7 +30,6 @@ const StartShiftCard = ({ mpds, onStarted }) => {
 
       const response = await startShift({
         businessDate: getBusinessDate(),
-        shiftType,
         mpdId: selectedMpd,
       });
 
@@ -54,7 +55,7 @@ const StartShiftCard = ({ mpds, onStarted }) => {
           lang="hi"
           className="mt-1 font-devanagari text-[13px] text-slate-500"
         >
-          अपना पंप और शिफ्ट चुनें
+          अपना पंप चुनें
         </p>
       </div>
 
@@ -63,26 +64,38 @@ const StartShiftCard = ({ mpds, onStarted }) => {
       </p>
 
       <div className="mt-2 grid grid-cols-2 gap-2">
-        {(mpds?.length
-          ? mpds.slice(0, 2)
-          : [
-              { _id: 'mpd-1', name: 'MPD 1' },
-              { _id: 'mpd-2', name: 'MPD 2' },
-            ]
+        {(
+          mpds?.length
+            ? mpds.slice(0, 2)
+            : [
+                {
+                  _id: 'mpd-1',
+                  name: 'MPD 1',
+                },
+                {
+                  _id: 'mpd-2',
+                  name: 'MPD 2',
+                },
+              ]
         ).map((mpd) => {
-          const id = mpd._id || mpd.mpd_id;
+          const id =
+            mpd._id || mpd.mpd_id;
+
           const name =
             mpd.mpd_number ||
             mpd.name ||
             'MPD';
 
-          const active = selectedMpd === id;
+          const active =
+            selectedMpd === id;
 
           return (
             <button
               key={id}
               type="button"
-              onClick={() => setSelectedMpd(id)}
+              onClick={() =>
+                setSelectedMpd(id)
+              }
               className={[
                 'min-h-[48px] rounded-[12px] border px-4',
                 'text-[13px] font-semibold transition-all',
@@ -92,37 +105,6 @@ const StartShiftCard = ({ mpds, onStarted }) => {
               ].join(' ')}
             >
               {name}
-            </button>
-          );
-        })}
-      </div>
-
-      <p className="mt-5 text-[11px] font-semibold text-slate-500">
-        Shift
-      </p>
-
-      <div className="mt-2 grid grid-cols-3 gap-2">
-        {[
-          ['MORNING', 'Morning'],
-          ['EVENING', 'Evening'],
-          ['NIGHT', 'Night'],
-        ].map(([value, label]) => {
-          const active = shiftType === value;
-
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setShiftType(value)}
-              className={[
-                'min-h-[44px] rounded-[11px] border',
-                'text-[11px] font-semibold transition-all',
-                active
-                  ? 'border-emerald-700 bg-emerald-50 text-emerald-800'
-                  : 'border-slate-200 text-slate-500',
-              ].join(' ')}
-            >
-              {label}
             </button>
           );
         })}
@@ -156,7 +138,9 @@ const StartShiftCard = ({ mpds, onStarted }) => {
           disabled:opacity-60
         "
       >
-        {isStarting ? 'Starting…' : 'Start Shift →'}
+        {isStarting
+          ? 'Starting…'
+          : 'Start Shift →'}
       </button>
     </section>
   );

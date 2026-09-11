@@ -4,11 +4,8 @@ import dispenserImage from '../../../assets/fuel/dispenser-dashboard.webp';
 const ShiftCard = ({ shift }) => {
   const { t } = useTranslation();
 
-  const mpdName = shift?.mpdId?.mpdNumber || 'MPD';
-
-  const shiftLabel = t(
-    `employee.shifts.${shift?.shiftType?.toLowerCase() || 'morning'}`
-  );
+  const mpdName =
+    shift?.mpdId?.mpdNumber || 'MPD';
 
   const startedTime = shift?.startedAt
     ? new Intl.DateTimeFormat('en-IN', {
@@ -18,7 +15,9 @@ const ShiftCard = ({ shift }) => {
     : '—';
 
   const nozzleCount =
-    shift?.mpdId?.nozzles?.filter((n) => n.isActive !== false).length || 0;
+    shift?.mpdId?.nozzles?.filter(
+      (n) => n.isActive !== false,
+    ).length || 0;
 
   return (
     <section className="relative mt-6 min-h-[148px] overflow-hidden rounded-[24px] bg-[#047857] p-5 text-white shadow-[0_12px_28px_rgba(4,120,87,0.20)]">
@@ -58,10 +57,6 @@ const ShiftCard = ({ shift }) => {
             <h2 className="mt-1 text-[21px] font-semibold tracking-[-0.02em]">
               {mpdName}
             </h2>
-
-            <p className="mt-1 text-[12px] text-emerald-100">
-              {shiftLabel}
-            </p>
           </div>
 
           <span className="ml-auto shrink-0 rounded-full bg-white/10 px-2.5 py-1.5 text-[9px] font-semibold">

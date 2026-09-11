@@ -143,7 +143,7 @@ export const getManagerExpenses = async (req, res, next) => {
       .populate('employeeId', 'name employeeId')
       .populate({
         path: 'shiftId',
-        select: 'businessDate shiftType mpdId',
+        select: 'businessDate mpdId',
         populate: { path: 'mpdId', select: 'mpdNumber name' },
       })
       .sort({ createdAt: -1 })

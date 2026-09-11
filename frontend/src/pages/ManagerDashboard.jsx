@@ -141,7 +141,6 @@ const ManagerDashboard = () => {
                   {shifts.map((shift) => (
                     <div key={shift._id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
                       <div>
-                        <p className="font-bold text-bpcl-navy text-lg">{shift.shiftType}</p>
                         <p className="text-xs font-bold text-gray-400 mt-1 uppercase">Sale: ₹{((shift.expectedTotalSalePaise || 0) / 100).toFixed(2)}</p>
                       </div>
                       <div className="text-right">

@@ -1,3 +1,14 @@
+const formatShiftStart = (startedAt) => {
+  if (!startedAt) return "";
+
+  return new Date(
+    startedAt,
+  ).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const EmployeeShiftHeader = ({ shift, user, onBack }) => {
   const employeeName = user?.name || user?.employeeId || "Employee";
 
@@ -37,7 +48,7 @@ const EmployeeShiftHeader = ({ shift, user, onBack }) => {
             {shift?.mpdId?.mpdNumber || "MPD"}
           </p>
           <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.06em] text-slate-400">
-            {shift?.shiftType || ""}
+            {formatShiftStart(shift?.startedAt)}
           </p>
         </div>
 

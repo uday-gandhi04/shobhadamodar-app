@@ -12,10 +12,9 @@ export const getCurrentShift = async (businessDate) => {
   return response.data;
 };
 
-export const startShift = async ({ businessDate, shiftType, mpdId }) => {
+export const startShift = async ({ businessDate, mpdId }) => {
   const response = await api.post('/shifts/start', {
     businessDate,
-    shiftType,
     mpdId,
   });
   return response.data;

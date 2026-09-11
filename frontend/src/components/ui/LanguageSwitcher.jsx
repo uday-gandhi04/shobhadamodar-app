@@ -1,7 +1,7 @@
 const languages = [
   { code: 'en', label: 'EN' },
   { code: 'hi', label: 'हिं' },
-  { code: 'mr', label: 'मरा' },
+  { code: 'mr', label: 'म' },
 ];
 
 const LanguageSwitcher = ({ language, onChange }) => {

@@ -48,7 +48,6 @@ export const getAvailableMpdSchema = z.object({
 export const startShiftSchema = z.object({
   body: z.object({
     businessDate,
-    shiftType: z.enum(['MORNING', 'EVENING', 'NIGHT']),
     mpdId: z.string().min(1),
   }),
 });
