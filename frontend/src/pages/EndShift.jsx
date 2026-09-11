@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { getCurrentShift } from "../services/shiftApi";
-import NozzleReadingList from "../components/business/nozzle/NozzleReadingList";
+import { AuthContext } from "../context/AuthContext";
+import { getCurrentFuelRate, getCurrentShift } from "../services/shiftApi";
+import NozzleReadingRow from "../components/business/nozzle/NozzleReadingRow";
 import {
   formatReading,
   getFuelType,
@@ -32,10 +33,12 @@ const calculateLitresDispensed = (opening, final) => {
 const EndShift = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const [shift, setShift] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [fuelRates, setFuelRates] = useState({ PETROL: 0, DIESEL: 0 });
 
   const [finalReadings, setFinalReadings] = useState({});
 
@@ -60,6 +63,19 @@ const EndShift = () => {
 
         setShift(currentShift);
 
+        try {
+          const rateResponse = await getCurrentFuelRate(currentShift.businessDate);
+          const rates = rateResponse?.data;
+          if (rates && mounted) {
+            setFuelRates({
+              PETROL: Number(rates.petrolRatePaise || 0),
+              DIESEL: Number(rates.dieselRatePaise || 0),
+            });
+          }
+        } catch {
+          if (mounted) setFuelRates({ PETROL: 0, DIESEL: 0 });
+        }
+
         const initialReadings = {};
 
         (currentShift.readings || []).forEach((reading) => {
@@ -67,25 +83,15 @@ const EndShift = () => {
 
           if (!nozzleId) return;
 
-          const openingReading = Number(
-            reading.openingReading ?? reading.opening ?? 0,
-          );
-
           const existingFinalReading =
             reading.closingReading ?? reading.finalReading;
 
-          /*
-           * If no final reading has been entered yet,
-           * pre-fill it with the opening reading.
-           *
-           * This lets an unused nozzle remain unchanged.
-           */
           initialReadings[nozzleId] =
             existingFinalReading !== null &&
             existingFinalReading !== undefined &&
             existingFinalReading !== ""
               ? String(existingFinalReading)
-              : formatReading(openingReading);
+              : "";
         });
 
         (location.state?.finalReadings || []).forEach((reading) => {
@@ -158,7 +164,7 @@ const EndShift = () => {
       return Number(value) >= openingReading;
     });
 
-  const nozzleCardReadings = readings.map((reading) => {
+  const nozzleReadings = readings.map((reading) => {
     const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
     const openingReading = Number(
       reading.openingReading ?? reading.opening ?? 0,
@@ -185,6 +191,18 @@ const EndShift = () => {
         Number.isFinite(numericFinalValue) && numericFinalValue < openingReading,
     };
   });
+
+  const totalLitres = nozzleReadings.reduce(
+    (total, reading) => total + (reading.litresDispensed || 0),
+    0,
+  );
+
+  const totalExpectedSalePaise = nozzleReadings.reduce((total, reading) => {
+    const ratePaise = fuelRates[reading.nozzle.fuelType] || 0;
+    return total + (reading.litresDispensed || 0) * ratePaise;
+  }, 0);
+
+  const employeeName = user?.name || user?.employeeId || "Employee";
 
   if (loading) {
     return (
@@ -213,8 +231,17 @@ const EndShift = () => {
             <button
               type="button"
               onClick={() => navigate("/select-mpd")}
-              className="grid h-9 w-9 place-items-center rounded-[12px] bg-white text-slate-700 shadow-sm"
-              style={{ borderRadius: "12px", overflow: "hidden" }}
+              className="
+                grid
+                h-9
+                w-9
+                shrink-0
+                place-items-center
+                rounded-[12px]
+                bg-white
+                text-slate-700
+                shadow-[0_2px_8px_rgba(15,23,42,0.06)]
+              "
               aria-label="Back"
             >
               <svg
@@ -228,57 +255,60 @@ const EndShift = () => {
               </svg>
             </button>
 
-            <div>
-              <h1 className="text-[18px] font-semibold text-slate-900">
-                End Shift
-              </h1>
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
+              {/* MPD */}
+              <div className="min-w-0">
+                <p className="text-[17px] font-bold leading-none tracking-[-0.02em] text-slate-900">
+                  {shift?.mpdId?.mpdNumber || "MPD"}
+                </p>
 
-              <p className="mt-0.5 text-[10px] text-slate-500">
-                Final nozzle readings
-              </p>
+                <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.06em] text-slate-400">
+                  {shift?.shiftType || ""}
+                </p>
+              </div>
+
+              {/* EMPLOYEE */}
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-50 text-[#047857]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="8" r="3.2" />
+                    <path d="M5.5 19c.8-3.2 3-5 6.5-5s5.7 1.8 6.5 5" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0">
+                  <p className="max-w-[95px] truncate text-[10px] font-semibold leading-none text-slate-900">
+                    {employeeName}
+                  </p>
+
+                  <p className="mt-1 text-[7px] font-medium uppercase tracking-[0.05em] text-slate-400">
+                    Employee
+                  </p>
+                </div>
+              </div>
             </div>
           </header>
 
           {/* Step indicator */}
           <div className="mt-5 rounded-[18px] bg-white p-3 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-            <div className="flex items-center">
-              <div className="flex flex-1 items-center gap-2">
-                <div className="grid h-7 w-7 place-items-center rounded-full bg-[#047857] text-[11px] font-bold text-white">
-                  1
-                </div>
-
-                <div>
-                  <p className="text-[11px] font-semibold text-slate-900">
-                    Nozzle
+            <div className="grid grid-cols-7 items-center gap-1 text-center">
+              {["Nozzle", "Cash", "UPI", "Card", "Udhari", "Expense", "Review"].map((label, index) => (
+                <div key={label} className="min-w-0">
+                  <div className={`mx-auto grid h-7 w-7 place-items-center rounded-full text-[10px] font-bold ${index === 0 ? "bg-[#047857] text-white" : "bg-slate-100 text-slate-400"}`}>
+                    {index + 1}
+                  </div>
+                  <p className={`mt-1 truncate text-[8px] font-semibold ${index === 0 ? "text-[#047857]" : "text-slate-400"}`}>
+                    {label}
                   </p>
-
-                  <p className="text-[9px] text-[#047857]">Current step</p>
                 </div>
-              </div>
-
-              <div className="h-px w-8 bg-slate-200" />
-
-              <div className="flex items-center gap-2 px-2">
-                <div className="grid h-7 w-7 place-items-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-400">
-                  2
-                </div>
-
-                <p className="hidden text-[11px] font-medium text-slate-400 sm:block">
-                  Money
-                </p>
-              </div>
-
-              <div className="h-px w-8 bg-slate-200" />
-
-              <div className="flex items-center gap-2">
-                <div className="grid h-7 w-7 place-items-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-400">
-                  3
-                </div>
-
-                <p className="hidden text-[11px] font-medium text-slate-400 sm:block">
-                  Review
-                </p>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -290,36 +320,51 @@ const EndShift = () => {
           )}
 
           {/* Final readings */}
-          <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
-            <div className="mb-4">
+          <section className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
+            <div className="p-4 pb-3">
               <h2 className="text-[15px] font-semibold text-slate-900">
                 Final nozzle readings
               </h2>
-
-              <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                {shift?.mpdId?.mpdNumber || "MPD"} · {shift?.shiftType || ""}
-              </p>
 
               <p className="mt-1 text-[10px] leading-4 text-slate-500">
                 Enter the final totalizer reading for each nozzle.
               </p>
             </div>
 
-            {/* Nozzle overview image
-            <div className="mb-4 flex justify-center rounded-[16px] bg-slate-50 px-3 py-4">
-              <img
-                src={nozzleDispenserImage}
-                alt="Four fuel nozzles"
-                className="w-full object-contain"
-              />
-            </div> */}
+            <div className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2 border-y border-slate-100 bg-slate-50/70 px-3 py-2.5 text-[9px] font-bold uppercase tracking-[0.05em] text-slate-500 sm:grid-cols-[88px_minmax(0,1fr)_minmax(0,1fr)] sm:gap-4 sm:px-4">
+              <span>Nozzle</span>
+              <span className="text-right">Opening</span>
+              <span className="text-right">Closing</span>
+            </div>
 
-            {/* Nozzle cards */}
-            <NozzleReadingList
-              variant="end-shift"
-              readings={nozzleCardReadings}
-              onFinalReadingChange={handleReadingChange}
-            />
+            <div>
+              {nozzleReadings.map((reading) => (
+                <NozzleReadingRow
+                  key={reading.nozzle.id}
+                  {...reading}
+                  onFinalReadingChange={handleReadingChange}
+                />
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 border-t border-slate-100 bg-slate-50/60 px-4 py-3">
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                  Total Litres
+                </p>
+                <p className="mt-1 font-mono text-[14px] font-semibold tabular-nums text-slate-800">
+                  {totalLitres.toFixed(2)} L
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                  Total Sale
+                </p>
+                <p className="mt-1 font-mono text-[15px] font-bold tabular-nums text-[#047857]">
+                  ₹{(totalExpectedSalePaise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
           </section>
 
           {/* Bottom action */}
