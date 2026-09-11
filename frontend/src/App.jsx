@@ -15,13 +15,16 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import SelectMpd from "./pages/SelectMpd";
 import EndShift from "./pages/EndShift";
-import ShiftEntry from "./pages/ShiftEntry";
 import Collections from "./pages/Collections";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { SyncProvider } from "./context/SyncContext";
 import EndShiftReview from "./pages/EndShiftReview";
 import Expenses from "./pages/Expenses";
+import CashCollectionPage from "./pages/CashCollectionPage";
+import UpiCollectionPage from "./pages/UpiCollectionPage";
+import CardCollectionPage from "./pages/CardCollectionPage";
+import UdhariCollectionPage from "./pages/UdhariCollectionPage";
 setupIonicReact();
 
 // Wrapper to prevent unauthenticated users from seeing the dashboard
@@ -71,10 +74,17 @@ function App() {
                 path="/shift/:mpdId"
                 element={
                   <ProtectedRoute>
-                    <ShiftEntry />
+                    <EndShift />
                   </ProtectedRoute>
                 }
               />
+
+              <Route path="/shift/cash" element={<ProtectedRoute><CashCollectionPage /></ProtectedRoute>} />
+              <Route path="/shift/upi" element={<ProtectedRoute><UpiCollectionPage /></ProtectedRoute>} />
+              <Route path="/shift/card" element={<ProtectedRoute><CardCollectionPage /></ProtectedRoute>} />
+              <Route path="/shift/udhari" element={<ProtectedRoute><UdhariCollectionPage /></ProtectedRoute>} />
+              <Route path="/shift/expense" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+              <Route path="/shift/review" element={<ProtectedRoute><EndShiftReview /></ProtectedRoute>} />
 
               <Route
                 path="/collections"

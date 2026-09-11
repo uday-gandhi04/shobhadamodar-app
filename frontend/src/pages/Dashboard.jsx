@@ -29,7 +29,7 @@ const Dashboard = () => {
   const { i18n } = useTranslation();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [currentShift, setCurrentShift] = useState(null);
+  const [currentShift] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -45,7 +45,8 @@ const Dashboard = () => {
         navigate('/select-mpd', { replace: true });
         return;
       }
-      setCurrentShift(response.data);
+      const activeMpdId = response.data.mpdId?._id || response.data.mpdId;
+      navigate(`/shift/${activeMpdId}`, { replace: true });
     } catch (err) {
       setError(err.message || 'Unable to load your shift.');
     } finally {

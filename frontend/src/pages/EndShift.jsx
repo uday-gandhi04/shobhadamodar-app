@@ -10,7 +10,7 @@ import {
   getNozzleNumber,
 } from "../components/business/nozzle/nozzleUtils";
 
-import nozzleDispenserImage from "../assets/fuel/nozzle-dispenser.webp";
+import { saveShiftWorkflowState } from "../utils/shiftWorkflow";
 
 const calculateLitresDispensed = (opening, final) => {
   const openingValue = Number(opening);
@@ -54,7 +54,7 @@ const EndShift = () => {
         const currentShift = response?.data || null;
 
         if (!currentShift) {
-          navigate("/dashboard", { replace: true });
+          navigate("/select-mpd", { replace: true });
           return;
         }
 
@@ -212,7 +212,7 @@ const EndShift = () => {
           <header className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/select-mpd")}
               className="grid h-9 w-9 place-items-center rounded-[12px] bg-white text-slate-700 shadow-sm"
               style={{ borderRadius: "12px", overflow: "hidden" }}
               aria-label="Back"
@@ -351,13 +351,14 @@ const EndShift = () => {
                     };
                   });
 
-                  navigate("/collections", {
-                    state: {
-                      mode: "end-shift",
+                  (() => {
+                    const workflowState = {
                       shiftId: shift?._id,
                       finalReadings: finalReadingsPayload,
-                    },
-                  });
+                    };
+                    saveShiftWorkflowState(workflowState);
+                    navigate("/shift/cash", { state: workflowState });
+                  })();
                 }}
                 className="
                   flex
@@ -380,7 +381,7 @@ const EndShift = () => {
                 "
                 style={{ borderRadius: "15px", overflow: "hidden" }}
               >
-                Next: Money Collection
+                Next: Cash
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"

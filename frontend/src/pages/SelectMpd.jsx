@@ -47,10 +47,11 @@ const SelectMpd = () => {
 
         /*
          * Active shift exists:
-         * employee should go directly to dashboard.
+         * employee should resume the staged shift workflow.
          */
         if (currentShift) {
-          navigate('/dashboard', {
+          const activeMpdId = currentShift.mpdId?._id || currentShift.mpdId;
+          navigate(`/shift/${activeMpdId}`, {
             replace: true,
           });
 
@@ -122,7 +123,8 @@ const SelectMpd = () => {
 
       // The backend has now created the shift and locked
       // both the employee and selected MPD.
-      navigate('/dashboard', { replace: true });
+      const activeMpdId = selectedMpd;
+      navigate(`/shift/${activeMpdId}`, { replace: true });
     } catch (err) {
       const status = err?.response?.status;
       const message =

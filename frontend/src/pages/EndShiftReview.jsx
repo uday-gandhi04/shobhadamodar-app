@@ -3,6 +3,11 @@ import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { previewEndShift, endShift } from "../services/shiftApi";
+import { getMyShiftExpenses } from "../services/expenseApi";
+import {
+  clearShiftWorkflowState,
+  readShiftWorkflowState,
+} from "../utils/shiftWorkflow";
 
 const formatMoney = (paise) => {
   return `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {
@@ -15,7 +20,8 @@ const EndShiftReview = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { shiftId, finalReadings, collections } = location.state || {};
+  const workflowState = readShiftWorkflowState(location.state);
+  const { shiftId, finalReadings, collections } = workflowState || {};
 
   const [preview, setPreview] = useState(null);
 
@@ -24,13 +30,14 @@ const EndShiftReview = () => {
   const [ending, setEnding] = useState(false);
 
   const [error, setError] = useState("");
+  const [expenses, setExpenses] = useState([]);
 
   useEffect(() => {
     let mounted = true;
 
     const calculateReview = async () => {
       if (!shiftId) {
-        navigate("/dashboard", {
+        navigate("/select-mpd", {
           replace: true,
         });
 
@@ -61,6 +68,9 @@ const EndShiftReview = () => {
         if (!mounted) return;
 
         setPreview(response?.data || null);
+
+        const expenseResponse = await getMyShiftExpenses(shiftId);
+        if (mounted) setExpenses(expenseResponse?.data || []);
       } catch (err) {
         if (!mounted) return;
 
@@ -103,6 +113,8 @@ const EndShiftReview = () => {
       },
     });
 
+    clearShiftWorkflowState();
+
     /*
      * Shift ended successfully.
      * Keep employee logged in, but start the next
@@ -138,11 +150,11 @@ const EndShiftReview = () => {
             <button
               type="button"
               onClick={() =>
-                navigate("/collections", {
+                navigate("/shift/expense", {
                   state: {
-                    mode: "end-shift",
                     shiftId,
                     finalReadings,
+                    collections,
                   },
                 })
               }
@@ -355,6 +367,18 @@ const EndShiftReview = () => {
                       </span>
                     </div>
                   </div>
+                </div>
+              </section>
+
+              <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
+                <h2 className="text-[14px] font-bold text-slate-900">
+                  Expenses
+                </h2>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-500">Business Expenses</span>
+                  <span className="text-[12px] font-bold text-amber-700">
+                    {formatMoney(expenses.reduce((total, expense) => total + Number(expense.amountPaise || 0), 0))}
+                  </span>
                 </div>
               </section>
 

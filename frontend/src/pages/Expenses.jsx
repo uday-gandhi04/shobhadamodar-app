@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import {
+  readShiftWorkflowState,
+  saveShiftWorkflowState,
+} from "../utils/shiftWorkflow";
 
 import { getCurrentShift } from "../services/shiftApi";
 import {
@@ -35,6 +40,8 @@ const sanitizeAmount = (value) => {
 
 const Expenses = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const workflowState = readShiftWorkflowState(location.state);
 
   const [shift, setShift] = useState(null);
   const [expenses, setExpenses] = useState([]);
@@ -59,7 +66,7 @@ const Expenses = () => {
         shiftResponse?.data || null;
 
       if (!currentShift) {
-        navigate("/dashboard", {
+        navigate("/select-mpd", {
           replace: true,
         });
         return;
@@ -206,7 +213,7 @@ const Expenses = () => {
             <button
               type="button"
               onClick={() =>
-                navigate("/dashboard")
+                navigate("/shift/udhari", { state: workflowState })
               }
               className="grid h-9 w-9 place-items-center rounded-full bg-white text-slate-700 shadow-sm"
               aria-label="Back"
@@ -459,6 +466,17 @@ const Expenses = () => {
               </>
             )}
           </section>
+
+          <button
+            type="button"
+            onClick={() => {
+              saveShiftWorkflowState(workflowState);
+              navigate("/shift/review", { state: workflowState });
+            }}
+            className="mt-4 flex min-h-[52px] w-full items-center justify-center rounded-[15px] bg-[#047857] text-[14px] font-semibold text-white shadow-[0_8px_20px_rgba(4,120,87,0.18)] transition active:scale-[0.985]"
+          >
+            Next: Review
+          </button>
         </main>
       </IonContent>
     </IonPage>
