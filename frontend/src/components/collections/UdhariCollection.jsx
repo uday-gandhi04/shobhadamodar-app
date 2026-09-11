@@ -61,6 +61,7 @@ const UdhariCollection = ({
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerName, setCustomerName] = useState("");
+  const [slipNumber, setSlipNumber] = useState("");
   const [vehicleNumber, setVehicleNumber] = useState("");
 
   const [udhariFuelType, setUdhariFuelType] = useState("DIESEL");
@@ -248,9 +249,14 @@ const UdhariCollection = ({
         shiftId: shift._id,
         customerId: selectedCustomer?._id,
         customerName: name,
+
+        slipNumber:
+          slipNumber.trim() || undefined,
+
         vehicleNumber:
           vehicleNumber.trim().toUpperCase() ||
           undefined,
+
         fuelType: udhariFuelType,
         ...(udhariMode === "litres" ? { litres } : {}),
         ratePaise: currentUdhariRatePaise,
@@ -275,6 +281,11 @@ const UdhariCollection = ({
         customerId:
           customer?._id ||
           selectedCustomer?._id ||
+          null,
+
+        slipNumber:
+          transaction?.slipNumber ||
+          slipNumber.trim() ||
           null,
 
         customer: customer
@@ -357,6 +368,7 @@ const UdhariCollection = ({
           finalUdhariTotal,
       }));
 
+      setSlipNumber("");
       setVehicleNumber("");
       setUdhariLitres("");
       setUdhariAmount("");
@@ -533,7 +545,6 @@ const UdhariCollection = ({
                   event.target.value,
                 )
               }
-              placeholder="Search customer..."
               className="
                 h-[48px]
                 w-full
@@ -662,42 +673,75 @@ const UdhariCollection = ({
           </div>
         )}
 
-        {/* VEHICLE */}
+        {/* SLIP + VEHICLE */}
         <div className="mt-4">
-          <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-            Vehicle Number
-            <span className="ml-1 font-normal normal-case">
-              (optional)
-            </span>
-          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {/* SLIP NUMBER */}
+            <div>
+              <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                Slip Number
+              </label>
 
-          <input
-            type="text"
-            value={vehicleNumber}
-            onChange={(event) =>
-              setVehicleNumber(
-                event.target.value,
-              )
-            }
-            placeholder="MH16AB1234"
-            className="
-              mt-2
-              h-[46px]
-              w-full
-              rounded-[11px]
-              border
-              border-slate-200
-              bg-slate-50
-              px-3
-              text-[13px]
-              font-semibold
-              uppercase
-              text-slate-900
-              outline-none
-              focus:border-[#047857]
-              focus:bg-white
-            "
-          />
+              <input
+                type="text"
+                value={slipNumber}
+                onChange={(event) =>
+                  setSlipNumber(event.target.value)
+                }
+                className="
+                  mt-2
+                  h-[46px]
+                  w-full
+                  rounded-[11px]
+                  border
+                  border-slate-200
+                  bg-slate-50
+                  px-3
+                  text-[13px]
+                  font-semibold
+                  text-slate-900
+                  outline-none
+                  focus:border-[#047857]
+                  focus:bg-white
+                "
+              />
+            </div>
+
+            {/* VEHICLE NUMBER */}
+            <div>
+              <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                Vehicle Number
+                <span className="ml-1 font-normal normal-case">
+                  (optional)
+                </span>
+              </label>
+
+              <input
+                type="text"
+                value={vehicleNumber}
+                onChange={(event) =>
+                  setVehicleNumber(event.target.value)
+                }
+                className="
+                  mt-2
+                  h-[46px]
+                  w-full
+                  rounded-[11px]
+                  border
+                  border-slate-200
+                  bg-slate-50
+                  px-3
+                  text-[13px]
+                  font-semibold
+                  uppercase
+                  text-slate-900
+                  outline-none
+                  focus:border-[#047857]
+                  focus:bg-white
+                "
+              />
+            </div>
+          </div>
         </div>
 
         {/* FUEL TYPE */}
@@ -822,7 +866,6 @@ const UdhariCollection = ({
                   ),
                 )
               }
-              placeholder="30.00"
               className="
                 mt-2
                 h-[50px]
@@ -832,8 +875,8 @@ const UdhariCollection = ({
                 border-slate-200
                 bg-slate-50
                 px-3
-                text-[18px]
-                font-bold
+                text-[16px]
+                font-semibold
                 text-slate-900
                 outline-none
                 focus:border-[#047857]
@@ -862,7 +905,7 @@ const UdhariCollection = ({
                 Amount
               </span>
 
-              <span className="text-[15px] font-bold text-slate-900">
+              <span className="text-[14px] font-bold text-slate-900">
                 {udhariLitres
                   ? formatCurrency(
                       calculatedUdhariAmount,
@@ -880,8 +923,8 @@ const UdhariCollection = ({
               Amount
             </label>
 
-            <div className="mt-2 flex h-[50px] items-center rounded-[12px] border border-slate-200 bg-slate-50 px-3">
-              <span className="mr-2 text-[18px] font-bold text-slate-400">
+            <div className="mt-2 flex h-[50px] items-center rounded-[12px] border border-slate-200 bg-slate-50 px-3 focus-within:border-[#047857] focus-within:bg-white">
+              <span className="mr-2 text-[16px] font-semibold text-slate-400">
                 ₹
               </span>
 
@@ -896,13 +939,12 @@ const UdhariCollection = ({
                     ),
                   )
                 }
-                placeholder="2963.10"
                 className="
                   min-w-0
                   flex-1
                   bg-transparent
-                  text-[18px]
-                  font-bold
+                  text-[16px]
+                  font-semibold
                   text-slate-900
                   outline-none
                 "
@@ -930,7 +972,7 @@ const UdhariCollection = ({
                 Litres
               </span>
 
-              <span className="text-[15px] font-bold text-[#047857]">
+              <span className="text-[14px] font-bold text-[#047857]">
                 {udhariAmount
                   ? `${calculatedUdhariLitres.toFixed(
                       2,
@@ -1044,6 +1086,12 @@ const UdhariCollection = ({
                           ).toFixed(2)}
                           {" L"}
                         </p>
+
+                        {entry.slipNumber && (
+                          <p className="mt-0.5 text-[9px] text-slate-400">
+                            Slip: {entry.slipNumber}
+                          </p>
+                        )}
 
                         {entry.vehicleNumber && (
                           <p className="mt-0.5 text-[9px] text-slate-400">
