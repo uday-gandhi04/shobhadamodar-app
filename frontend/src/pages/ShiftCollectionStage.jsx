@@ -43,10 +43,30 @@ const sanitizeMoneyInput = (value) =>
   value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
 
 const stageConfig = {
-  cash: { title: "Cash Collection", previous: "/shift/nozzle", next: "/shift/upi", label: "Cash" },
-  upi: { title: "PhonePe", previous: "/shift/cash", next: "/shift/card", label: "UPI" },
-  card: { title: "Card / ATM Collection", previous: "/shift/upi", next: "/shift/udhari", label: "Card" },
-  udhari: { title: "Udhari Collection", previous: "/shift/card", next: "/shift/expense", label: "Udhari" },
+  cash: {
+    title: "Cash Collection",
+    previous: "/shift/nozzle",
+    next: "/shift/upi",
+    label: "Cash",
+  },
+  upi: {
+    title: "PhonePe",
+    previous: "/shift/cash",
+    next: "/shift/card",
+    label: "UPI",
+  },
+  card: {
+    title: "Card / ATM Collection",
+    previous: "/shift/upi",
+    next: "/shift/udhari",
+    label: "Card",
+  },
+  udhari: {
+    title: "Udhari Collection",
+    previous: "/shift/card",
+    next: "/shift/expense",
+    label: "Udhari",
+  },
 };
 
 const ShiftCollectionStage = ({ stage }) => {
@@ -96,31 +116,52 @@ const ShiftCollectionStage = ({ stage }) => {
         });
         setCashCounts(counts);
         const legacyCoinsPaise = (currentShift.cashCollections || [])
-          .filter((item) => LEGACY_COIN_DENOMINATIONS.includes(Number(item.denomination)))
-          .reduce((total, item) => total + Number(item.denomination) * Number(item.count || 0) * 100, 0);
-        const savedCoinsPaise = Number(currentShift.coinsPaise || 0) || legacyCoinsPaise;
+          .filter((item) =>
+            LEGACY_COIN_DENOMINATIONS.includes(Number(item.denomination)),
+          )
+          .reduce(
+            (total, item) =>
+              total + Number(item.denomination) * Number(item.count || 0) * 100,
+            0,
+          );
+        const savedCoinsPaise =
+          Number(currentShift.coinsPaise || 0) || legacyCoinsPaise;
         setCoins(savedCoinsPaise ? String(savedCoinsPaise / 100) : "");
         setUpi(
           currentShift.upiCollection || currentShift.totalUpiPaise
             ? String(Number(currentShift.totalUpiPaise || 0) / 100)
             : "",
         );
-        setFirstTransactionTime(currentShift.upiCollection?.firstTransactionTime || "");
+        setFirstTransactionTime(
+          currentShift.upiCollection?.firstTransactionTime || "",
+        );
         setFirstTransactionAmount(
           currentShift.upiCollection?.firstTransactionAmountPaise != null
-            ? String(currentShift.upiCollection.firstTransactionAmountPaise / 100)
+            ? String(
+                currentShift.upiCollection.firstTransactionAmountPaise / 100,
+              )
             : "",
         );
-        setLastTransactionTime(currentShift.upiCollection?.lastTransactionTime || "");
+        setLastTransactionTime(
+          currentShift.upiCollection?.lastTransactionTime || "",
+        );
         setLastTransactionAmount(
           currentShift.upiCollection?.lastTransactionAmountPaise != null
-            ? String(currentShift.upiCollection.lastTransactionAmountPaise / 100)
+            ? String(
+                currentShift.upiCollection.lastTransactionAmountPaise / 100,
+              )
             : "",
         );
-        setCard(currentShift.totalCardPaise ? String(currentShift.totalCardPaise / 100) : "");
+        setCard(
+          currentShift.totalCardPaise
+            ? String(currentShift.totalCardPaise / 100)
+            : "",
+        );
 
         try {
-          const rateResponse = await getCurrentFuelRate(currentShift.businessDate);
+          const rateResponse = await getCurrentFuelRate(
+            currentShift.businessDate,
+          );
           const rates = rateResponse?.data;
           if (rates && mounted) {
             setFuelRates({
@@ -133,7 +174,11 @@ const ShiftCollectionStage = ({ stage }) => {
         }
       } catch (err) {
         if (mounted) {
-          setError(err?.response?.data?.message || err?.message || "Unable to load collection.");
+          setError(
+            err?.response?.data?.message ||
+              err?.message ||
+              "Unable to load collection.",
+          );
         }
       } finally {
         if (mounted) setLoading(false);
@@ -152,19 +197,35 @@ const ShiftCollectionStage = ({ stage }) => {
         denomination,
         count: Number(cashCounts[denomination] || 0),
       })).filter((item) => item.count > 0),
+
       coinsPaise: parseRupeesToPaise(coins),
+
       upiPaise: parseRupeesToPaise(upi),
+
       cardPaise: parseRupeesToPaise(card),
+
       udhariPaise: Number(shift?.totalUdhariPaise || 0),
     };
 
     if (stage === "upi") {
-      payload.upiCollection = {
+      const hasAnyUpiData = [
         firstTransactionTime,
-        firstTransactionAmountPaise: parseRupeesToPaise(firstTransactionAmount),
+        firstTransactionAmount,
         lastTransactionTime,
-        lastTransactionAmountPaise: parseRupeesToPaise(lastTransactionAmount),
-      };
+        lastTransactionAmount,
+        upi,
+      ].some((value) => String(value || "").trim() !== "");
+
+      if (hasAnyUpiData) {
+        payload.upiCollection = {
+          firstTransactionTime,
+          firstTransactionAmountPaise: parseRupeesToPaise(
+            firstTransactionAmount,
+          ),
+          lastTransactionTime,
+          lastTransactionAmountPaise: parseRupeesToPaise(lastTransactionAmount),
+        };
+      }
     } else if (workflowState?.collections?.upiCollection) {
       payload.upiCollection = workflowState.collections.upiCollection;
     }
@@ -176,31 +237,55 @@ const ShiftCollectionStage = ({ stage }) => {
     if (!shift?._id || saving) return;
 
     if (stage === "upi") {
-      const fieldsArePresent = [
+      const hasAnyUpiData = [
         firstTransactionTime,
         firstTransactionAmount,
         lastTransactionTime,
         lastTransactionAmount,
         upi,
-      ].every((value) => value.trim() !== "");
-      const amountsAreValid = [
-        firstTransactionAmount,
-        lastTransactionAmount,
-        upi,
-      ].every((value) => Number.isFinite(Number(value)) && Number(value) >= 0);
-      const timesAreValid =
-        firstTransactionTime &&
-        lastTransactionTime &&
-        lastTransactionTime >= firstTransactionTime;
+      ].some((value) => String(value || "").trim() !== "");
 
-      if (!fieldsArePresent || !amountsAreValid) {
-        setError("Enter both PhonePe transaction details and the total collection.");
-        return;
-      }
+      // No UPI payments during the shift:
+      // allow the employee to continue with everything blank.
+      if (!hasAnyUpiData) {
+        // Keep total as zero when nothing was entered.
+      } else {
+        // Once the employee starts entering UPI information,
+        // require all PhonePe fields to be completed.
+        const fieldsArePresent = [
+          firstTransactionTime,
+          firstTransactionAmount,
+          lastTransactionTime,
+          lastTransactionAmount,
+          upi,
+        ].every((value) => String(value || "").trim() !== "");
 
-      if (!timesAreValid) {
-        setError("Last transaction time cannot be earlier than first transaction time.");
-        return;
+        const amountsAreValid = [
+          firstTransactionAmount,
+          lastTransactionAmount,
+          upi,
+        ].every(
+          (value) => Number.isFinite(Number(value)) && Number(value) >= 0,
+        );
+
+        const timesAreValid =
+          firstTransactionTime &&
+          lastTransactionTime &&
+          lastTransactionTime >= firstTransactionTime;
+
+        if (!fieldsArePresent || !amountsAreValid) {
+          setError(
+            "Complete the PhonePe transaction details and total collection.",
+          );
+          return;
+        }
+
+        if (!timesAreValid) {
+          setError(
+            "Last transaction time cannot be earlier than first transaction time.",
+          );
+          return;
+        }
       }
     }
 
@@ -213,7 +298,11 @@ const ShiftCollectionStage = ({ stage }) => {
       saveShiftWorkflowState(nextState);
       navigate(config.next, { state: nextState });
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || "Unable to save collection.");
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Unable to save collection.",
+      );
     } finally {
       setSaving(false);
     }
@@ -239,11 +328,23 @@ const ShiftCollectionStage = ({ stage }) => {
           <EmployeeShiftHeader
             shift={shift}
             user={user}
-            onBack={() => navigate(stage === "cash" ? `/shift/${mpdId}` : config.previous, { state: workflowState })}
+            onBack={() =>
+              navigate(stage === "cash" ? `/shift/${mpdId}` : config.previous, {
+                state: workflowState,
+              })
+            }
           />
           <WorkflowStatusBar currentStage={stage} />
 
-          {stage === "cash" && <CashCollection cashCounts={cashCounts} onCashCountsChange={setCashCounts} coins={coins} onCoinsChange={(value) => setCoins(sanitizeMoneyInput(value))} onSavedMessage={setSavedMessage} />}
+          {stage === "cash" && (
+            <CashCollection
+              cashCounts={cashCounts}
+              onCashCountsChange={setCashCounts}
+              coins={coins}
+              onCoinsChange={(value) => setCoins(sanitizeMoneyInput(value))}
+              onSavedMessage={setSavedMessage}
+            />
+          )}
           {stage === "upi" && (
             <UpiCollection
               upi={upi}
@@ -251,11 +352,15 @@ const ShiftCollectionStage = ({ stage }) => {
               firstTransactionTime={firstTransactionTime}
               onFirstTransactionTimeChange={setFirstTransactionTime}
               firstTransactionAmount={firstTransactionAmount}
-              onFirstTransactionAmountChange={(value) => setFirstTransactionAmount(sanitizeMoneyInput(value))}
+              onFirstTransactionAmountChange={(value) =>
+                setFirstTransactionAmount(sanitizeMoneyInput(value))
+              }
               lastTransactionTime={lastTransactionTime}
               onLastTransactionTimeChange={setLastTransactionTime}
               lastTransactionAmount={lastTransactionAmount}
-              onLastTransactionAmountChange={(value) => setLastTransactionAmount(sanitizeMoneyInput(value))}
+              onLastTransactionAmountChange={(value) =>
+                setLastTransactionAmount(sanitizeMoneyInput(value))
+              }
               timeError={
                 firstTransactionTime &&
                 lastTransactionTime &&
@@ -266,16 +371,44 @@ const ShiftCollectionStage = ({ stage }) => {
               onSavedMessage={setSavedMessage}
             />
           )}
-          {stage === "card" && <AtmCollection card={card} onCardChange={(value) => setCard(sanitizeMoneyInput(value))} onSavedMessage={setSavedMessage} />}
-          {stage === "udhari" && <UdhariCollection shift={shift} fuelRates={fuelRates} onShiftUpdate={setShift} onSavedMessage={setSavedMessage} />}
+          {stage === "card" && (
+            <AtmCollection
+              card={card}
+              onCardChange={(value) => setCard(sanitizeMoneyInput(value))}
+              onSavedMessage={setSavedMessage}
+            />
+          )}
+          {stage === "udhari" && (
+            <UdhariCollection
+              shift={shift}
+              fuelRates={fuelRates}
+              onShiftUpdate={setShift}
+              onSavedMessage={setSavedMessage}
+            />
+          )}
 
-          {error && <div className="mt-4 rounded-[14px] border border-red-100 bg-red-50 px-4 py-3 text-[11px] font-medium leading-4 text-red-700">{error}</div>}
-          {savedMessage && <div className="mt-4 rounded-[14px] border border-emerald-100 bg-emerald-50 px-4 py-3 text-[11px] font-medium leading-4 text-emerald-700">{savedMessage}</div>}
+          {error && (
+            <div className="mt-4 rounded-[14px] border border-red-100 bg-red-50 px-4 py-3 text-[11px] font-medium leading-4 text-red-700">
+              {error}
+            </div>
+          )}
+          {savedMessage && (
+            <div className="mt-4 rounded-[14px] border border-emerald-100 bg-emerald-50 px-4 py-3 text-[11px] font-medium leading-4 text-emerald-700">
+              {savedMessage}
+            </div>
+          )}
 
           <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-slate-100 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
             <div className="mx-auto max-w-[480px]">
-              <button type="button" onClick={handleNext} disabled={saving} className="flex min-h-[52px] w-full items-center justify-center rounded-[15px] bg-[#047857] text-[14px] font-semibold text-white shadow-[0_8px_20px_rgba(4,120,87,0.18)] transition active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60">
-                {saving ? "Saving..." : `Next: ${stage === "cash" ? "UPI" : stage === "upi" ? "Card / ATM" : stage === "card" ? "Udhari" : "Expense"}`}
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={saving}
+                className="flex min-h-[52px] w-full items-center justify-center rounded-[15px] bg-[#047857] text-[14px] font-semibold text-white shadow-[0_8px_20px_rgba(4,120,87,0.18)] transition active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {saving
+                  ? "Saving..."
+                  : `Next: ${stage === "cash" ? "UPI" : stage === "upi" ? "Card / ATM" : stage === "card" ? "Udhari" : "Expense"}`}
               </button>
             </div>
           </div>
