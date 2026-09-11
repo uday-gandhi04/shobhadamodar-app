@@ -1,7 +1,10 @@
 import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { AuthContext } from "../context/AuthContext";
+
 import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
 import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
 
@@ -29,6 +32,8 @@ const EndShiftReview = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
+
   const [currentShift, setCurrentShift] = useState(null);
 
   const workflowState = readShiftWorkflowState(location.state);
@@ -117,7 +122,7 @@ const EndShiftReview = () => {
           !Array.isArray(persistedReadings) ||
           persistedReadings.length === 0
         ) {
-          setError("Final nozzle readings are missing.");
+          setError(t("review.error.missingReadings"));
           setLoading(false);
           return;
         }
@@ -147,7 +152,7 @@ const EndShiftReview = () => {
         setError(
           err?.response?.data?.message ||
             err?.message ||
-            "Unable to calculate final result.",
+            t("review.error.calculateFailed"),
         );
       } finally {
         if (mounted) {
@@ -161,7 +166,7 @@ const EndShiftReview = () => {
     return () => {
       mounted = false;
     };
-  }, [shiftId, navigate, finalReadings]);
+  }, [shiftId, navigate, finalReadings, t]);
 
   const handleEndShift = async () => {
     if (!resolvedShiftId || !preview || ending) {
@@ -189,7 +194,9 @@ const EndShiftReview = () => {
       window.location.replace("/select-mpd");
     } catch (err) {
       setError(
-        err?.response?.data?.message || err?.message || "Unable to end shift.",
+        err?.response?.data?.message ||
+          err?.message ||
+          t("review.error.endFailed"),
       );
     } finally {
       setEnding(false);
@@ -207,16 +214,6 @@ const EndShiftReview = () => {
 
   const totalCollectedPaise = Number(preview?.totalCollectedPaise || 0);
 
-  /*
-   * This is a DISPLAY-ONLY figure.
-   *
-   * It includes both:
-   * - customer collections
-   * - business expenses
-   *
-   * It must NOT replace totalCollectedPaise
-   * in reconciliation/endShift calculations.
-   */
   const totalAccountedPaise = totalCollectedPaise + expenseTotalPaise;
 
   const status = preview?.reconciliationStatus;
@@ -254,10 +251,12 @@ const EndShiftReview = () => {
           <WorkflowStatusBar currentStage="review" />
 
           <div className="mt-4">
-            <h1 className="text-[18px] font-bold text-slate-900">Review</h1>
+            <h1 className="text-[18px] font-bold text-slate-900">
+              {t("review.title")}
+            </h1>
 
             <p className="mt-0.5 text-[10px] text-slate-500">
-              Check everything before ending
+              {t("review.subtitle")}
             </p>
           </div>
 
@@ -283,13 +282,15 @@ const EndShiftReview = () => {
               ====================================================== */}
               <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
                 <h2 className="text-[15px] font-bold text-slate-900">
-                  Collection
+                  {t("review.collection")}
                 </h2>
 
                 <div className="mt-4 space-y-3">
                   {/* CASH */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500">Cash</span>
+                    <span className="text-[11px] text-slate-500">
+                      {t("review.cash")}
+                    </span>
 
                     <span className="text-[12px] font-semibold text-slate-800">
                       {formatMoney(preview.totalCashPaise)}
@@ -298,7 +299,9 @@ const EndShiftReview = () => {
 
                   {/* UPI */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500">UPI</span>
+                    <span className="text-[11px] text-slate-500">
+                      {t("review.upi")}
+                    </span>
 
                     <span className="text-[12px] font-semibold text-slate-800">
                       {formatMoney(preview.totalUpiPaise)}
@@ -308,7 +311,7 @@ const EndShiftReview = () => {
                   {/* CARD */}
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] text-slate-500">
-                      Card / ATM
+                      {t("review.card")}
                     </span>
 
                     <span className="text-[12px] font-semibold text-slate-800">
@@ -318,7 +321,9 @@ const EndShiftReview = () => {
 
                   {/* UDHARI */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500">Udhari</span>
+                    <span className="text-[11px] text-slate-500">
+                      {t("review.udhari")}
+                    </span>
 
                     <span className="text-[12px] font-semibold text-slate-800">
                       {formatMoney(preview.totalUdhariPaise)}
@@ -327,7 +332,9 @@ const EndShiftReview = () => {
 
                   {/* EXPENSES */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500">Expenses</span>
+                    <span className="text-[11px] text-slate-500">
+                      {t("review.expenses")}
+                    </span>
 
                     <span className="text-[12px] font-semibold text-slate-800">
                       {formatMoney(expenseTotalPaise)}
@@ -338,7 +345,7 @@ const EndShiftReview = () => {
                   <div className="mt-1 border-t border-slate-100 pt-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[12px] font-semibold text-slate-700">
-                        Total
+                        {t("review.total")}
                       </span>
 
                       <span className="text-[16px] font-bold text-[#047857]">
@@ -354,14 +361,14 @@ const EndShiftReview = () => {
               ====================================================== */}
               <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
                 <h2 className="text-[15px] font-bold text-slate-900">
-                  Sale Reconciliation
+                  {t("review.saleReconciliation")}
                 </h2>
 
                 <div className="mt-4 space-y-3">
                   {/* EXPECTED */}
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] text-slate-500">
-                      Expected Sale
+                      {t("review.expectedSale")}
                     </span>
 
                     <span className="text-[14px] font-bold text-slate-900">
@@ -372,7 +379,7 @@ const EndShiftReview = () => {
                   {/* ACTUAL */}
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] text-slate-500">
-                      Actual Sale
+                      {t("review.actualSale")}
                     </span>
 
                     <span className="text-[14px] font-bold text-slate-900">
@@ -398,7 +405,7 @@ const EndShiftReview = () => {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[11px] font-semibold text-slate-600">
-                        Balance
+                        {t("review.balance")}
                       </span>
 
                       <span
@@ -415,12 +422,16 @@ const EndShiftReview = () => {
                         `}
                       >
                         {isMatched
-                          ? "MATCHED"
+                          ? t("review.status.matched")
                           : isShort
-                            ? `SHORT ${formatMoney(Math.abs(difference))}`
+                            ? t("review.status.short", {
+                                amount: formatMoney(Math.abs(difference)),
+                              })
                             : isExcess
-                              ? `EXCESS ${formatMoney(Math.abs(difference))}`
-                              : "PENDING"}
+                              ? t("review.status.excess", {
+                                  amount: formatMoney(Math.abs(difference)),
+                                })
+                              : t("review.status.pending")}
                       </span>
                     </div>
                   </div>
@@ -456,7 +467,9 @@ const EndShiftReview = () => {
                   disabled:opacity-60
                 "
               >
-                {ending ? "Ending Shift..." : "End Shift"}
+                {ending
+                  ? t("review.endingShift")
+                  : t("review.endShift")}
               </button>
             </div>
           </div>

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { formatReading } from "./nozzleUtils";
 
 const NozzleReadingRow = ({
@@ -7,6 +9,8 @@ const NozzleReadingRow = ({
   isInvalid,
   onFinalReadingChange,
 }) => {
+  const { t } = useTranslation();
+
   const fuelCode =
     nozzle.fuelType === "DIESEL" ? "D" : "P";
 
@@ -37,8 +41,8 @@ const NozzleReadingRow = ({
 
         <span className="sr-only">
           {nozzle.fuelType === "DIESEL"
-            ? "Diesel"
-            : "Petrol"}
+            ? t("nozzle.diesel")
+            : t("nozzle.petrol")}
         </span>
       </div>
 
@@ -66,8 +70,9 @@ const NozzleReadingRow = ({
           htmlFor={inputId}
           className="sr-only"
         >
-          Closing reading for nozzle{" "}
-          {nozzle.number}
+          {t("nozzle.closingAriaLabel", {
+            number: nozzle.number,
+          })}
         </label>
 
         <input
@@ -82,7 +87,7 @@ const NozzleReadingRow = ({
             )
           }
           aria-invalid={isInvalid}
-          placeholder="Enter"
+          placeholder={t("nozzle.enter")}
           className={`
             block
             h-[36px]
@@ -126,7 +131,7 @@ const NozzleReadingRow = ({
 
         {isInvalid && (
           <p className="mt-1 text-[8px] font-semibold leading-tight text-red-600">
-            Closing cannot be below opening.
+            {t("nozzle.closingBelowOpening")}
           </p>
         )}
       </div>

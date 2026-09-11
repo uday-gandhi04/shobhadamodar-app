@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   addUdhariTransaction,
@@ -20,13 +21,6 @@ const formatOutstanding = (paise) => {
   })}`;
 };
 
-/**
- * Convert a user-entered rupee amount into integer paise.
- *
- * Example:
- * "97.83" -> 9783
- * "600"   -> 60000
- */
 const parseRupeesToPaise = (value) => {
   const number = Number(value);
 
@@ -55,6 +49,8 @@ const UdhariCollection = ({
   onShiftUpdate,
   onSavedMessage,
 }) => {
+  const { t } = useTranslation();
+
   const [customerSearch, setCustomerSearch] = useState("");
   const [customerResults, setCustomerResults] = useState([]);
   const [searchingCustomers, setSearchingCustomers] = useState(false);
@@ -108,7 +104,7 @@ const UdhariCollection = ({
 
       setUdhariError(
         err?.response?.data?.message ||
-          "Unable to search customers.",
+          t("udhari.error.searchCustomers"),
       );
     } finally {
       setSearchingCustomers(false);
@@ -128,12 +124,6 @@ const UdhariCollection = ({
     fuelRates?.[udhariFuelType] || 0,
   );
 
-  /*
-   * LITRES MODE
-   *
-   * Litres entered by user are authoritative.
-   * Amount is derived from litres × rate.
-   */
   const calculatedUdhariAmount =
     udhariLitres !== "" &&
     currentUdhariRatePaise > 0 &&
@@ -143,28 +133,6 @@ const UdhariCollection = ({
         )
       : 0;
 
-  /*
-   * AMOUNT MODE
-   *
-   * IMPORTANT:
-   * udhariAmount is entered in rupees.
-   *
-   * Convert it to paise first.
-   *
-   * Example:
-   *
-   * ₹97.83
-   * -> 9783 paise
-   *
-   * Rate:
-   * ₹97.83/L
-   * -> 9783 paise/L
-   *
-   * Litres:
-   * 9783 / 9783 = 1.00 L
-   *
-   * DO NOT divide rupees directly by paise.
-   */
   const enteredAmountPaise = parseRupeesToPaise(udhariAmount);
 
   const calculatedUdhariLitres =
@@ -184,14 +152,12 @@ const UdhariCollection = ({
       customerName.trim();
 
     if (name.length < 2) {
-      setUdhariError(
-        "Enter or select a customer name.",
-      );
+      setUdhariError(t("udhari.error.customerName"));
       return;
     }
 
     if (currentUdhariRatePaise <= 0) {
-      setUdhariError("Fuel rate is unavailable.");
+      setUdhariError(t("udhari.error.rateUnavailable"));
       return;
     }
 
@@ -202,42 +168,24 @@ const UdhariCollection = ({
       litres = Number(udhariLitres);
 
       if (!Number.isFinite(litres) || litres <= 0) {
-        setUdhariError(
-          "Enter a valid litre amount.",
-        );
+        setUdhariError(t("udhari.error.invalidLitres"));
         return;
       }
 
-      /*
-       * Litres are authoritative in this mode.
-       * Amount is derived from litres × rate.
-       */
       amountPaise = Math.round(
         litres * currentUdhariRatePaise,
       );
     } else {
-      /*
-       * RUPEE MODE:
-       *
-       * The exact entered amount is authoritative.
-       *
-       * Do NOT calculate amount again from rounded litres.
-       */
       amountPaise = enteredAmountPaise;
 
       if (
         !Number.isFinite(amountPaise) ||
         amountPaise <= 0
       ) {
-        setUdhariError(
-          "Enter a valid rupee amount.",
-        );
+        setUdhariError(t("udhari.error.invalidAmount"));
         return;
       }
 
-      /*
-       * Litres are derived from exact paise.
-       */
       litres =
         amountPaise / currentUdhariRatePaise;
     }
@@ -270,7 +218,7 @@ const UdhariCollection = ({
 
       if (!transaction?._id) {
         throw new Error(
-          "Udhari response did not include a transaction ID.",
+          t("udhari.error.missingTransactionId"),
         );
       }
 
@@ -316,15 +264,6 @@ const UdhariCollection = ({
           transaction?.ratePaise ??
           currentUdhariRatePaise,
 
-        /*
-         * IMPORTANT:
-         *
-         * The backend transaction amount is authoritative
-         * when it is returned.
-         *
-         * In rupee mode, this must remain exactly the
-         * entered amount.
-         */
         amountPaise:
           transaction?.amountPaise ??
           amountPaise,
@@ -335,9 +274,6 @@ const UdhariCollection = ({
         ...current,
       ]);
 
-      /*
-       * Prefer the shift total returned by the backend.
-       */
       const updatedUdhariTotal = Number(
         result?.shift?.totalUdhariPaise ??
           shift.totalUdhariPaise ??
@@ -373,14 +309,12 @@ const UdhariCollection = ({
       setUdhariLitres("");
       setUdhariAmount("");
 
-      onSavedMessage(
-        "Udhari added successfully.",
-      );
+      onSavedMessage(t("udhari.success.added"));
     } catch (err) {
       setUdhariError(
         err?.response?.data?.message ||
           err?.message ||
-          "Unable to add Udhari.",
+          t("udhari.error.addFailed"),
       );
     } finally {
       setAddingUdhari(false);
@@ -403,13 +337,13 @@ const UdhariCollection = ({
     const customerNameForConfirm =
       entry.customer?.name ||
       entry.customerName ||
-      "Customer";
+      t("udhari.customerFallback");
 
     const confirmed = window.confirm(
-      `Remove this Udhari transaction?\n\n` +
+      `${t("udhari.confirmRemove.title")}\n\n` +
         `${customerNameForConfirm}\n` +
         `${formatCurrency(amountPaise)}\n\n` +
-        `This will reverse the transaction and restore the customer's outstanding balance.`,
+        `${t("udhari.confirmRemove.body")}`,
     );
 
     if (!confirmed) {
@@ -420,14 +354,6 @@ const UdhariCollection = ({
       setRemovingUdhariId(entry.id);
       setUdhariError("");
 
-      /*
-       * IMPORTANT:
-       *
-       * This must be a real backend reversal/delete.
-       *
-       * We do NOT remove the entry locally before the
-       * backend confirms success.
-       */
       const response =
         await deleteUdhariTransaction(
           entry.id,
@@ -435,19 +361,12 @@ const UdhariCollection = ({
 
       const result = response?.data;
 
-      /*
-       * Only update the UI AFTER backend success.
-       */
       setUdhariEntries((current) =>
         current.filter(
           (item) => item.id !== entry.id,
         ),
       );
 
-      /*
-       * Prefer the authoritative shift total
-       * returned by the backend.
-       */
       const backendUdhariTotal =
         result?.shift?.totalUdhariPaise;
 
@@ -464,10 +383,6 @@ const UdhariCollection = ({
               ) - amountPaise,
             );
 
-      /*
-       * Update selected customer's outstanding
-       * when backend returns the updated customer.
-       */
       if (
         result?.customer &&
         selectedCustomer?._id ===
@@ -497,17 +412,12 @@ const UdhariCollection = ({
           newUdhariTotal,
       }));
 
-      onSavedMessage(
-        "Udhari removed successfully.",
-      );
+      onSavedMessage(t("udhari.success.removed"));
     } catch (err) {
-      /*
-       * DO NOT hide the entry if backend removal failed.
-       */
       setUdhariError(
         err?.response?.data?.message ||
           err?.message ||
-          "Unable to remove Udhari.",
+          t("udhari.error.removeFailed"),
       );
     } finally {
       setRemovingUdhariId(null);
@@ -516,24 +426,21 @@ const UdhariCollection = ({
 
   return (
     <div className="mt-4 space-y-4">
-      {/* =====================================================
-          ADD UDHARI
-      ====================================================== */}
       <section className="rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
         <div>
           <p className="text-[16px] font-bold text-slate-900">
-            Udhari Collection
+            {t("udhari.title")}
           </p>
 
           <p className="mt-1 text-[10px] leading-4 text-slate-500">
-            Add fuel given on credit to a customer.
+            {t("udhari.description")}
           </p>
         </div>
 
         {/* CUSTOMER */}
         <div className="mt-5">
           <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-            Customer Name
+            {t("udhari.customerName")}
           </label>
 
           <div className="relative mt-2">
@@ -621,7 +528,7 @@ const UdhariCollection = ({
 
                       <div className="text-right">
                         <p className="text-[8px] font-semibold uppercase tracking-[0.04em] text-slate-400">
-                          Owes
+                          {t("udhari.owes")}
                         </p>
 
                         <p className="mt-0.5 text-[10px] font-bold text-slate-700">
@@ -638,7 +545,7 @@ const UdhariCollection = ({
 
             {searchingCustomers && (
               <p className="mt-1 text-[9px] text-slate-400">
-                Searching...
+                {t("udhari.searching")}
               </p>
             )}
           </div>
@@ -654,13 +561,13 @@ const UdhariCollection = ({
                 </p>
 
                 <p className="mt-0.5 text-[9px] text-emerald-700">
-                  Existing customer
+                  {t("udhari.existingCustomer")}
                 </p>
               </div>
 
               <div className="text-right">
                 <p className="text-[8px] font-semibold uppercase tracking-[0.04em] text-slate-400">
-                  Outstanding
+                  {t("udhari.outstanding")}
                 </p>
 
                 <p className="mt-0.5 text-[12px] font-bold text-[#047857]">
@@ -676,10 +583,9 @@ const UdhariCollection = ({
         {/* SLIP + VEHICLE */}
         <div className="mt-4">
           <div className="grid grid-cols-2 gap-2">
-            {/* SLIP NUMBER */}
             <div>
               <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                Slip Number
+                {t("udhari.slipNumber")}
               </label>
 
               <input
@@ -707,12 +613,11 @@ const UdhariCollection = ({
               />
             </div>
 
-            {/* VEHICLE NUMBER */}
             <div>
               <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                Vehicle Number
+                {t("udhari.vehicleNumber")}
                 <span className="ml-1 font-normal normal-case">
-                  (optional)
+                  {t("udhari.optional")}
                 </span>
               </label>
 
@@ -747,7 +652,7 @@ const UdhariCollection = ({
         {/* FUEL TYPE */}
         <div className="mt-4">
           <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-            Fuel Type
+            {t("udhari.fuelType")}
           </p>
 
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -771,7 +676,7 @@ const UdhariCollection = ({
                 }
               `}
             >
-              Petrol
+              {t("udhari.petrol")}
             </button>
 
             <button
@@ -794,7 +699,7 @@ const UdhariCollection = ({
                 }
               `}
             >
-              Diesel
+              {t("udhari.diesel")}
             </button>
           </div>
         </div>
@@ -802,7 +707,7 @@ const UdhariCollection = ({
         {/* ENTRY MODE */}
         <div className="mt-4">
           <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-            Enter
+            {t("udhari.enter")}
           </p>
 
           <div className="mt-2 grid grid-cols-2 gap-1 rounded-[12px] bg-slate-100 p-1">
@@ -823,7 +728,7 @@ const UdhariCollection = ({
                 }
               `}
             >
-              Litres
+              {t("udhari.litres")}
             </button>
 
             <button
@@ -843,7 +748,7 @@ const UdhariCollection = ({
                 }
               `}
             >
-              Rupees
+              {t("udhari.rupees")}
             </button>
           </div>
         </div>
@@ -852,7 +757,7 @@ const UdhariCollection = ({
         {udhariMode === "litres" && (
           <div className="mt-3">
             <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-              Litres
+              {t("udhari.litres")}
             </label>
 
             <input
@@ -886,7 +791,7 @@ const UdhariCollection = ({
 
             <div className="mt-2 flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2">
               <span className="text-[9px] text-slate-500">
-                Rate
+                {t("udhari.rate")}
               </span>
 
               <span className="text-[11px] font-semibold text-slate-700">
@@ -902,7 +807,7 @@ const UdhariCollection = ({
 
             <div className="mt-2 flex items-center justify-between rounded-[11px] bg-amber-50 px-3 py-2.5">
               <span className="text-[9px] font-semibold text-slate-600">
-                Amount
+                {t("udhari.amount")}
               </span>
 
               <span className="text-[14px] font-bold text-slate-900">
@@ -920,7 +825,7 @@ const UdhariCollection = ({
         {udhariMode === "amount" && (
           <div className="mt-3">
             <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-              Amount
+              {t("udhari.amount")}
             </label>
 
             <div className="mt-2 flex h-[50px] items-center rounded-[12px] border border-slate-200 bg-slate-50 px-3 focus-within:border-[#047857] focus-within:bg-white">
@@ -953,7 +858,7 @@ const UdhariCollection = ({
 
             <div className="mt-2 flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2">
               <span className="text-[9px] text-slate-500">
-                Rate
+                {t("udhari.rate")}
               </span>
 
               <span className="text-[11px] font-semibold text-slate-700">
@@ -969,7 +874,7 @@ const UdhariCollection = ({
 
             <div className="mt-2 flex items-center justify-between rounded-[11px] bg-emerald-50 px-3 py-2.5">
               <span className="text-[9px] font-semibold text-slate-600">
-                Litres
+                {t("udhari.litres")}
               </span>
 
               <span className="text-[14px] font-bold text-[#047857]">
@@ -1015,32 +920,30 @@ const UdhariCollection = ({
           "
         >
           {addingUdhari
-            ? "Adding..."
-            : "+ Add Udhari"}
+            ? t("udhari.adding")
+            : t("udhari.addUdhari")}
         </button>
       </section>
 
-      {/* =====================================================
-          THIS SHIFT
-      ====================================================== */}
+      {/* THIS SHIFT */}
       {udhariEntries.length > 0 && (
         <section className="rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[13px] font-bold text-slate-900">
-                This Shift
+                {t("udhari.thisShift")}
               </p>
 
               <p className="mt-0.5 text-[9px] text-slate-400">
-                Udhari added during this shift
+                {t("udhari.thisShiftHint")}
               </p>
             </div>
 
             <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-bold text-amber-700">
               {udhariEntries.length}{" "}
               {udhariEntries.length === 1
-                ? "entry"
-                : "entries"}
+                ? t("udhari.entry")
+                : t("udhari.entries")}
             </span>
           </div>
 
@@ -1077,8 +980,8 @@ const UdhariCollection = ({
                         <p className="mt-1 text-[9px] font-medium text-slate-500">
                           {entry.fuelType ===
                           "DIESEL"
-                            ? "Diesel"
-                            : "Petrol"}
+                            ? t("udhari.diesel")
+                            : t("udhari.petrol")}
                           {" · "}
                           {Number(
                             entry.litres ||
@@ -1089,7 +992,8 @@ const UdhariCollection = ({
 
                         {entry.slipNumber && (
                           <p className="mt-0.5 text-[9px] text-slate-400">
-                            Slip: {entry.slipNumber}
+                            {t("udhari.slipLabel")}{" "}
+                            {entry.slipNumber}
                           </p>
                         )}
 
@@ -1142,8 +1046,8 @@ const UdhariCollection = ({
                           "
                         >
                           {isRemoving
-                            ? "Removing..."
-                            : "Remove"}
+                            ? t("udhari.removing")
+                            : t("udhari.remove")}
                         </button>
                       </div>
                     </div>
@@ -1155,7 +1059,7 @@ const UdhariCollection = ({
 
           <div className="mt-3 flex items-center justify-between rounded-[12px] bg-amber-50 px-3 py-3">
             <span className="text-[10px] font-semibold text-slate-600">
-              Shift Udhari
+              {t("udhari.shiftUdhari")}
             </span>
 
             <span className="text-[15px] font-bold text-amber-700">

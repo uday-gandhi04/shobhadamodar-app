@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { AuthContext } from "../context/AuthContext";
 
@@ -48,6 +49,7 @@ const Expenses = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
 
   const workflowState = readShiftWorkflowState(
     location.state,
@@ -97,13 +99,13 @@ const Expenses = () => {
         setError(
           err?.response?.data?.message ||
             err?.message ||
-            "Unable to load expenses.",
+            t("expense.error.loadFailed"),
         );
       } finally {
         setLoading(false);
       }
     },
-    [navigate],
+    [navigate, t],
   );
 
   useEffect(() => {
@@ -128,21 +130,17 @@ const Expenses = () => {
       reason.trim();
 
     if (!amountPaise) {
-      setError(
-        "Enter a valid expense amount.",
-      );
+      setError(t("expense.error.invalidAmount"));
       return;
     }
 
     if (trimmedReason.length < 2) {
-      setError(
-        "Enter a reason for the expense.",
-      );
+      setError(t("expense.error.missingReason"));
       return;
     }
 
     if (!shift?._id) {
-      setError("Active shift not found.");
+      setError(t("expense.error.noShift"));
       return;
     }
 
@@ -171,14 +169,12 @@ const Expenses = () => {
       setAmount("");
       setReason("");
 
-      setSuccess(
-        "Expense recorded successfully.",
-      );
+      setSuccess(t("expense.success.saved"));
     } catch (err) {
       setError(
         err?.response?.data?.message ||
           err?.message ||
-          "Unable to save expense.",
+          t("expense.error.saveFailed"),
       );
     } finally {
       setSaving(false);
@@ -224,7 +220,6 @@ const Expenses = () => {
         }}
       >
         <main className="mx-auto min-h-[100dvh] max-w-[480px] px-4 pb-28 pt-[max(0.9rem,env(safe-area-inset-top))]">
-          {/* SHARED HEADER */}
           <EmployeeShiftHeader
             shift={shift}
             user={user}
@@ -235,38 +230,34 @@ const Expenses = () => {
             }
           />
 
-          {/* SHARED WORKFLOW STATUS */}
           <WorkflowStatusBar
             currentStage="expense"
           />
 
-          {/* PAGE TITLE */}
           <div className="mt-4">
             <h1 className="text-[18px] font-bold text-slate-900">
-              Expenses
+              {t("expense.title")}
             </h1>
 
             <p className="mt-0.5 text-[10px] text-slate-500">
-              Record business expenses during your shift
+              {t("expense.subtitle")}
             </p>
           </div>
 
-          {/* ADD EXPENSE */}
           <section className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
             <div>
               <h2 className="text-[15px] font-semibold text-slate-900">
-                Add Expense
+                {t("expense.addExpense")}
               </h2>
 
               <p className="mt-1 text-[10px] leading-4 text-slate-500">
-                Record money spent for station/business purposes.
+                {t("expense.description")}
               </p>
             </div>
 
-            {/* AMOUNT */}
             <div className="mt-5">
               <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                Amount
+                {t("expense.amount")}
               </label>
 
               <div className="mt-2 flex h-[50px] items-center rounded-[12px] border border-slate-200 bg-slate-50 px-3 focus-within:border-[#047857] focus-within:bg-white">
@@ -286,15 +277,14 @@ const Expenses = () => {
                     )
                   }
                   className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold text-slate-900 outline-none"
-                  aria-label="Expense amount"
+                  aria-label={t("expense.amountAriaLabel")}
                 />
               </div>
             </div>
 
-            {/* REASON */}
             <div className="mt-4">
               <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                Reason
+                {t("expense.reason")}
               </label>
 
               <textarea
@@ -320,18 +310,16 @@ const Expenses = () => {
                   focus:border-[#047857]
                   focus:bg-white
                 "
-                aria-label="Expense reason"
+                aria-label={t("expense.reasonAriaLabel")}
               />
             </div>
 
-            {/* ERROR */}
             {error && (
               <div className="mt-4 rounded-[12px] border border-red-100 bg-red-50 px-3 py-2.5 text-[10px] font-medium leading-4 text-red-700">
                 {error}
               </div>
             )}
 
-            {/* SUCCESS */}
             {success && (
               <div className="mt-4 rounded-[12px] border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-[10px] font-medium leading-4 text-emerald-700">
                 {success}
@@ -362,36 +350,35 @@ const Expenses = () => {
               "
             >
               {saving
-                ? "Saving..."
-                : "Save Expense"}
+                ? t("expense.saving")
+                : t("expense.saveExpense")}
             </button>
           </section>
 
-          {/* THIS SHIFT */}
           <section className="mt-4 rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[13px] font-bold text-slate-900">
-                  This Shift
+                  {t("expense.thisShift")}
                 </p>
 
                 <p className="mt-0.5 text-[9px] text-slate-400">
-                  Expenses recorded during this shift
+                  {t("expense.thisShiftHint")}
                 </p>
               </div>
 
               <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-bold text-amber-700">
                 {expenses.length}{" "}
                 {expenses.length === 1
-                  ? "expense"
-                  : "expenses"}
+                  ? t("expense.expense")
+                  : t("expense.expenses")}
               </span>
             </div>
 
             {expenses.length === 0 ? (
               <div className="mt-4 rounded-[12px] bg-slate-50 px-3 py-4 text-center">
                 <p className="text-[10px] text-slate-400">
-                  No expenses recorded yet.
+                  {t("expense.empty")}
                 </p>
               </div>
             ) : (
@@ -444,7 +431,7 @@ const Expenses = () => {
 
                 <div className="mt-3 flex items-center justify-between rounded-[12px] bg-amber-50 px-3 py-3">
                   <span className="text-[10px] font-semibold text-slate-600">
-                    Total Expenses
+                    {t("expense.totalExpenses")}
                   </span>
 
                   <span className="text-[15px] font-bold text-amber-700">
@@ -457,7 +444,6 @@ const Expenses = () => {
             )}
           </section>
 
-          {/* NEXT */}
           <button
             type="button"
             disabled={saving}
@@ -489,7 +475,7 @@ const Expenses = () => {
               disabled:opacity-60
             "
           >
-            Next: Review
+            {t("expense.nextReview")}
           </button>
         </main>
       </IonContent>

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 const UpiCollection = ({
   upi,
   onUpiChange,
@@ -12,6 +14,8 @@ const UpiCollection = ({
   timeError,
   onSavedMessage,
 }) => {
+  const { t } = useTranslation();
+
   const hasAnyUpiData =
     Boolean(
       upi ||
@@ -24,25 +28,24 @@ const UpiCollection = ({
   return (
     <section className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
       <p className="text-[16px] font-bold text-slate-900">
-        PhonePe
+        {t("phonepe.title")}
       </p>
 
       <p className="mt-1 text-[11px] leading-5 text-slate-500">
-        Enter the first and last transaction only when
-        UPI payments were received during this shift.
+        {t("phonepe.description")}
       </p>
 
       <div className="mt-5 overflow-hidden rounded-[14px] border border-slate-200">
         <div className="grid grid-cols-[minmax(72px,0.7fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2 bg-slate-50 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.05em] text-slate-500">
-          <span>Transaction</span>
-          <span>Time</span>
-          <span>Amount</span>
+          <span>{t("phonepe.transaction")}</span>
+          <span>{t("phonepe.time")}</span>
+          <span>{t("phonepe.amount")}</span>
         </div>
 
         {/* FIRST */}
         <div className="grid grid-cols-[minmax(72px,0.7fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 border-t border-slate-100 px-3 py-3">
           <span className="text-[12px] font-semibold text-slate-700">
-            First
+            {t("phonepe.first")}
           </span>
 
           <input
@@ -53,7 +56,7 @@ const UpiCollection = ({
                 event.target.value,
               )
             }
-            aria-label="First PhonePe transaction time"
+            aria-label={t("phonepe.firstTimeAriaLabel")}
             className="
               min-w-0
               rounded-[8px]
@@ -85,7 +88,7 @@ const UpiCollection = ({
                   event.target.value,
                 )
               }
-              aria-label="First PhonePe transaction amount"
+              aria-label={t("phonepe.firstAmountAriaLabel")}
               className="min-w-0 w-full bg-transparent text-right text-[11px] font-semibold tabular-nums text-slate-800 outline-none"
             />
           </div>
@@ -94,7 +97,7 @@ const UpiCollection = ({
         {/* LAST */}
         <div className="grid grid-cols-[minmax(72px,0.7fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 border-t border-slate-100 px-3 py-3">
           <span className="text-[12px] font-semibold text-slate-700">
-            Last
+            {t("phonepe.last")}
           </span>
 
           <input
@@ -105,7 +108,7 @@ const UpiCollection = ({
                 event.target.value,
               )
             }
-            aria-label="Last PhonePe transaction time"
+            aria-label={t("phonepe.lastTimeAriaLabel")}
             className="
               min-w-0
               rounded-[8px]
@@ -137,7 +140,7 @@ const UpiCollection = ({
                   event.target.value,
                 )
               }
-              aria-label="Last PhonePe transaction amount"
+              aria-label={t("phonepe.lastAmountAriaLabel")}
               className="min-w-0 w-full bg-transparent text-right text-[11px] font-semibold tabular-nums text-slate-800 outline-none"
             />
           </div>
@@ -153,7 +156,7 @@ const UpiCollection = ({
       {/* TOTAL */}
       <div className="mt-4 rounded-[14px] border border-emerald-100 bg-emerald-50 px-3 py-3">
         <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-emerald-700">
-          Total UPI Collection
+          {t("phonepe.totalCollection")}
         </p>
 
         <div className="mt-1 flex items-center">
@@ -170,14 +173,14 @@ const UpiCollection = ({
               onSavedMessage("");
             }}
             className="min-w-0 flex-1 bg-transparent text-right text-[22px] font-bold tabular-nums text-slate-900 outline-none"
-            aria-label="Total UPI collection"
+            aria-label={t("phonepe.totalCollectionAriaLabel")}
           />
         </div>
       </div>
 
       {!hasAnyUpiData && (
         <p className="mt-2 text-center text-[9px] text-slate-400">
-          No PhonePe payment? Leave this section empty.
+          {t("phonepe.emptyHint")}
         </p>
       )}
     </section>

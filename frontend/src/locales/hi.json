@@ -6,6 +6,7 @@
     "submit": "लॉग इन करें →",
     "secure": "सुरक्षित • विश्वसनीय • हमेशा सिंक"
   },
+
   "dashboard": {
     "assignedPump": "आपका पंप",
     "todaySale": "आज की बिक्री",
@@ -28,6 +29,7 @@
     "upiUpdated": "UPI संग्रह अपडेट किया गया",
     "viewPumpDetails": "पंप विवरण देखें"
   },
+
   "employee": {
     "selectMpd": {
       "kicker": "शिफ्ट शुरू करें",
@@ -42,11 +44,13 @@
       "loadError": "उपलब्ध MPD लोड नहीं हो सके।",
       "startError": "शिफ्ट शुरू नहीं हो सकी।"
     },
+
     "shifts": {
       "morning": "सुबह",
       "evening": "शाम",
       "night": "रात"
     },
+
     "dashboard": {
       "currentShift": "वर्तमान शिफ्ट",
       "active": "सक्रिय",
@@ -65,6 +69,7 @@
       "done": "पूरा",
       "pending": "बाकी"
     },
+
     "nozzles": {
       "title": "नोज़ल रीडिंग",
       "subtitle": "चारों नोज़ल की वर्तमान दर्ज रीडिंग।",
@@ -72,6 +77,7 @@
       "overviewAlt": "चार ईंधन नोज़ल",
       "loadError": "नोज़ल रीडिंग लोड नहीं हो सकी।"
     },
+
     "collections": {
       "title": "नकद संग्रह",
       "currentTotal": "वर्तमान संग्रह",
@@ -85,6 +91,7 @@
       "loadError": "संग्रह लोड नहीं हो सका।",
       "saveError": "संग्रह सेव नहीं हो सका।"
     },
+
     "endShift": {
       "title": "शिफ्ट समाप्त करें",
       "subtitle": "अंतिम नोज़ल रीडिंग और अंतिम रकम दर्ज करें।",
@@ -107,6 +114,171 @@
       "loadError": "शिफ्ट लोड नहीं हो सकी।",
       "previewError": "अंतिम परिणाम नहीं निकाला जा सका।",
       "endError": "शिफ्ट समाप्त नहीं हो सकी।"
+    }
+  },
+
+  "workflow": {
+    "stages": {
+      "nozzle": "नोज़ल",
+      "cash": "नकद",
+      "upi": "UPI",
+      "card": "कार्ड",
+      "udhari": "उधारी",
+      "expense": "खर्च",
+      "review": "समीक्षा"
+    },
+    "employee": "कर्मचारी",
+    "back": "वापस",
+    "started": "शुरू"
+  },
+
+  "nozzle": {
+    "title": "अंतिम नोज़ल रीडिंग",
+    "finalReadings": "अंतिम नोज़ल रीडिंग",
+    "subtitle": "हर नोज़ल की अंतिम टोटलाइज़र रीडिंग दर्ज करें।",
+    "readingInstruction": "हर नोज़ल की अंतिम टोटलाइज़र रीडिंग दर्ज करें।",
+    "nozzle": "नोज़ल",
+    "opening": "ओपनिंग",
+    "closing": "क्लोज़िंग",
+    "totalLitres": "कुल लीटर",
+    "totalSale": "कुल बिक्री",
+    "next": "अगला: नकद",
+    "nextCash": "अगला: नकद",
+    "closingRequired": "क्लोज़िंग रीडिंग दर्ज करें",
+    "closingBelowOpening": "क्लोज़िंग रीडिंग ओपनिंग से कम नहीं हो सकती।",
+    "finalReadingsHint": "हर नोज़ल की अंतिम टोटलाइज़र रीडिंग दर्ज करें।",
+"enter": "दर्ज करें"
+  },
+
+  "cash": {
+    "title": "नकद संग्रह",
+    "subtitle": "इस शिफ्ट में एकत्र नकद दर्ज करें।",
+    "collectedSoFar": "अब तक एकत्र नकद",
+    "count": "गिनती",
+    "value": "रकम",
+    "coins": "सिक्के",
+    "coinsHint": "₹1 / ₹2 / ₹5 कुल",
+    "totalCash": "कुल नकद",
+    "next": "अगला: UPI",
+    "nextUpi": "अगला: UPI"
+  },
+
+  "phonepe": {
+    "title": "PhonePe",
+    "subtitle": "UPI भुगतान होने पर पहली और आखिरी ट्रांज़ैक्शन दर्ज करें।",
+    "description": "UPI भुगतान होने पर पहली और आखिरी ट्रांज़ैक्शन दर्ज करें।",
+    "transaction": "ट्रांज़ैक्शन",
+    "time": "समय",
+    "amount": "रकम",
+    "first": "पहली",
+    "last": "आखिरी",
+    "totalCollection": "कुल UPI संग्रह",
+    "noPayment": "कोई PhonePe भुगतान नहीं? इसे खाली छोड़ें।",
+    "timeError": "आखिरी ट्रांज़ैक्शन का समय पहली ट्रांज़ैक्शन से पहले नहीं हो सकता।",
+    "completeError": "PhonePe ट्रांज़ैक्शन की पूरी जानकारी और कुल संग्रह दर्ज करें।",
+    "next": "अगला: कार्ड / ATM",
+    "emptyHint": "कोई PhonePe भुगतान नहीं? इसे खाली छोड़ें।"
+  },
+
+  "card": {
+    "title": "कार्ड / ATM संग्रह",
+    "description": "इस शिफ्ट में एकत्र कुल कार्ड / ATM राशि दर्ज करें।",
+    "subtitle": "इस शिफ्ट में एकत्र कुल कार्ड / ATM राशि दर्ज करें।",
+    "total": "कुल कार्ड / ATM",
+    "totalCardAtm": "कुल कार्ड / ATM",
+    "next": "अगला: उधारी",
+    "nextUdhari": "अगला: उधारी"
+  },
+
+  "atm": {
+    "title": "कार्ड / ATM संग्रह",
+    "description": "अब तक एकत्र कुल कार्ड / ATM राशि दर्ज करें।",
+    "totalCardAtm": "कुल कार्ड / ATM",
+    "nextUdhari": "अगला: उधारी",
+    "totalCard": "कुल कार्ड / ATM"
+  },
+
+  "udhari": {
+    "title": "उधारी संग्रह",
+    "subtitle": "उधार दिए गए ईंधन की जानकारी दर्ज करें।",
+    "description": "ग्राहक को उधार दिए गए ईंधन की जानकारी दर्ज करें।",
+    "customer": "ग्राहक का नाम",
+    "customerName": "ग्राहक का नाम",
+    "searchCustomer": "ग्राहक खोजें",
+    "slip": "स्लिप नंबर",
+    "slipNumber": "स्लिप नंबर",
+    "vehicle": "वाहन नंबर",
+    "vehicleNumber": "वाहन नंबर",
+    "optional": "वैकल्पिक",
+    "fuelType": "ईंधन प्रकार",
+    "petrol": "पेट्रोल",
+    "diesel": "डीज़ल",
+    "enter": "दर्ज करें",
+    "litres": "लीटर",
+    "rupees": "रुपये",
+    "rate": "दर",
+    "amount": "राशि",
+    "outstanding": "बकाया",
+    "existingCustomer": "मौजूदा ग्राहक",
+    "add": "उधारी जोड़ें",
+    "addUdhari": "उधारी जोड़ें",
+    "thisShift": "इस शिफ्ट में",
+    "entries": "प्रविष्टियाँ",
+    "entry": "प्रविष्टि",
+    "remove": "हटाएँ",
+    "removing": "हटाया जा रहा है...",
+    "next": "अगला: खर्च",
+    "nextExpenses": "अगला: खर्च",
+    "customerNameHint": "ग्राहक खोजें या चुनें"
+  },
+
+  "expense": {
+    "title": "खर्च",
+    "subtitle": "इस शिफ्ट के व्यावसायिक खर्च दर्ज करें।",
+    "add": "खर्च जोड़ें",
+    "addExpense": "खर्च जोड़ें",
+    "description": "पंप/व्यवसाय के लिए खर्च की गई राशि दर्ज करें।",
+    "amount": "राशि",
+    "reason": "कारण",
+    "save": "खर्च सेव करें",
+    "saveExpense": "खर्च सेव करें",
+    "saving": "सेव हो रहा है...",
+    "thisShift": "इस शिफ्ट में",
+    "recorded": "इस शिफ्ट के दर्ज खर्च",
+    "noExpenses": "अभी कोई खर्च दर्ज नहीं है।",
+    "total": "कुल खर्च",
+    "next": "अगला: समीक्षा",
+    "nextReview": "अगला: समीक्षा",
+    "thisShiftHint": "इस शिफ्ट के दर्ज खर्च",
+"empty": "अभी कोई खर्च दर्ज नहीं है।",
+"expenses": "खर्च"
+  },
+
+  "review": {
+    "title": "समीक्षा",
+    "subtitle": "शिफ्ट समाप्त करने से पहले सब कुछ जांचें।",
+    "collection": "संग्रह",
+    "cash": "नकद",
+    "upi": "UPI",
+    "card": "कार्ड / ATM",
+    "udhari": "उधारी",
+    "expenses": "खर्च",
+    "total": "कुल",
+    "saleReconciliation": "बिक्री मिलान",
+    "expectedSale": "अपेक्षित बिक्री",
+    "actualSale": "वास्तविक बिक्री",
+    "balance": "अंतर",
+    "matched": "मिलान सही",
+    "short": "कम",
+    "excess": "अधिक",
+    "pending": "लंबित",
+    "endShift": "शिफ्ट समाप्त करें",
+    "ending": "शिफ्ट समाप्त हो रही है...",
+    "status": {
+      "matched": "मिलान सही",
+      "short": "कम",
+      "excess": "अधिक",
+      "pending": "लंबित"
     }
   }
 }

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 const formatShiftStart = (startedAt) => {
   if (!startedAt) return "";
 
@@ -10,6 +12,8 @@ const formatShiftStart = (startedAt) => {
 };
 
 const EmployeeShiftHeader = ({ shift, user, onBack }) => {
+  const { t } = useTranslation();
+
   const employeeName = user?.name || user?.employeeId || "Employee";
 
   return (
@@ -28,7 +32,7 @@ const EmployeeShiftHeader = ({ shift, user, onBack }) => {
           text-slate-700
           shadow-[0_2px_8px_rgba(15,23,42,0.06)]
         "
-        aria-label="Back"
+        aria-label={t("workflow.back")}
       >
         <svg
           viewBox="0 0 24 24"
@@ -72,7 +76,7 @@ const EmployeeShiftHeader = ({ shift, user, onBack }) => {
               {employeeName}
             </p>
             <p className="mt-1 text-[7px] font-medium uppercase tracking-[0.05em] text-slate-400">
-              Employee
+              {t("workflow.employee")}
             </p>
           </div>
         </div>

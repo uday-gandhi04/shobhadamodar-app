@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 const DENOMINATIONS = [500, 200, 100, 50, 20, 10];
 
@@ -21,6 +22,8 @@ const CashCollection = ({
   onCoinsChange,
   onSavedMessage,
 }) => {
+  const { t } = useTranslation();
+
   const totalCashPaise = useMemo(() => {
     const notesPaise = DENOMINATIONS.reduce((total, denomination) => {
       const count = Number(cashCounts[denomination] || 0);
@@ -49,7 +52,7 @@ const CashCollection = ({
             <div className="text-[36px] font-bold text-[#047857]">₹</div>
 
             <p className="mt-1 text-[10px] font-medium text-slate-500">
-              Cash collected so far
+              {t("cash.collectedSoFar")}
             </p>
           </div>
         </div>
@@ -59,11 +62,11 @@ const CashCollection = ({
         <div className="w-[72px]" />
 
         <div className="flex-1 text-center text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-          Count
+          {t("cash.count")}
         </div>
 
         <div className="w-[82px] text-right text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-          Value
+          {t("cash.value")}
         </div>
       </div>
 
@@ -138,7 +141,9 @@ const CashCollection = ({
 
         <div className="grid grid-cols-5 min-h-[43px] items-center border-t border-slate-50">
           <div className="text-center">
-            <span className="text-[13px] font-semibold text-slate-700">Coins</span>
+            <span className="text-[13px] font-semibold text-slate-700">
+              {t("cash.coins")}
+            </span>
           </div>
 
           <span />
@@ -152,7 +157,7 @@ const CashCollection = ({
               onSavedMessage("");
             }}
             placeholder="₹0.00"
-            aria-label="Total value of coins"
+            aria-label={t("cash.coinsAriaLabel")}
             className="h-7 w-[54px] justify-self-center rounded-[7px] border border-slate-200 bg-white px-1 text-right text-[11px] font-semibold text-slate-800 outline-none focus:border-[#047857]"
           />
 
@@ -167,7 +172,7 @@ const CashCollection = ({
 
         <div className="mt-2 flex items-center justify-between rounded-[12px] bg-emerald-50 px-3 py-3">
           <span className="text-[11px] font-semibold text-slate-600">
-            Total Cash
+            {t("cash.totalCash")}
           </span>
 
           <span className="text-[17px] font-bold text-[#047857]">

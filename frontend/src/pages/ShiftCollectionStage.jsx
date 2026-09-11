@@ -128,8 +128,8 @@ const ShiftCollectionStage = ({ stage }) => {
           Number(currentShift.coinsPaise || 0) || legacyCoinsPaise;
         setCoins(savedCoinsPaise ? String(savedCoinsPaise / 100) : "");
         setUpi(
-          currentShift.upiCollection || currentShift.totalUpiPaise
-            ? String(Number(currentShift.totalUpiPaise || 0) / 100)
+          Number(currentShift.totalUpiPaise || 0) > 0
+            ? String(Number(currentShift.totalUpiPaise) / 100)
             : "",
         );
         setFirstTransactionTime(

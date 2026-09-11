@@ -1,16 +1,20 @@
+import { useTranslation } from "react-i18next";
+
 const WORKFLOW_STAGES = [
-  { key: "nozzle", label: "Nozzle" },
-  { key: "cash", label: "Cash" },
-  { key: "upi", label: "UPI" },
-  { key: "card", label: "Card" },
-  { key: "udhari", label: "Udhari" },
-  { key: "expense", label: "Expense" },
-  { key: "review", label: "Review" },
+  "nozzle",
+  "cash",
+  "upi",
+  "card",
+  "udhari",
+  "expense",
+  "review",
 ];
 
 const WorkflowStatusBar = ({ currentStage }) => {
+  const { t } = useTranslation();
+
   const currentIndex = WORKFLOW_STAGES.findIndex(
-    (stage) => stage.key === currentStage,
+    (stage) => stage === currentStage,
   );
 
   return (
@@ -21,7 +25,7 @@ const WorkflowStatusBar = ({ currentStage }) => {
           const isCompleted = index < currentIndex;
 
           return (
-            <div key={stage.key} className="min-w-0">
+            <div key={stage} className="min-w-0">
               <div
                 className={`mx-auto grid h-7 w-7 place-items-center rounded-full text-[10px] font-bold ${
                   isCurrent
@@ -42,7 +46,7 @@ const WorkflowStatusBar = ({ currentStage }) => {
                       : "text-slate-400"
                 }`}
               >
-                {stage.label}
+                {t(`workflow.stages.${stage}`)}
               </p>
             </div>
           );

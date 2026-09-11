@@ -1,6 +1,7 @@
 import { IonContent, IonPage } from "@ionic/react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { AuthContext } from "../context/AuthContext";
 import { getCurrentFuelRate, getCurrentShift, updateReadings } from "../services/shiftApi";
@@ -36,6 +37,7 @@ const EndShift = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
 
   const [shift, setShift] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -101,7 +103,7 @@ const EndShift = () => {
         setError(
           err?.response?.data?.message ||
             err?.message ||
-            "Unable to load shift readings.",
+            t("nozzle.error.loadReadings"),
         );
       } finally {
         if (mounted) setLoading(false);
@@ -113,7 +115,7 @@ const EndShift = () => {
     return () => {
       mounted = false;
     };
-  }, [location.state, navigate]);
+  }, [location.state, navigate, t]);
 
   const readings = useMemo(() => {
     return [...(shift?.readings || [])].sort((a, b) => {
@@ -235,18 +237,18 @@ const EndShift = () => {
           <section className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
             <div className="p-4 pb-3">
               <h2 className="text-[15px] font-semibold text-slate-900">
-                Final nozzle readings
+                {t("nozzle.finalReadings")}
               </h2>
 
               <p className="mt-1 text-[10px] leading-4 text-slate-500">
-                Enter the final totalizer reading for each nozzle.
+                {t("nozzle.finalReadingsHint")}
               </p>
             </div>
 
             <div className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2 border-y border-slate-100 bg-slate-50/70 px-3 py-2.5 text-[9px] font-bold uppercase tracking-[0.05em] text-slate-500 sm:grid-cols-[88px_minmax(0,1fr)_minmax(0,1fr)] sm:gap-4 sm:px-4">
-              <span>Nozzle</span>
-              <span className="text-right">Opening</span>
-              <span className="text-right">Closing</span>
+              <span>{t("nozzle.nozzle")}</span>
+              <span className="text-right">{t("nozzle.opening")}</span>
+              <span className="text-right">{t("nozzle.closing")}</span>
             </div>
 
             <div>
@@ -262,7 +264,7 @@ const EndShift = () => {
             <div className="grid grid-cols-2 gap-3 border-t border-slate-100 bg-slate-50/60 px-4 py-3">
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                  Total Litres
+                  {t("nozzle.totalLitres")}
                 </p>
                 <p className="mt-1 font-mono text-[14px] font-semibold tabular-nums text-slate-800">
                   {totalLitres.toFixed(2)} L
@@ -270,7 +272,7 @@ const EndShift = () => {
               </div>
               <div className="text-right">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                  Total Sale
+                  {t("nozzle.totalSale")}
                 </p>
                 <p className="mt-1 font-mono text-[15px] font-bold tabular-nums text-[#047857]">
                   ₹{(totalExpectedSalePaise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -322,7 +324,7 @@ const EndShift = () => {
                         setError(
                           err?.response?.data?.message ||
                             err?.message ||
-                            "Unable to save nozzle readings.",
+                            t("nozzle.error.saveReadings"),
                         );
                       }
                   })();
@@ -348,7 +350,7 @@ const EndShift = () => {
                 "
                 style={{ borderRadius: "15px", overflow: "hidden" }}
               >
-                Next: Cash
+                {t("nozzle.nextCash")}
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"

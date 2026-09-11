@@ -6,6 +6,7 @@
     "submit": "Login →",
     "secure": "Secure • Reliable • Always Synced"
   },
+
   "dashboard": {
     "assignedPump": "Assigned Pump",
     "todaySale": "Today's Sale",
@@ -28,6 +29,7 @@
     "upiUpdated": "UPI collection updated",
     "viewPumpDetails": "View pump details"
   },
+
   "employee": {
     "selectMpd": {
       "kicker": "SHIFT START",
@@ -42,11 +44,13 @@
       "loadError": "Unable to load available MPDs.",
       "startError": "Unable to start the shift."
     },
+
     "shifts": {
       "morning": "Morning",
       "evening": "Evening",
       "night": "Night"
     },
+
     "dashboard": {
       "currentShift": "Current Shift",
       "active": "Active",
@@ -67,6 +71,7 @@
       "done": "Done",
       "pending": "Pending"
     },
+
     "nozzles": {
       "title": "Nozzle Reading",
       "subtitle": "Current recorded readings for all four nozzles.",
@@ -74,6 +79,7 @@
       "overviewAlt": "Four fuel nozzles",
       "loadError": "Unable to load nozzle readings."
     },
+
     "collections": {
       "title": "Cash Collection",
       "currentTotal": "Current collection",
@@ -87,6 +93,7 @@
       "loadError": "Unable to load collections.",
       "saveError": "Unable to save collections."
     },
+
     "endShift": {
       "title": "End Shift",
       "subtitle": "Enter the final readings and final money count.",
@@ -109,6 +116,172 @@
       "loadError": "Unable to load the shift.",
       "previewError": "Unable to calculate the final result.",
       "endError": "Unable to end the shift."
+    }
+  },
+
+  "workflow": {
+    "stages": {
+      "nozzle": "Nozzle",
+      "cash": "Cash",
+      "upi": "UPI",
+      "card": "Card",
+      "udhari": "Udhari",
+      "expense": "Expense",
+      "review": "Review"
+    },
+    "employee": "Employee",
+    "back": "Back",
+    "started": "Started"
+  },
+
+  "nozzle": {
+    "title": "Final nozzle readings",
+    "finalReadings": "Final nozzle readings",
+    "subtitle": "Enter the final totalizer reading for each nozzle.",
+    "readingInstruction": "Enter the final totalizer reading for each nozzle.",
+    "nozzle": "Nozzle",
+    "opening": "Opening",
+    "closing": "Closing",
+    "totalLitres": "Total Litres",
+    "totalSale": "Total Sale",
+    "next": "Next: Cash",
+    "nextCash": "Next: Cash",
+    "closingRequired": "Enter closing reading",
+    "closingBelowOpening": "Closing reading cannot be below opening.",
+    "finalReadingsHint": "Enter the final totalizer reading for each nozzle.",
+"enter": "Enter"
+  },
+
+  "cash": {
+    "title": "Cash Collection",
+    "subtitle": "Enter the cash collected during this shift.",
+    "collectedSoFar": "Cash collected so far",
+    "count": "Count",
+    "value": "Value",
+    "coins": "Coins",
+    "coinsHint": "₹1 / ₹2 / ₹5 total",
+    "totalCash": "Total Cash",
+    "next": "Next: UPI",
+    "nextUpi": "Next: UPI"
+  },
+
+  "phonepe": {
+    "title": "PhonePe",
+    "subtitle": "Enter the first and last transaction only when UPI payments were received during this shift.",
+    "description": "Enter the first and last transaction only when UPI payments were received during this shift.",
+    "transaction": "Transaction",
+    "time": "Time",
+    "amount": "Amount",
+    "first": "First",
+    "last": "Last",
+    "totalCollection": "Total UPI Collection",
+    "noPayment": "No PhonePe payment? Leave this section empty.",
+    "timeError": "Last transaction time cannot be earlier than first transaction time.",
+    "completeError": "Complete the PhonePe transaction details and total collection.",
+    "next": "Next: Card / ATM",
+    "emptyHint": "No PhonePe payment? Leave this section empty."
+  },
+
+  "card": {
+    "title": "Card / ATM Collection",
+    "description": "Enter the total card / ATM amount collected so far.",
+    "subtitle": "Enter the total card / ATM amount collected during this shift.",
+    "total": "Total Card / ATM",
+    "totalCardAtm": "Total Card / ATM",
+    "next": "Next: Udhari",
+    "nextUdhari": "Next: Udhari"
+  },
+
+  "atm": {
+    "title": "Card / ATM Collection",
+    "description": "Enter the total card / ATM amount collected so far.",
+    "totalCardAtm": "Total Card / ATM",
+    "nextUdhari": "Next: Udhari",
+    "totalCard": "Total Card / ATM"
+  },
+
+  "udhari": {
+    "title": "Udhari Collection",
+    "subtitle": "Add fuel given on credit to a customer.",
+    "description": "Add fuel given on credit to a customer.",
+    "customer": "Customer Name",
+    "customerName": "Customer Name",
+    "searchCustomer": "Search customer",
+    "slip": "Slip Number",
+    "slipNumber": "Slip Number",
+    "vehicle": "Vehicle Number",
+    "vehicleNumber": "Vehicle Number",
+    "optional": "optional",
+    "fuelType": "Fuel Type",
+    "petrol": "Petrol",
+    "diesel": "Diesel",
+    "enter": "Enter",
+    "litres": "Litres",
+    "rupees": "Rupees",
+    "rate": "Rate",
+    "amount": "Amount",
+    "outstanding": "Outstanding",
+    "existingCustomer": "Existing customer",
+    "add": "Add Udhari",
+    "addUdhari": "Add Udhari",
+    "thisShift": "This Shift",
+    "entries": "entries",
+    "entry": "entry",
+    "remove": "Remove",
+    "removing": "Removing...",
+    "next": "Next: Expenses",
+    "nextExpenses": "Next: Expenses",
+    "customerNameHint": "Search or select a customer"
+  },
+
+  "expense": {
+    "title": "Expenses",
+    "subtitle": "Record business expenses during your shift.",
+    "add": "Add Expense",
+    "addExpense": "Add Expense",
+    "description": "Record money spent for station/business purposes.",
+    "amount": "Amount",
+    "reason": "Reason",
+    "save": "Save Expense",
+    "saveExpense": "Save Expense",
+    "saving": "Saving...",
+    "thisShift": "This Shift",
+    "recorded": "Expenses recorded during this shift",
+    "noExpenses": "No expenses recorded yet.",
+    "total": "Total Expenses",
+    "next": "Next: Review",
+    "nextReview": "Next: Review",
+
+"thisShiftHint": "Expenses recorded during this shift",
+"empty": "No expenses recorded yet.",
+"expenses": "expenses"
+  },
+
+  "review": {
+    "title": "Review",
+    "subtitle": "Check everything before ending.",
+    "collection": "Collection",
+    "cash": "Cash",
+    "upi": "UPI",
+    "card": "Card / ATM",
+    "udhari": "Udhari",
+    "expenses": "Expenses",
+    "total": "Total",
+    "saleReconciliation": "Sale Reconciliation",
+    "expectedSale": "Expected Sale",
+    "actualSale": "Actual Sale",
+    "balance": "Balance",
+    "matched": "MATCHED",
+    "short": "SHORT",
+    "excess": "EXCESS",
+    "pending": "PENDING",
+    "endShift": "End Shift",
+    "ending": "Ending Shift...",
+    "status": {
+      "matched": "MATCHED",
+      "short": "SHORT",
+      "excess": "EXCESS",
+      "pending": "PENDING"
     }
   }
 }

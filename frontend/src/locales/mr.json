@@ -6,6 +6,7 @@
     "submit": "लॉगिन करा →",
     "secure": "सुरक्षित • विश्वसनीय • नेहमी सिंक"
   },
+
   "dashboard": {
     "assignedPump": "तुमचा पंप",
     "todaySale": "आजची विक्री",
@@ -28,6 +29,7 @@
     "upiUpdated": "UPI संग्रह अपडेट केला",
     "viewPumpDetails": "पंप तपशील पहा"
   },
+
   "employee": {
     "selectMpd": {
       "kicker": "शिफ्ट सुरू करा",
@@ -42,11 +44,13 @@
       "loadError": "उपलब्ध MPD लोड करता आले नाहीत.",
       "startError": "शिफ्ट सुरू करता आली नाही."
     },
+
     "shifts": {
       "morning": "सकाळ",
       "evening": "संध्याकाळ",
       "night": "रात्र"
     },
+
     "dashboard": {
       "currentShift": "सध्याची शिफ्ट",
       "active": "सक्रिय",
@@ -65,6 +69,7 @@
       "done": "पूर्ण",
       "pending": "बाकी"
     },
+
     "nozzles": {
       "title": "नोजल रीडिंग",
       "subtitle": "चारही नोजलची सध्याची नोंदवलेली रीडिंग.",
@@ -72,6 +77,7 @@
       "overviewAlt": "चार इंधन नोजल",
       "loadError": "नोजल रीडिंग लोड करता आली नाही."
     },
+
     "collections": {
       "title": "रोकड संकलन",
       "currentTotal": "सध्याचे संकलन",
@@ -85,6 +91,7 @@
       "loadError": "संकलन लोड करता आले नाही.",
       "saveError": "संकलन सेव्ह करता आले नाही."
     },
+
     "endShift": {
       "title": "शिफ्ट समाप्त करा",
       "subtitle": "अंतिम नोजल रीडिंग आणि अंतिम रक्कम भरा.",
@@ -107,6 +114,171 @@
       "loadError": "शिफ्ट लोड करता आली नाही.",
       "previewError": "अंतिम निकाल काढता आला नाही.",
       "endError": "शिफ्ट समाप्त करता आली नाही."
+    }
+  },
+
+  "workflow": {
+    "stages": {
+      "nozzle": "नोजल",
+      "cash": "रोकड",
+      "upi": "UPI",
+      "card": "कार्ड",
+      "udhari": "उधारी",
+      "expense": "खर्च",
+      "review": "आढावा"
+    },
+    "employee": "कर्मचारी",
+    "back": "मागे",
+    "started": "सुरू"
+  },
+
+  "nozzle": {
+    "title": "अंतिम नोजल रीडिंग",
+    "finalReadings": "अंतिम नोजल रीडिंग",
+    "subtitle": "प्रत्येक नोजलची अंतिम टोटलायझर रीडिंग भरा.",
+    "readingInstruction": "प्रत्येक नोजलची अंतिम टोटलायझर रीडिंग भरा.",
+    "nozzle": "नोजल",
+    "opening": "ओपनिंग",
+    "closing": "क्लोजिंग",
+    "totalLitres": "एकूण लिटर",
+    "totalSale": "एकूण विक्री",
+    "next": "पुढे: रोकड",
+    "nextCash": "पुढे: रोकड",
+    "closingRequired": "क्लोजिंग रीडिंग भरा",
+    "closingBelowOpening": "क्लोजिंग रीडिंग ओपनिंगपेक्षा कमी असू शकत नाही.",
+    "finalReadingsHint": "प्रत्येक नोजलची अंतिम टोटलायझर रीडिंग भरा.",
+"enter": "दर्ज करा"
+  },
+
+  "cash": {
+    "title": "रोकड संकलन",
+    "subtitle": "या शिफ्टमध्ये जमा झालेली रोकड भरा.",
+    "collectedSoFar": "आतापर्यंत जमा झालेली रोकड",
+    "count": "संख्या",
+    "value": "रक्कम",
+    "coins": "नाणी",
+    "coinsHint": "₹1 / ₹2 / ₹5 एकूण",
+    "totalCash": "एकूण रोकड",
+    "next": "पुढे: UPI",
+    "nextUpi": "पुढे: UPI"
+  },
+
+  "phonepe": {
+    "title": "PhonePe",
+    "subtitle": "UPI पेमेंट झाले असल्यास पहिली आणि शेवटची ट्रान्झॅक्शन भरा.",
+    "description": "UPI पेमेंट झाले असल्यास पहिली आणि शेवटची ट्रान्झॅक्शन भरा.",
+    "transaction": "ट्रान्झॅक्शन",
+    "time": "वेळ",
+    "amount": "रक्कम",
+    "first": "पहिली",
+    "last": "शेवटची",
+    "totalCollection": "एकूण UPI संकलन",
+    "noPayment": "PhonePe पेमेंट झाले नाही? हे रिकामे ठेवा.",
+    "timeError": "शेवटच्या ट्रान्झॅक्शनची वेळ पहिल्या ट्रान्झॅक्शनपेक्षा आधीची असू शकत नाही.",
+    "completeError": "PhonePe ट्रान्झॅक्शनची पूर्ण माहिती आणि एकूण संकलन भरा.",
+    "next": "पुढे: कार्ड / ATM",
+    "emptyHint": "PhonePe पेमेंट झाले नाही? हे रिकामे ठेवा."
+  },
+
+  "card": {
+    "title": "कार्ड / ATM संकलन",
+    "description": "या शिफ्टमध्ये जमा झालेली एकूण कार्ड / ATM रक्कम भरा.",
+    "subtitle": "या शिफ्टमध्ये जमा झालेली एकूण कार्ड / ATM रक्कम भरा.",
+    "total": "एकूण कार्ड / ATM",
+    "totalCardAtm": "एकूण कार्ड / ATM",
+    "next": "पुढे: उधारी",
+    "nextUdhari": "पुढे: उधारी"
+  },
+
+  "atm": {
+    "title": "कार्ड / ATM संकलन",
+    "description": "आतापर्यंत जमा झालेली एकूण कार्ड / ATM रक्कम भरा.",
+    "totalCardAtm": "एकूण कार्ड / ATM",
+    "nextUdhari": "पुढे: उधारी",
+    "totalCard": "एकूण कार्ड / ATM"
+  },
+
+  "udhari": {
+    "title": "उधारी संकलन",
+    "subtitle": "उधारीवर दिलेल्या इंधनाची माहिती भरा.",
+    "description": "ग्राहकाला उधारीवर दिलेल्या इंधनाची माहिती भरा.",
+    "customer": "ग्राहकाचे नाव",
+    "customerName": "ग्राहकाचे नाव",
+    "searchCustomer": "ग्राहक शोधा",
+    "slip": "स्लिप नंबर",
+    "slipNumber": "स्लिप नंबर",
+    "vehicle": "वाहन नंबर",
+    "vehicleNumber": "वाहन नंबर",
+    "optional": "ऐच्छिक",
+    "fuelType": "इंधन प्रकार",
+    "petrol": "पेट्रोल",
+    "diesel": "डिझेल",
+    "enter": "दर्ज करा",
+    "litres": "लिटर",
+    "rupees": "रुपये",
+    "rate": "दर",
+    "amount": "रक्कम",
+    "outstanding": "बाकी",
+    "existingCustomer": "मागील ग्राहक",
+    "add": "उधारी जोडा",
+    "addUdhari": "उधारी जोडा",
+    "thisShift": "या शिफ्टमध्ये",
+    "entries": "नोंदी",
+    "entry": "नोंद",
+    "remove": "काढा",
+    "removing": "काढत आहे...",
+    "next": "पुढे: खर्च",
+    "nextExpenses": "पुढे: खर्च",
+    "customerNameHint": "ग्राहक शोधा किंवा निवडा"
+  },
+
+  "expense": {
+    "title": "खर्च",
+    "subtitle": "या शिफ्टमधील व्यावसायिक खर्च नोंदवा.",
+    "add": "खर्च जोडा",
+    "addExpense": "खर्च जोडा",
+    "description": "पंप/व्यवसायासाठी खर्च केलेली रक्कम नोंदवा.",
+    "amount": "रक्कम",
+    "reason": "कारण",
+    "save": "खर्च सेव्ह करा",
+    "saveExpense": "खर्च सेव्ह करा",
+    "saving": "सेव्ह होत आहे...",
+    "thisShift": "या शिफ्टमध्ये",
+    "recorded": "या शिफ्टमधील खर्च",
+    "noExpenses": "अजून कोणताही खर्च नोंदलेला नाही.",
+    "total": "एकूण खर्च",
+    "next": "पुढे: आढावा",
+    "nextReview": "पुढे: आढावा",
+    "thisShiftHint": "या शिफ्टमधील नोंदवलेले खर्च",
+"empty": "अजून कोणताही खर्च नोंदलेला नाही.",
+"expenses": "खर्च"
+  },
+
+  "review": {
+    "title": "आढावा",
+    "subtitle": "शिफ्ट समाप्त करण्यापूर्वी सर्व काही तपासा.",
+    "collection": "संकलन",
+    "cash": "रोकड",
+    "upi": "UPI",
+    "card": "कार्ड / ATM",
+    "udhari": "उधारी",
+    "expenses": "खर्च",
+    "total": "एकूण",
+    "saleReconciliation": "विक्री ताळमेळ",
+    "expectedSale": "अपेक्षित विक्री",
+    "actualSale": "प्रत्यक्ष विक्री",
+    "balance": "फरक",
+    "matched": "जुळले",
+    "short": "कमी",
+    "excess": "जास्त",
+    "pending": "प्रलंबित",
+    "endShift": "शिफ्ट समाप्त करा",
+    "ending": "शिफ्ट समाप्त होत आहे...",
+    "status": {
+      "matched": "जुळले",
+      "short": "कमी",
+      "excess": "जास्त",
+      "pending": "प्रलंबित"
     }
   }
 }

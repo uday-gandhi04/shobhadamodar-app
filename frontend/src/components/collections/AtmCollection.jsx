@@ -1,17 +1,21 @@
+import { useTranslation } from "react-i18next";
+
 const AtmCollection = ({ card, onCardChange, onSavedMessage }) => {
+  const { t } = useTranslation();
+
   return (
     <section className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
       <p className="text-[16px] font-bold text-slate-900">
-        Card / ATM Collection
+        {t("atm.title")}
       </p>
 
       <p className="mt-1 text-[11px] leading-5 text-slate-500">
-        Enter the total card / ATM amount received so far.
+        {t("atm.description")}
       </p>
 
       <div className="mt-5 rounded-[14px] border border-slate-200 bg-slate-50 px-3 py-3">
         <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-          Total Card / ATM
+          {t("atm.totalCard")}
         </p>
 
         <div className="mt-1 flex items-center">
@@ -25,7 +29,6 @@ const AtmCollection = ({ card, onCardChange, onSavedMessage }) => {
               onCardChange(event.target.value);
               onSavedMessage("");
             }}
-            placeholder="0.00"
             className="
               min-w-0
               flex-1
@@ -35,6 +38,7 @@ const AtmCollection = ({ card, onCardChange, onSavedMessage }) => {
               text-slate-900
               outline-none
             "
+            aria-label={t("atm.totalCardAriaLabel")}
           />
         </div>
       </div>
