@@ -61,6 +61,12 @@ export const endShiftSchema = z.object({
   body: finalShiftBody,
 });
 
+export const updateReadingsSchema = z.object({
+  body: z.object({
+    readings: z.array(finalReading).min(1).max(8),
+  }),
+});
+
 const udhariBody = z.object({
   shiftId: z.string().min(1),
 

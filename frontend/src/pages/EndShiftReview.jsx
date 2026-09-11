@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { previewEndShift, endShift } from "../services/shiftApi";
+import { getCurrentShift, previewEndShift, endShift } from "../services/shiftApi";
 import { getMyShiftExpenses } from "../services/expenseApi";
 import {
   clearShiftWorkflowState,
@@ -31,6 +31,8 @@ const EndShiftReview = () => {
 
   const [error, setError] = useState("");
   const [expenses, setExpenses] = useState([]);
+  const [resolvedFinalReadings, setResolvedFinalReadings] = useState(finalReadings || []);
+  const [resolvedCollections, setResolvedCollections] = useState(collections || null);
 
   useEffect(() => {
     let mounted = true;
@@ -44,25 +46,45 @@ const EndShiftReview = () => {
         return;
       }
 
-      if (!Array.isArray(finalReadings) || finalReadings.length === 0) {
-        setError("Final nozzle readings are missing.");
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
         setError("");
 
-        const response = await previewEndShift(shiftId, {
-          readings: finalReadings,
+        const shiftResponse = await getCurrentShift();
+        const currentShift = shiftResponse?.data;
+        if (!currentShift) {
+          navigate("/select-mpd", { replace: true });
+          return;
+        }
 
-          collections: collections || {
-            cashBreakdown: [],
-            upiPaise: 0,
-            cardPaise: 0,
-            udhariPaise: 0,
-          },
+        const backendReadings = (currentShift.readings || [])
+          .filter((reading) => reading.closingReading !== null && reading.closingReading !== undefined)
+          .map((reading) => ({
+            nozzleId: reading.nozzleId,
+            closingReading: Number(reading.closingReading),
+          }));
+        const persistedReadings = backendReadings.length > 0 ? backendReadings : finalReadings;
+        const persistedCollections = {
+          cashBreakdown: currentShift.cashCollections || [],
+          coinsPaise: Number(currentShift.coinsPaise || 0),
+          upiPaise: Number(currentShift.totalUpiPaise || 0),
+          cardPaise: Number(currentShift.totalCardPaise || 0),
+          udhariPaise: Number(currentShift.totalUdhariPaise || 0),
+          ...(currentShift.upiCollection ? { upiCollection: currentShift.upiCollection } : {}),
+        };
+
+        if (!Array.isArray(persistedReadings) || persistedReadings.length === 0) {
+          setError("Final nozzle readings are missing.");
+          setLoading(false);
+          return;
+        }
+
+        setResolvedFinalReadings(persistedReadings);
+        setResolvedCollections(persistedCollections);
+
+        const response = await previewEndShift(shiftId, {
+          readings: persistedReadings,
+          collections: persistedCollections,
         });
 
         if (!mounted) return;
@@ -91,7 +113,7 @@ const EndShiftReview = () => {
     return () => {
       mounted = false;
     };
-  }, [shiftId, navigate, finalReadings, collections]);
+  }, [shiftId, navigate]);
 
   const handleEndShift = async () => {
   if (!shiftId || !preview || ending) {
@@ -103,9 +125,8 @@ const EndShiftReview = () => {
     setError("");
 
     await endShift(shiftId, {
-      readings: finalReadings,
-
-      collections: collections || {
+      readings: resolvedFinalReadings,
+      collections: resolvedCollections || {
         cashBreakdown: [],
         upiPaise: 0,
         cardPaise: 0,

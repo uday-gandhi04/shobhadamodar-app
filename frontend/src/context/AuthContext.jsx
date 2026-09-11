@@ -11,8 +11,8 @@ export const AuthProvider = ({ children }) => {
 
   // Check local storage for an existing session when the app boots
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
 
     if (storedToken && storedUser) {
       setToken(storedToken);
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login', { employeeId, password });
       
-      const { token: newToken, user: userData } = response.data;
+      const { token: newToken, refreshToken, user: userData } = response.data;
       
       // Save to state
       setToken(newToken);
@@ -34,9 +34,15 @@ export const AuthProvider = ({ children }) => {
       // Keep the session only when the employee explicitly opts in.
       if (persistSession) {
         localStorage.setItem('token', newToken);
+        localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(userData));
+        sessionStorage.clear();
       } else {
+        sessionStorage.setItem('token', newToken);
+        sessionStorage.setItem('refreshToken', refreshToken);
+        sessionStorage.setItem('user', JSON.stringify(userData));
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
       }
       
@@ -49,11 +55,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      if (localStorage.getItem('token') || sessionStorage.getItem('token')) {
+        await api.post('/auth/logout');
+      }
+    } catch {
+      // Clear the local session even if the server is unavailable.
+    }
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('user');
   };
 
   return (

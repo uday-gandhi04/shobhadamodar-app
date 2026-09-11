@@ -85,3 +85,8 @@ export const deleteUdhariTransaction = async (transactionId) => {
 
   return response.data;
 };
+
+export const updateReadings = async (shiftId, readings) => {
+  const response = await api.patch(`/shifts/${shiftId}/readings`, { readings });
+  return response.data;
+};

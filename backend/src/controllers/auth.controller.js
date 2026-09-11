@@ -13,6 +13,14 @@ const generateToken = (id) => {
   });
 };
 
+const generateRefreshToken = (id, tokenVersion) => {
+  return jwt.sign(
+    { id, type: "refresh", tokenVersion },
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d" },
+  );
+};
+
 /**
  * Authenticates user and returns JWT token
  * @route POST /api/auth/login
@@ -44,10 +52,12 @@ export const loginUser = async (req, res, next) => {
 
     // Generate Token
     const token = generateToken(user._id);
+    const refreshToken = generateRefreshToken(user._id, user.tokenVersion);
 
     res.status(200).json({
       success: true,
       token,
+      refreshToken,
       user: {
         _id: user._id,
         name: user.name,
@@ -55,6 +65,46 @@ export const loginUser = async (req, res, next) => {
         role: user.role,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshAccessToken = async (req, res) => {
+  try {
+    const decoded = jwt.verify(
+      req.body.refreshToken,
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+    );
+
+    if (decoded.type !== "refresh") {
+      return res.status(401).json({ success: false, message: "Invalid refresh token." });
+    }
+
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user || !user.isActive || user.tokenVersion !== decoded.tokenVersion) {
+      return res.status(401).json({ success: false, message: "Refresh session expired." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      token: generateToken(user._id),
+      user: {
+        _id: user._id,
+        name: user.name,
+        employeeId: user.employeeId,
+        role: user.role,
+      },
+    });
+  } catch {
+    return res.status(401).json({ success: false, message: "Refresh session expired." });
+  }
+};
+
+export const logoutUser = async (req, res, next) => {
+  try {
+    await User.findByIdAndUpdate(req.user._id, { $inc: { tokenVersion: 1 } });
+    return res.status(200).json({ success: true });
   } catch (error) {
     next(error);
   }

@@ -3,7 +3,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
-import { getCurrentFuelRate, getCurrentShift } from "../services/shiftApi";
+import { getCurrentFuelRate, getCurrentShift, updateReadings } from "../services/shiftApi";
 import NozzleReadingRow from "../components/business/nozzle/NozzleReadingRow";
 import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
 import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
@@ -285,7 +285,7 @@ const EndShift = () => {
               <button
                 type="button"
                 disabled={!canContinue}
-                onClick={() => {
+                onClick={async () => {
                   const finalReadingsPayload = readings.map((reading) => {
                     const nozzleId =
                       reading.nozzleId ||
@@ -308,13 +308,23 @@ const EndShift = () => {
                     };
                   });
 
-                  (() => {
+                  (async () => {
                     const workflowState = {
                       shiftId: shift?._id,
                       finalReadings: finalReadingsPayload,
                     };
-                    saveShiftWorkflowState(workflowState);
-                    navigate("/shift/cash", { state: workflowState });
+                      try {
+                        setError("");
+                        await updateReadings(shift._id, finalReadingsPayload);
+                        saveShiftWorkflowState(workflowState);
+                        navigate("/shift/cash", { state: workflowState });
+                      } catch (err) {
+                        setError(
+                          err?.response?.data?.message ||
+                            err?.message ||
+                            "Unable to save nozzle readings.",
+                        );
+                      }
                   })();
                 }}
                 className="

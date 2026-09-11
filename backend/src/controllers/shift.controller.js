@@ -354,6 +354,52 @@ export const updateCollections = async (req, res, next) => {
   }
 };
 
+export const updateReadings = async (req, res, next) => {
+  try {
+    const shift = await Shift.findOne({
+      _id: req.params.id,
+      employeeId: req.user._id,
+      status: 'IN_PROGRESS',
+    });
+
+    if (!shift) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active shift not found.',
+        code: 'ACTIVE_SHIFT_NOT_FOUND',
+      });
+    }
+
+    const readingsById = new Map(
+      shift.readings.map((reading) => [reading.nozzleId, reading]),
+    );
+
+    for (const input of req.body.readings) {
+      const reading = readingsById.get(input.nozzleId);
+      if (!reading) {
+        return res.status(400).json({
+          success: false,
+          message: `Nozzle ${input.nozzleId} is not part of this shift.`,
+        });
+      }
+
+      if (input.closingReading < reading.openingReading) {
+        return res.status(400).json({
+          success: false,
+          message: `${input.nozzleId}: closing reading cannot be less than opening reading.`,
+        });
+      }
+
+      reading.closingReading = input.closingReading;
+    }
+
+    await shift.save();
+    return res.status(200).json({ success: true, data: shift });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const previewEndShift = async (req, res, next) => {
   try {
     const shift = await Shift.findOne({
