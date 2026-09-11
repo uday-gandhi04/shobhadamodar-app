@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 
-const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+const DENOMINATIONS = [500, 200, 100, 50, 20, 10];
+
+const parseRupeesToPaise = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? Math.round(number * 100) : 0;
+};
 
 const formatCurrency = (paise) => {
   return `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {
@@ -9,17 +14,24 @@ const formatCurrency = (paise) => {
   })}`;
 };
 
-const CashCollection = ({ cashCounts, onCashCountsChange, onSavedMessage }) => {
+const CashCollection = ({
+  cashCounts,
+  onCashCountsChange,
+  coins,
+  onCoinsChange,
+  onSavedMessage,
+}) => {
   const totalCashPaise = useMemo(() => {
-    return DENOMINATIONS.reduce((total, denomination) => {
+    const notesPaise = DENOMINATIONS.reduce((total, denomination) => {
       const count = Number(cashCounts[denomination] || 0);
 
       return total + denomination * count * 100;
     }, 0);
-  }, [cashCounts]);
+    return notesPaise + parseRupeesToPaise(coins);
+  }, [cashCounts, coins]);
 
   const updateCashCount = (denomination, value) => {
-    const cleaned = value.replace(/\D/g, "");
+    const cleaned = value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 
     onCashCountsChange((current) => ({
       ...current,
@@ -88,6 +100,9 @@ const CashCollection = ({ cashCounts, onCashCountsChange, onSavedMessage }) => {
                 type="text"
                 inputMode="numeric"
                 value={count}
+                onFocus={(event) => {
+                  if (count === 0) event.currentTarget.select();
+                }}
                 onChange={(event) =>
                   updateCashCount(denomination, event.target.value)
                 }
@@ -120,6 +135,35 @@ const CashCollection = ({ cashCounts, onCashCountsChange, onSavedMessage }) => {
             </div>
           );
         })}
+
+        <div className="grid grid-cols-5 min-h-[43px] items-center border-t border-slate-50">
+          <div className="text-center">
+            <span className="text-[13px] font-semibold text-slate-700">Coins</span>
+          </div>
+
+          <span />
+
+          <input
+            type="text"
+            inputMode="decimal"
+            value={coins}
+            onChange={(event) => {
+              onCoinsChange(event.target.value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1"));
+              onSavedMessage("");
+            }}
+            placeholder="₹0.00"
+            aria-label="Total value of coins"
+            className="h-7 w-[54px] justify-self-center rounded-[7px] border border-slate-200 bg-white px-1 text-right text-[11px] font-semibold text-slate-800 outline-none focus:border-[#047857]"
+          />
+
+          <span className="place-self-center text-[16px] font-bold leading-none text-slate-600">=</span>
+
+          <div className="text-center">
+            <span className="text-[11px] font-semibold text-slate-700">
+              {formatCurrency(parseRupeesToPaise(coins))}
+            </span>
+          </div>
+        </div>
 
         <div className="mt-2 flex items-center justify-between rounded-[12px] bg-emerald-50 px-3 py-3">
           <span className="text-[11px] font-semibold text-slate-600">

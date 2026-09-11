@@ -11,8 +11,17 @@ const cashItem = z.object({
 
 const moneyPaise = z.coerce.number().int().min(0);
 
+const upiCollection = z.object({
+  firstTransactionTime: z.string().regex(/^\d{2}:\d{2}$/),
+  firstTransactionAmountPaise: moneyPaise,
+  lastTransactionTime: z.string().regex(/^\d{2}:\d{2}$/),
+  lastTransactionAmountPaise: moneyPaise,
+});
+
 const collectionBody = z.object({
   cashBreakdown: z.array(cashItem).max(12).default([]),
+  coinsPaise: moneyPaise.default(0),
+  upiCollection: upiCollection.optional(),
   upiPaise: moneyPaise.default(0),
   cardPaise: moneyPaise.default(0),
   udhariPaise: moneyPaise.default(0),

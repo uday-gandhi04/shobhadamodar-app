@@ -142,6 +142,7 @@ const Collections = () => {
 
     return {
       cashBreakdown,
+      coinsPaise: Number(shift?.coinsPaise || 0),
       upiPaise: parseRupeesToPaise(upi),
       cardPaise: parseRupeesToPaise(card),
       udhariPaise: Number(shift?.totalUdhariPaise || 0),

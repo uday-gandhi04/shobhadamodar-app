@@ -32,7 +32,8 @@ const normalizeCash = (cashBreakdown = []) => {
 
 const calculateCollections = (collections = {}) => {
   const cashCollections = normalizeCash(collections.cashBreakdown);
-  const totalCashPaise = cashCollections.reduce((sum, item) => sum + item.totalPaise, 0);
+  const coinsPaise = Number(collections.coinsPaise || 0);
+  const totalCashPaise = cashCollections.reduce((sum, item) => sum + item.totalPaise, 0) + coinsPaise;
   const totalUpiPaise = Number(collections.upiPaise || 0);
   const totalCardPaise = Number(collections.cardPaise || 0);
   const totalUdhariPaise = Number(collections.udhariPaise || 0);
@@ -41,6 +42,8 @@ const calculateCollections = (collections = {}) => {
 
   return {
     cashCollections,
+    coinsPaise,
+    upiCollection: collections.upiCollection,
     totalCashPaise,
     totalUpiPaise,
     totalCardPaise,
@@ -330,6 +333,8 @@ export const updateCollections = async (req, res, next) => {
     const financials = calculateCollections(req.body);
 
     shift.cashCollections = financials.cashCollections;
+    shift.coinsPaise = financials.coinsPaise;
+    if (financials.upiCollection) shift.upiCollection = financials.upiCollection;
     shift.totalCashPaise = financials.totalCashPaise;
     shift.totalUpiPaise = financials.totalUpiPaise;
     shift.totalCardPaise = financials.totalCardPaise;
@@ -377,6 +382,8 @@ export const previewEndShift = async (req, res, next) => {
         totalLitresPetrol: result.totalLitresPetrol,
         totalLitresDiesel: result.totalLitresDiesel,
         cashCollections: result.cashCollections,
+        coinsPaise: result.coinsPaise,
+        upiCollection: result.upiCollection,
         totalCashPaise: result.totalCashPaise,
         totalUpiPaise: result.totalUpiPaise,
         totalCardPaise: result.totalCardPaise,
@@ -417,6 +424,8 @@ export const endShift = async (req, res, next) => {
 
     shift.readings = result.processedReadings;
     shift.cashCollections = result.cashCollections;
+    shift.coinsPaise = result.coinsPaise;
+    if (result.upiCollection) shift.upiCollection = result.upiCollection;
     shift.totalLitresPetrol = result.totalLitresPetrol;
     shift.totalLitresDiesel = result.totalLitresDiesel;
     shift.expectedTotalSalePaise = result.expectedTotalSalePaise;

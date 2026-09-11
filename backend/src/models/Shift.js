@@ -59,6 +59,7 @@ const shiftSchema = new mongoose.Schema(
 
     readings: { type: [shiftReadingSchema], default: [] },
     cashCollections: { type: [cashCollectionSchema], default: [] },
+    coinsPaise: { type: Number, default: 0, min: 0 },
     udhariEntries: { type: [mongoose.Schema.Types.Mixed], default: [] },
 
     totalLitresPetrol: { type: Number, default: 0 },
@@ -66,6 +67,7 @@ const shiftSchema = new mongoose.Schema(
     expectedTotalSalePaise: { type: Number, default: 0 },
 
     totalCashPaise: { type: Number, default: 0 },
+    upiCollection: { type: mongoose.Schema.Types.Mixed, default: null },
     totalUpiPaise: { type: Number, default: 0 },
     totalCardPaise: { type: Number, default: 0 },
     totalUdhariPaise: { type: Number, default: 0 },

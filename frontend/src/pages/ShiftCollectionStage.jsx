@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -11,12 +11,16 @@ import CashCollection from "../components/collections/CashCollection";
 import UpiCollection from "../components/collections/UpiCollection";
 import AtmCollection from "../components/collections/AtmCollection";
 import UdhariCollection from "../components/collections/UdhariCollection";
+import { AuthContext } from "../context/AuthContext";
+import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
+import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
 import {
   readShiftWorkflowState,
   saveShiftWorkflowState,
 } from "../utils/shiftWorkflow";
 
-const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+const DENOMINATIONS = [500, 200, 100, 50, 20, 10];
+const LEGACY_COIN_DENOMINATIONS = [5, 2, 1];
 
 const createEmptyCounts = () => ({
   500: 0,
@@ -40,7 +44,7 @@ const sanitizeMoneyInput = (value) =>
 
 const stageConfig = {
   cash: { title: "Cash Collection", previous: "/shift/nozzle", next: "/shift/upi", label: "Cash" },
-  upi: { title: "UPI Collection", previous: "/shift/cash", next: "/shift/card", label: "UPI" },
+  upi: { title: "PhonePe", previous: "/shift/cash", next: "/shift/card", label: "UPI" },
   card: { title: "Card / ATM Collection", previous: "/shift/upi", next: "/shift/udhari", label: "Card" },
   udhari: { title: "Udhari Collection", previous: "/shift/card", next: "/shift/expense", label: "Udhari" },
 };
@@ -49,11 +53,17 @@ const ShiftCollectionStage = ({ stage }) => {
   const config = stageConfig[stage];
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const workflowState = readShiftWorkflowState(location.state);
   const [shift, setShift] = useState(null);
   const [cashCounts, setCashCounts] = useState(createEmptyCounts());
   const [upi, setUpi] = useState("");
+  const [firstTransactionTime, setFirstTransactionTime] = useState("");
+  const [firstTransactionAmount, setFirstTransactionAmount] = useState("");
+  const [lastTransactionTime, setLastTransactionTime] = useState("");
+  const [lastTransactionAmount, setLastTransactionAmount] = useState("");
   const [card, setCard] = useState("");
+  const [coins, setCoins] = useState("");
   const [fuelRates, setFuelRates] = useState({ PETROL: 0, DIESEL: 0 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -85,7 +95,24 @@ const ShiftCollectionStage = ({ stage }) => {
           }
         });
         setCashCounts(counts);
+        const legacyCoinsPaise = (currentShift.cashCollections || [])
+          .filter((item) => LEGACY_COIN_DENOMINATIONS.includes(Number(item.denomination)))
+          .reduce((total, item) => total + Number(item.denomination) * Number(item.count || 0) * 100, 0);
+        const savedCoinsPaise = Number(currentShift.coinsPaise || 0) || legacyCoinsPaise;
+        setCoins(savedCoinsPaise ? String(savedCoinsPaise / 100) : "");
         setUpi(currentShift.totalUpiPaise ? String(currentShift.totalUpiPaise / 100) : "");
+        setFirstTransactionTime(currentShift.upiCollection?.firstTransactionTime || "");
+        setFirstTransactionAmount(
+          currentShift.upiCollection?.firstTransactionAmountPaise != null
+            ? String(currentShift.upiCollection.firstTransactionAmountPaise / 100)
+            : "",
+        );
+        setLastTransactionTime(currentShift.upiCollection?.lastTransactionTime || "");
+        setLastTransactionAmount(
+          currentShift.upiCollection?.lastTransactionAmountPaise != null
+            ? String(currentShift.upiCollection.lastTransactionAmountPaise / 100)
+            : "",
+        );
         setCard(currentShift.totalCardPaise ? String(currentShift.totalCardPaise / 100) : "");
 
         try {
@@ -115,18 +142,63 @@ const ShiftCollectionStage = ({ stage }) => {
     };
   }, [navigate]);
 
-  const buildPayload = () => ({
-    cashBreakdown: DENOMINATIONS.map((denomination) => ({
-      denomination,
-      count: Number(cashCounts[denomination] || 0),
-    })).filter((item) => item.count > 0),
-    upiPaise: parseRupeesToPaise(upi),
-    cardPaise: parseRupeesToPaise(card),
-    udhariPaise: Number(shift?.totalUdhariPaise || 0),
-  });
+  const buildPayload = () => {
+    const payload = {
+      cashBreakdown: DENOMINATIONS.map((denomination) => ({
+        denomination,
+        count: Number(cashCounts[denomination] || 0),
+      })).filter((item) => item.count > 0),
+      coinsPaise: parseRupeesToPaise(coins),
+      upiPaise: parseRupeesToPaise(upi),
+      cardPaise: parseRupeesToPaise(card),
+      udhariPaise: Number(shift?.totalUdhariPaise || 0),
+    };
+
+    if (stage === "upi") {
+      payload.upiCollection = {
+        firstTransactionTime,
+        firstTransactionAmountPaise: parseRupeesToPaise(firstTransactionAmount),
+        lastTransactionTime,
+        lastTransactionAmountPaise: parseRupeesToPaise(lastTransactionAmount),
+      };
+    } else if (workflowState?.collections?.upiCollection) {
+      payload.upiCollection = workflowState.collections.upiCollection;
+    }
+
+    return payload;
+  };
 
   const handleNext = async () => {
     if (!shift?._id || saving) return;
+
+    if (stage === "upi") {
+      const fieldsArePresent = [
+        firstTransactionTime,
+        firstTransactionAmount,
+        lastTransactionTime,
+        lastTransactionAmount,
+        upi,
+      ].every((value) => value.trim() !== "");
+      const amountsAreValid = [
+        firstTransactionAmount,
+        lastTransactionAmount,
+        upi,
+      ].every((value) => Number.isFinite(Number(value)) && Number(value) >= 0);
+      const timesAreValid =
+        firstTransactionTime &&
+        lastTransactionTime &&
+        lastTransactionTime >= firstTransactionTime;
+
+      if (!fieldsArePresent || !amountsAreValid) {
+        setError("Enter both PhonePe transaction details and the total collection.");
+        return;
+      }
+
+      if (!timesAreValid) {
+        setError("Last transaction time cannot be earlier than first transaction time.");
+        return;
+      }
+    }
 
     try {
       setSaving(true);
@@ -160,35 +232,36 @@ const ShiftCollectionStage = ({ stage }) => {
     <IonPage>
       <IonContent fullscreen style={{ "--background": "#F3F4F6" }}>
         <main className="mx-auto min-h-[100dvh] max-w-[480px] px-4 pb-28 pt-[max(0.9rem,env(safe-area-inset-top))]">
-          <header className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(stage === "cash" ? `/shift/${mpdId}` : config.previous, { state: workflowState })}
-              className="grid h-9 w-9 place-items-center rounded-full bg-white text-slate-700 shadow-sm"
-              aria-label="Back"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            </button>
-            <div>
-              <h1 className="text-[18px] font-bold text-slate-900">{config.title}</h1>
-              <p className="text-[10px] text-slate-500">{shift?.mpdId?.mpdNumber || "MPD"}</p>
-            </div>
-          </header>
+          <EmployeeShiftHeader
+            shift={shift}
+            user={user}
+            onBack={() => navigate(stage === "cash" ? `/shift/${mpdId}` : config.previous, { state: workflowState })}
+          />
+          <WorkflowStatusBar currentStage={stage} />
 
-          <div className="mt-5 rounded-[18px] bg-white p-3 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-            <div className="flex items-center justify-between">
-              {["Nozzle", "Cash", "UPI", "Card", "Udhari", "Expense", "Review"].map((label, index) => (
-                <div key={label} className={`grid h-7 w-7 place-items-center rounded-full text-[10px] font-bold ${label === config.label ? "bg-[#047857] text-white" : index < ["Nozzle", "Cash", "UPI", "Card", "Udhari", "Expense", "Review"].indexOf(config.label) + 1 ? "bg-emerald-100 text-[#047857]" : "bg-slate-100 text-slate-400"}`}>
-                  {index + 1}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {stage === "cash" && <CashCollection cashCounts={cashCounts} onCashCountsChange={setCashCounts} onSavedMessage={setSavedMessage} />}
-          {stage === "upi" && <UpiCollection upi={upi} onUpiChange={(value) => setUpi(sanitizeMoneyInput(value))} onSavedMessage={setSavedMessage} />}
+          {stage === "cash" && <CashCollection cashCounts={cashCounts} onCashCountsChange={setCashCounts} coins={coins} onCoinsChange={(value) => setCoins(sanitizeMoneyInput(value))} onSavedMessage={setSavedMessage} />}
+          {stage === "upi" && (
+            <UpiCollection
+              upi={upi}
+              onUpiChange={(value) => setUpi(sanitizeMoneyInput(value))}
+              firstTransactionTime={firstTransactionTime}
+              onFirstTransactionTimeChange={setFirstTransactionTime}
+              firstTransactionAmount={firstTransactionAmount}
+              onFirstTransactionAmountChange={(value) => setFirstTransactionAmount(sanitizeMoneyInput(value))}
+              lastTransactionTime={lastTransactionTime}
+              onLastTransactionTimeChange={setLastTransactionTime}
+              lastTransactionAmount={lastTransactionAmount}
+              onLastTransactionAmountChange={(value) => setLastTransactionAmount(sanitizeMoneyInput(value))}
+              timeError={
+                firstTransactionTime &&
+                lastTransactionTime &&
+                lastTransactionTime < firstTransactionTime
+                  ? "Last transaction time cannot be earlier than first transaction time."
+                  : ""
+              }
+              onSavedMessage={setSavedMessage}
+            />
+          )}
           {stage === "card" && <AtmCollection card={card} onCardChange={(value) => setCard(sanitizeMoneyInput(value))} onSavedMessage={setSavedMessage} />}
           {stage === "udhari" && <UdhariCollection shift={shift} fuelRates={fuelRates} onShiftUpdate={setShift} onSavedMessage={setSavedMessage} />}
 
