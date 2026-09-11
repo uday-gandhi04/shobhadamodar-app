@@ -31,6 +31,7 @@ const EndShiftReview = () => {
 
   const [error, setError] = useState("");
   const [expenses, setExpenses] = useState([]);
+  const [resolvedShiftId, setResolvedShiftId] = useState(shiftId || null);
   const [resolvedFinalReadings, setResolvedFinalReadings] = useState(finalReadings || []);
   const [resolvedCollections, setResolvedCollections] = useState(collections || null);
 
@@ -38,14 +39,6 @@ const EndShiftReview = () => {
     let mounted = true;
 
     const calculateReview = async () => {
-      if (!shiftId) {
-        navigate("/select-mpd", {
-          replace: true,
-        });
-
-        return;
-      }
-
       try {
         setLoading(true);
         setError("");
@@ -56,6 +49,13 @@ const EndShiftReview = () => {
           navigate("/select-mpd", { replace: true });
           return;
         }
+
+        const activeShiftId = currentShift._id || shiftId;
+        if (!activeShiftId) {
+          navigate("/select-mpd", { replace: true });
+          return;
+        }
+        setResolvedShiftId(activeShiftId);
 
         const backendReadings = (currentShift.readings || [])
           .filter((reading) => reading.closingReading !== null && reading.closingReading !== undefined)
@@ -82,7 +82,7 @@ const EndShiftReview = () => {
         setResolvedFinalReadings(persistedReadings);
         setResolvedCollections(persistedCollections);
 
-        const response = await previewEndShift(shiftId, {
+        const response = await previewEndShift(activeShiftId, {
           readings: persistedReadings,
           collections: persistedCollections,
         });
@@ -91,7 +91,7 @@ const EndShiftReview = () => {
 
         setPreview(response?.data || null);
 
-        const expenseResponse = await getMyShiftExpenses(shiftId);
+        const expenseResponse = await getMyShiftExpenses(activeShiftId);
         if (mounted) setExpenses(expenseResponse?.data || []);
       } catch (err) {
         if (!mounted) return;
@@ -113,10 +113,10 @@ const EndShiftReview = () => {
     return () => {
       mounted = false;
     };
-  }, [shiftId, navigate]);
+  }, [shiftId, navigate, finalReadings]);
 
   const handleEndShift = async () => {
-  if (!shiftId || !preview || ending) {
+  if (!resolvedShiftId || !preview || ending) {
     return;
   }
 
@@ -124,7 +124,7 @@ const EndShiftReview = () => {
     setEnding(true);
     setError("");
 
-    await endShift(shiftId, {
+    await endShift(resolvedShiftId, {
       readings: resolvedFinalReadings,
       collections: resolvedCollections || {
         cashBreakdown: [],

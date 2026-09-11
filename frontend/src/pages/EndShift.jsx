@@ -164,7 +164,7 @@ const EndShift = () => {
     const currentValue =
       finalReadings[nozzleId] !== undefined
         ? finalReadings[nozzleId]
-        : formatReading(openingReading);
+        : "";
     const numericFinalValue = currentValue === "" ? NaN : Number(currentValue);
     const litresDispensed = Number.isFinite(numericFinalValue)
       ? calculateLitresDispensed(openingReading, numericFinalValue)

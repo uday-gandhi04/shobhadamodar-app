@@ -100,7 +100,11 @@ const ShiftCollectionStage = ({ stage }) => {
           .reduce((total, item) => total + Number(item.denomination) * Number(item.count || 0) * 100, 0);
         const savedCoinsPaise = Number(currentShift.coinsPaise || 0) || legacyCoinsPaise;
         setCoins(savedCoinsPaise ? String(savedCoinsPaise / 100) : "");
-        setUpi(currentShift.totalUpiPaise ? String(currentShift.totalUpiPaise / 100) : "");
+        setUpi(
+          currentShift.upiCollection || currentShift.totalUpiPaise
+            ? String(Number(currentShift.totalUpiPaise || 0) / 100)
+            : "",
+        );
         setFirstTransactionTime(currentShift.upiCollection?.firstTransactionTime || "");
         setFirstTransactionAmount(
           currentShift.upiCollection?.firstTransactionAmountPaise != null
