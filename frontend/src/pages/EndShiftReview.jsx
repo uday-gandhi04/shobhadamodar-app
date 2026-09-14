@@ -248,7 +248,11 @@ const EndShiftReview = () => {
             }
           />
 
-          <WorkflowStatusBar currentStage="review" />
+          <WorkflowStatusBar
+            currentStage="review"
+            navigationUnlocked={true}
+            mpdId={currentShift?.mpdId?._id || currentShift?.mpdId}
+          />
 
           <div className="mt-4">
             <h1 className="text-[18px] font-bold text-slate-900">
@@ -467,9 +471,7 @@ const EndShiftReview = () => {
                   disabled:opacity-60
                 "
               >
-                {ending
-                  ? t("review.endingShift")
-                  : t("review.endShift")}
+                {ending ? t("review.endingShift") : t("review.endShift")}
               </button>
             </div>
           </div>

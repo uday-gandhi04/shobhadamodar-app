@@ -4,7 +4,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { AuthContext } from "../context/AuthContext";
-import { getCurrentFuelRate, getCurrentShift, updateReadings } from "../services/shiftApi";
+import {
+  getCurrentFuelRate,
+  getCurrentShift,
+  updateReadings,
+} from "../services/shiftApi";
 import NozzleReadingRow from "../components/business/nozzle/NozzleReadingRow";
 import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
 import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
@@ -65,7 +69,9 @@ const EndShift = () => {
         setShift(currentShift);
 
         try {
-          const rateResponse = await getCurrentFuelRate(currentShift.businessDate);
+          const rateResponse = await getCurrentFuelRate(
+            currentShift.businessDate,
+          );
           const rates = rateResponse?.data;
           if (rates && mounted) {
             setFuelRates({
@@ -82,7 +88,8 @@ const EndShift = () => {
           const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
           if (!nozzleId) return;
 
-          const existingFinalReading = reading.closingReading ?? reading.finalReading;
+          const existingFinalReading =
+            reading.closingReading ?? reading.finalReading;
           initialReadings[nozzleId] =
             existingFinalReading !== null &&
             existingFinalReading !== undefined &&
@@ -164,9 +171,7 @@ const EndShift = () => {
       reading.openingReading ?? reading.opening ?? 0,
     );
     const currentValue =
-      finalReadings[nozzleId] !== undefined
-        ? finalReadings[nozzleId]
-        : "";
+      finalReadings[nozzleId] !== undefined ? finalReadings[nozzleId] : "";
     const numericFinalValue = currentValue === "" ? NaN : Number(currentValue);
     const litresDispensed = Number.isFinite(numericFinalValue)
       ? calculateLitresDispensed(openingReading, numericFinalValue)
@@ -182,7 +187,8 @@ const EndShift = () => {
       finalReading: currentValue,
       litresDispensed,
       isInvalid:
-        Number.isFinite(numericFinalValue) && numericFinalValue < openingReading,
+        Number.isFinite(numericFinalValue) &&
+        numericFinalValue < openingReading,
     };
   });
 
@@ -224,7 +230,11 @@ const EndShift = () => {
             onBack={() => navigate("/select-mpd")}
           />
 
-          <WorkflowStatusBar currentStage="nozzle" />
+          <WorkflowStatusBar
+            currentStage="nozzle"
+            navigationUnlocked={canContinue}
+            mpdId={shift?.mpdId?._id || shift?.mpdId}
+          />
 
           {/* Error */}
           {error && (
@@ -275,7 +285,11 @@ const EndShift = () => {
                   {t("nozzle.totalSale")}
                 </p>
                 <p className="mt-1 font-mono text-[15px] font-bold tabular-nums text-[#047857]">
-                  ₹{(totalExpectedSalePaise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹
+                  {(totalExpectedSalePaise / 100).toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
             </div>
@@ -290,18 +304,12 @@ const EndShift = () => {
                 onClick={async () => {
                   const finalReadingsPayload = readings.map((reading) => {
                     const nozzleId =
-                      reading.nozzleId ||
-                      reading.nozzle ||
-                      reading._id;
+                      reading.nozzleId || reading.nozzle || reading._id;
 
                     const finalValue =
                       finalReadings[nozzleId] ??
                       formatReading(
-                        Number(
-                          reading.openingReading ??
-                            reading.opening ??
-                            0,
-                        ),
+                        Number(reading.openingReading ?? reading.opening ?? 0),
                       );
 
                     return {
@@ -315,18 +323,18 @@ const EndShift = () => {
                       shiftId: shift?._id,
                       finalReadings: finalReadingsPayload,
                     };
-                      try {
-                        setError("");
-                        await updateReadings(shift._id, finalReadingsPayload);
-                        saveShiftWorkflowState(workflowState);
-                        navigate("/shift/cash", { state: workflowState });
-                      } catch (err) {
-                        setError(
-                          err?.response?.data?.message ||
-                            err?.message ||
-                            t("nozzle.error.saveReadings"),
-                        );
-                      }
+                    try {
+                      setError("");
+                      await updateReadings(shift._id, finalReadingsPayload);
+                      saveShiftWorkflowState(workflowState);
+                      navigate("/shift/cash", { state: workflowState });
+                    } catch (err) {
+                      setError(
+                        err?.response?.data?.message ||
+                          err?.message ||
+                          t("nozzle.error.saveReadings"),
+                      );
+                    }
                   })();
                 }}
                 className="

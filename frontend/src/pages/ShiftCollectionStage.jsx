@@ -334,7 +334,11 @@ const ShiftCollectionStage = ({ stage }) => {
               })
             }
           />
-          <WorkflowStatusBar currentStage={stage} />
+          <WorkflowStatusBar
+            currentStage={stage}
+            navigationUnlocked={true}
+            mpdId={shift?.mpdId?._id || shift?.mpdId}
+          />
 
           {stage === "cash" && (
             <CashCollection

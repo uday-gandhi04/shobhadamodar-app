@@ -15,15 +15,10 @@ import {
 
 import { getCurrentShift } from "../services/shiftApi";
 
-import {
-  createExpense,
-  getMyShiftExpenses,
-} from "../services/expenseApi";
+import { createExpense, getMyShiftExpenses } from "../services/expenseApi";
 
 const formatCurrency = (paise) => {
-  return `₹${(
-    Number(paise || 0) / 100
-  ).toLocaleString("en-IN", {
+  return `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -40,9 +35,7 @@ const parseRupeesToPaise = (value) => {
 };
 
 const sanitizeAmount = (value) => {
-  return value
-    .replace(/[^\d.]/g, "")
-    .replace(/(\..*)\./g, "$1");
+  return value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
 };
 
 const Expenses = () => {
@@ -51,9 +44,7 @@ const Expenses = () => {
   const { user } = useContext(AuthContext);
   const { t } = useTranslation();
 
-  const workflowState = readShiftWorkflowState(
-    location.state,
-  );
+  const workflowState = readShiftWorkflowState(location.state);
 
   const [shift, setShift] = useState(null);
   const [expenses, setExpenses] = useState([]);
@@ -66,55 +57,44 @@ const Expenses = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const loadExpenses = useCallback(
-    async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const loadExpenses = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        const shiftResponse =
-          await getCurrentShift();
+      const shiftResponse = await getCurrentShift();
 
-        const currentShift =
-          shiftResponse?.data || null;
+      const currentShift = shiftResponse?.data || null;
 
-        if (!currentShift) {
-          navigate("/select-mpd", {
-            replace: true,
-          });
-          return;
-        }
-
-        setShift(currentShift);
-
-        const expenseResponse =
-          await getMyShiftExpenses(
-            currentShift._id,
-          );
-
-        setExpenses(
-          expenseResponse?.data || [],
-        );
-      } catch (err) {
-        setError(
-          err?.response?.data?.message ||
-            err?.message ||
-            t("expense.error.loadFailed"),
-        );
-      } finally {
-        setLoading(false);
+      if (!currentShift) {
+        navigate("/select-mpd", {
+          replace: true,
+        });
+        return;
       }
-    },
-    [navigate, t],
-  );
+
+      setShift(currentShift);
+
+      const expenseResponse = await getMyShiftExpenses(currentShift._id);
+
+      setExpenses(expenseResponse?.data || []);
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          t("expense.error.loadFailed"),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate, t]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       loadExpenses();
     }, 0);
 
-    return () =>
-      window.clearTimeout(timer);
+    return () => window.clearTimeout(timer);
   }, [loadExpenses]);
 
   const handleSave = async () => {
@@ -123,11 +103,9 @@ const Expenses = () => {
     setError("");
     setSuccess("");
 
-    const amountPaise =
-      parseRupeesToPaise(amount);
+    const amountPaise = parseRupeesToPaise(amount);
 
-    const trimmedReason =
-      reason.trim();
+    const trimmedReason = reason.trim();
 
     if (!amountPaise) {
       setError(t("expense.error.invalidAmount"));
@@ -147,23 +125,16 @@ const Expenses = () => {
     try {
       setSaving(true);
 
-      const response =
-        await createExpense({
-          shiftId: shift._id,
-          amountPaise,
-          reason: trimmedReason,
-        });
+      const response = await createExpense({
+        shiftId: shift._id,
+        amountPaise,
+        reason: trimmedReason,
+      });
 
-      const newExpense =
-        response?.data?.expense ||
-        response?.expense ||
-        null;
+      const newExpense = response?.data?.expense || response?.expense || null;
 
       if (newExpense) {
-        setExpenses((current) => [
-          newExpense,
-          ...current,
-        ]);
+        setExpenses((current) => [newExpense, ...current]);
       }
 
       setAmount("");
@@ -182,9 +153,7 @@ const Expenses = () => {
   };
 
   const totalExpenses = expenses.reduce(
-    (total, expense) =>
-      total +
-      Number(expense.amountPaise || 0),
+    (total, expense) => total + Number(expense.amountPaise || 0),
     0,
   );
 
@@ -232,6 +201,8 @@ const Expenses = () => {
 
           <WorkflowStatusBar
             currentStage="expense"
+            navigationUnlocked={true}
+            mpdId={shift?.mpdId?._id || shift?.mpdId}
           />
 
           <div className="mt-4">
@@ -270,11 +241,7 @@ const Expenses = () => {
                   inputMode="decimal"
                   value={amount}
                   onChange={(event) =>
-                    setAmount(
-                      sanitizeAmount(
-                        event.target.value,
-                      ),
-                    )
+                    setAmount(sanitizeAmount(event.target.value))
                   }
                   className="min-w-0 flex-1 bg-transparent text-[16px] font-semibold text-slate-900 outline-none"
                   aria-label={t("expense.amountAriaLabel")}
@@ -289,9 +256,7 @@ const Expenses = () => {
 
               <textarea
                 value={reason}
-                onChange={(event) =>
-                  setReason(event.target.value)
-                }
+                onChange={(event) => setReason(event.target.value)}
                 rows={3}
                 className="
                   mt-2
@@ -349,9 +314,7 @@ const Expenses = () => {
                 disabled:opacity-60
               "
             >
-              {saving
-                ? t("expense.saving")
-                : t("expense.saveExpense")}
+              {saving ? t("expense.saving") : t("expense.saveExpense")}
             </button>
           </section>
 
@@ -384,11 +347,10 @@ const Expenses = () => {
             ) : (
               <>
                 <div className="mt-3 space-y-2">
-                  {expenses.map(
-                    (expense) => (
-                      <div
-                        key={expense._id}
-                        className="
+                  {expenses.map((expense) => (
+                    <div
+                      key={expense._id}
+                      className="
                           rounded-[14px]
                           border
                           border-slate-100
@@ -396,37 +358,32 @@ const Expenses = () => {
                           px-3
                           py-3
                         "
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-[12px] font-semibold text-slate-900">
-                              {expense.reason}
-                            </p>
-
-                            {expense.createdAt && (
-                              <p className="mt-1 text-[9px] text-slate-400">
-                                {new Date(
-                                  expense.createdAt,
-                                ).toLocaleTimeString(
-                                  "en-IN",
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  },
-                                )}
-                              </p>
-                            )}
-                          </div>
-
-                          <p className="shrink-0 text-[13px] font-bold text-slate-900">
-                            {formatCurrency(
-                              expense.amountPaise,
-                            )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-semibold text-slate-900">
+                            {expense.reason}
                           </p>
+
+                          {expense.createdAt && (
+                            <p className="mt-1 text-[9px] text-slate-400">
+                              {new Date(expense.createdAt).toLocaleTimeString(
+                                "en-IN",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </p>
+                          )}
                         </div>
+
+                        <p className="shrink-0 text-[13px] font-bold text-slate-900">
+                          {formatCurrency(expense.amountPaise)}
+                        </p>
                       </div>
-                    ),
-                  )}
+                    </div>
+                  ))}
                 </div>
 
                 <div className="mt-3 flex items-center justify-between rounded-[12px] bg-amber-50 px-3 py-3">
@@ -435,9 +392,7 @@ const Expenses = () => {
                   </span>
 
                   <span className="text-[15px] font-bold text-amber-700">
-                    {formatCurrency(
-                      totalExpenses,
-                    )}
+                    {formatCurrency(totalExpenses)}
                   </span>
                 </div>
               </>
@@ -448,9 +403,7 @@ const Expenses = () => {
             type="button"
             disabled={saving}
             onClick={() => {
-              saveShiftWorkflowState(
-                workflowState,
-              );
+              saveShiftWorkflowState(workflowState);
 
               navigate("/shift/review", {
                 state: workflowState,
