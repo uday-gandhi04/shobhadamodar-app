@@ -83,6 +83,7 @@ const ShiftCollectionStage = ({ stage }) => {
   const [lastTransactionTime, setLastTransactionTime] = useState("");
   const [lastTransactionAmount, setLastTransactionAmount] = useState("");
   const [card, setCard] = useState("");
+  const [atmEntries, setAtmEntries] = useState([]);
   const [coins, setCoins] = useState("");
   const [fuelRates, setFuelRates] = useState({ PETROL: 0, DIESEL: 0 });
   const [loading, setLoading] = useState(true);
@@ -106,6 +107,14 @@ const ShiftCollectionStage = ({ stage }) => {
 
         if (!mounted) return;
         setShift(currentShift);
+
+        setAtmEntries(
+          (currentShift.atmEntries || []).map((entry, index) => ({
+            id: entry._id || `${entry.time}-${index}`,
+            time: entry.time,
+            amountPaise: Number(entry.amountPaise || 0),
+          })),
+        );
 
         const counts = createEmptyCounts();
         (currentShift.cashCollections || []).forEach((item) => {
@@ -202,7 +211,10 @@ const ShiftCollectionStage = ({ stage }) => {
 
       upiPaise: parseRupeesToPaise(upi),
 
-      cardPaise: parseRupeesToPaise(card),
+      atmEntries: atmEntries.map((entry) => ({
+        time: entry.time,
+        amountPaise: Number(entry.amountPaise || 0),
+      })),
 
       udhariPaise: Number(shift?.totalUdhariPaise || 0),
     };
@@ -417,8 +429,8 @@ const ShiftCollectionStage = ({ stage }) => {
           )}
           {stage === "card" && (
             <AtmCollection
-              card={card}
-              onCardChange={(value) => setCard(sanitizeMoneyInput(value))}
+              entries={atmEntries}
+              onEntriesChange={setAtmEntries}
               onSavedMessage={setSavedMessage}
             />
           )}

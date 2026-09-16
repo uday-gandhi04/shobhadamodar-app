@@ -149,7 +149,7 @@
     "closingRequired": "Enter closing reading",
     "closingBelowOpening": "Closing reading cannot be below opening.",
     "finalReadingsHint": "Enter the final totalizer reading for each nozzle.",
-"enter": "Enter"
+    "enter": "Enter"
   },
 
   "cash": {
@@ -197,7 +197,12 @@
     "description": "Enter the total card / ATM amount collected so far.",
     "totalCardAtm": "Total Card / ATM",
     "nextUdhari": "Next: Udhari",
-    "totalCard": "Total Card / ATM"
+    "totalCard": "Total Card / ATM",
+    "amount": "Amount",
+    "thisShift": "This Shift",
+    "entries": "entries",
+    "entry": "entry",
+    "remove": "Remove"
   },
 
   "udhari": {
@@ -252,9 +257,9 @@
     "next": "Next: Review",
     "nextReview": "Next: Review",
 
-"thisShiftHint": "Expenses recorded during this shift",
-"empty": "No expenses recorded yet.",
-"expenses": "expenses"
+    "thisShiftHint": "Expenses recorded during this shift",
+    "empty": "No expenses recorded yet.",
+    "expenses": "expenses"
   },
 
   "review": {

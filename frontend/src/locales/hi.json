@@ -147,7 +147,7 @@
     "closingRequired": "क्लोज़िंग रीडिंग दर्ज करें",
     "closingBelowOpening": "क्लोज़िंग रीडिंग ओपनिंग से कम नहीं हो सकती।",
     "finalReadingsHint": "हर नोज़ल की अंतिम टोटलाइज़र रीडिंग दर्ज करें।",
-"enter": "दर्ज करें"
+    "enter": "दर्ज करें"
   },
 
   "cash": {
@@ -193,9 +193,13 @@
   "atm": {
     "title": "कार्ड / ATM संग्रह",
     "description": "अब तक एकत्र कुल कार्ड / ATM राशि दर्ज करें।",
+    "amount": "राशि",
+    "thisShift": "इस शिफ्ट में",
+    "entries": "प्रविष्टियाँ",
+    "entry": "प्रविष्टि",
+    "remove": "हटाएँ",
     "totalCardAtm": "कुल कार्ड / ATM",
-    "nextUdhari": "अगला: उधारी",
-    "totalCard": "कुल कार्ड / ATM"
+    "nextUdhari": "अगला: उधारी"
   },
 
   "udhari": {
@@ -250,8 +254,8 @@
     "next": "अगला: समीक्षा",
     "nextReview": "अगला: समीक्षा",
     "thisShiftHint": "इस शिफ्ट के दर्ज खर्च",
-"empty": "अभी कोई खर्च दर्ज नहीं है।",
-"expenses": "खर्च"
+    "empty": "अभी कोई खर्च दर्ज नहीं है।",
+    "expenses": "खर्च"
   },
 
   "review": {

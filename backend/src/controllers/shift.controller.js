@@ -30,20 +30,70 @@ const normalizeCash = (cashBreakdown = []) => {
     .filter((item) => item.count > 0);
 };
 
-const calculateCollections = (collections = {}) => {
-  const cashCollections = normalizeCash(collections.cashBreakdown);
-  const coinsPaise = Number(collections.coinsPaise || 0);
-  const totalCashPaise = cashCollections.reduce((sum, item) => sum + item.totalPaise, 0) + coinsPaise;
-  const totalUpiPaise = Number(collections.upiPaise || 0);
-  const totalCardPaise = Number(collections.cardPaise || 0);
-  const totalUdhariPaise = Number(collections.udhariPaise || 0);
+const normalizeAtmEntries = (
+  atmEntries = [],
+) =>
+  atmEntries
+    .map((entry) => ({
+      time: String(entry.time || "").trim(),
+      amountPaise: Number(
+        entry.amountPaise || 0,
+      ),
+    }))
+    .filter(
+      (entry) =>
+        /^\d{2}:\d{2}$/.test(entry.time) &&
+        Number.isFinite(entry.amountPaise) &&
+        entry.amountPaise >= 0,
+    );
+
+const calculateCollections = (
+  collections = {},
+) => {
+  const cashCollections =
+    normalizeCash(
+      collections.cashBreakdown,
+    );
+
+  const totalCashPaise =
+    cashCollections.reduce(
+      (sum, item) =>
+        sum +
+        item.denomination *
+          item.count *
+          100,
+      0,
+    );
+
+  const totalUpiPaise = Number(
+    collections.upiPaise || 0,
+  );
+
+  const atmEntries =
+    normalizeAtmEntries(
+      collections.atmEntries,
+    );
+
+  const totalCardPaise =
+    atmEntries.reduce(
+      (sum, entry) =>
+        sum + entry.amountPaise,
+      0,
+    );
+
+  const totalUdhariPaise = Number(
+    collections.udhariPaise || 0,
+  );
+
   const totalCollectedPaise =
-    totalCashPaise + totalUpiPaise + totalCardPaise + totalUdhariPaise;
+    totalCashPaise +
+    totalUpiPaise +
+    totalCardPaise +
+    totalUdhariPaise;
 
   return {
     cashCollections,
-    coinsPaise,
-    upiCollection: collections.upiCollection,
+    atmEntries,
     totalCashPaise,
     totalUpiPaise,
     totalCardPaise,
@@ -339,6 +389,7 @@ export const updateCollections = async (req, res, next) => {
     shift.totalCardPaise = financials.totalCardPaise;
     shift.totalUdhariPaise = financials.totalUdhariPaise;
     shift.totalCollectedPaise = financials.totalCollectedPaise;
+    shift.atmEntries = financials.atmEntries;
     shift.reconciliationStatus = 'PENDING';
 
     await shift.save();

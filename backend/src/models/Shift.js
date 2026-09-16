@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const shiftReadingSchema = new mongoose.Schema(
   {
     nozzleId: { type: String, required: true },
-    fuelType: { type: String, enum: ['PETROL', 'DIESEL'], required: true },
+    fuelType: { type: String, enum: ["PETROL", "DIESEL"], required: true },
     openingReading: { type: Number, required: true },
     closingReading: { type: Number, default: null },
     dispensedLitres: { type: Number, default: 0 },
@@ -28,22 +28,22 @@ const shiftSchema = new mongoose.Schema(
 
     mpdId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Mpd',
+      ref: "Mpd",
       required: true,
       index: true,
     },
 
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
 
     status: {
       type: String,
-      enum: ['IN_PROGRESS', 'ENDED', 'FORCE_CLOSED'],
-      default: 'IN_PROGRESS',
+      enum: ["IN_PROGRESS", "ENDED", "FORCE_CLOSED"],
+      default: "IN_PROGRESS",
       required: true,
       index: true,
     },
@@ -67,11 +67,21 @@ const shiftSchema = new mongoose.Schema(
     totalUdhariPaise: { type: Number, default: 0 },
     totalCollectedPaise: { type: Number, default: 0 },
 
+    atmEntries: {
+      type: [
+        {
+          time: { type: String, required: true },
+          amountPaise: { type: Number, required: true, min: 0 },
+        },
+      ],
+      default: [],
+    },
+
     differencePaise: { type: Number, default: 0 },
     reconciliationStatus: {
       type: String,
-      enum: ['MATCHED', 'SHORT', 'EXCESS', 'PENDING'],
-      default: 'PENDING',
+      enum: ["MATCHED", "SHORT", "EXCESS", "PENDING"],
+      default: "PENDING",
     },
   },
   { timestamps: true },
@@ -81,8 +91,8 @@ shiftSchema.index(
   { employeeId: 1 },
   {
     unique: true,
-    partialFilterExpression: { status: 'IN_PROGRESS' },
-    name: 'one_active_shift_per_employee',
+    partialFilterExpression: { status: "IN_PROGRESS" },
+    name: "one_active_shift_per_employee",
   },
 );
 
@@ -90,13 +100,13 @@ shiftSchema.index(
   { mpdId: 1 },
   {
     unique: true,
-    partialFilterExpression: { status: 'IN_PROGRESS' },
-    name: 'one_active_shift_per_mpd',
+    partialFilterExpression: { status: "IN_PROGRESS" },
+    name: "one_active_shift_per_mpd",
   },
 );
 
 shiftSchema.index({ businessDate: 1, mpdId: 1 });
 
-const Shift = mongoose.model('Shift', shiftSchema);
+const Shift = mongoose.model("Shift", shiftSchema);
 
 export default Shift;
