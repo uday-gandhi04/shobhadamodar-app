@@ -107,7 +107,10 @@ const EndShiftReview = () => {
 
           upiPaise: Number(activeShift.totalUpiPaise || 0),
 
-          cardPaise: Number(activeShift.totalCardPaise || 0),
+          atmEntries: (activeShift.atmEntries || []).map((entry) => ({
+            time: entry.time,
+            amountPaise: Number(entry.amountPaise || 0),
+          })),
 
           udhariPaise: Number(activeShift.totalUdhariPaise || 0),
 
