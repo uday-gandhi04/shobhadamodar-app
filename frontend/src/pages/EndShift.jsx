@@ -143,6 +143,59 @@ const EndShift = () => {
     }));
   };
 
+  useEffect(() => {
+    if (!shift?._id || !readings.length) {
+      return;
+    }
+
+    const hasAnyReading = readings.some((reading) => {
+      const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
+
+      const value = finalReadings[nozzleId];
+
+      return (
+        value !== undefined && value !== "" && Number.isFinite(Number(value))
+      );
+    });
+
+    if (!hasAnyReading) {
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const payload = readings
+          .map((reading) => {
+            const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
+
+            const value = finalReadings[nozzleId];
+
+            if (value === undefined || value === "") {
+              return null;
+            }
+
+            return {
+              nozzleId,
+              closingReading: Number(value),
+            };
+          })
+          .filter(Boolean);
+
+        if (!payload.length) {
+          return;
+        }
+
+        await updateReadings(shift._id, payload);
+      } catch (err) {
+        console.error("[Nozzle Autosave] Failed:", err);
+      }
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [finalReadings, shift?._id, readings]);
+
   const canContinue =
     readings.length > 0 &&
     readings.every((reading) => {
@@ -164,6 +217,35 @@ const EndShift = () => {
 
       return Number(value) >= openingReading;
     });
+
+  const saveNozzleProgress = async () => {
+    if (!shift?._id || !readings.length) {
+      return;
+    }
+
+    const payload = readings
+      .map((reading) => {
+        const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
+
+        const value = finalReadings[nozzleId];
+
+        if (value === undefined || value === "") {
+          return null;
+        }
+
+        return {
+          nozzleId,
+          closingReading: Number(value),
+        };
+      })
+      .filter(Boolean);
+
+    if (!payload.length) {
+      return;
+    }
+
+    await updateReadings(shift._id, payload);
+  };
 
   const nozzleReadings = readings.map((reading) => {
     const nozzleId = reading.nozzleId || reading.nozzle || reading._id;
@@ -234,6 +316,7 @@ const EndShift = () => {
             currentStage="nozzle"
             navigationUnlocked={canContinue}
             mpdId={shift?.mpdId?._id || shift?.mpdId}
+            onBeforeNavigate={saveNozzleProgress}
           />
 
           {/* Error */}
@@ -245,7 +328,7 @@ const EndShift = () => {
 
           {/* Final readings */}
           <section className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
-            <div className="p-4 pb-3">
+            {/* <div className="p-4 pb-3">
               <h2 className="text-[15px] font-semibold text-slate-900">
                 {t("nozzle.finalReadings")}
               </h2>
@@ -253,7 +336,7 @@ const EndShift = () => {
               <p className="mt-1 text-[10px] leading-4 text-slate-500">
                 {t("nozzle.finalReadingsHint")}
               </p>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2 border-y border-slate-100 bg-slate-50/70 px-3 py-2.5 text-[9px] font-bold uppercase tracking-[0.05em] text-slate-500 sm:grid-cols-[88px_minmax(0,1fr)_minmax(0,1fr)] sm:gap-4 sm:px-4">
               <span>{t("nozzle.nozzle")}</span>

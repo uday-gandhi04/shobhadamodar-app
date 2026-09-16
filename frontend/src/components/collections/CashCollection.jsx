@@ -46,7 +46,7 @@ const CashCollection = ({
 
   return (
     <>
-      <div className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
+      {/* <div className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
         <div className="flex h-[116px] items-center justify-center bg-gradient-to-b from-amber-50 to-emerald-50">
           <div className="text-center">
             <div className="text-[36px] font-bold text-[#047857]">₹</div>
@@ -56,7 +56,7 @@ const CashCollection = ({
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="mt-4 flex items-center px-3">
         <div className="w-[72px]" />

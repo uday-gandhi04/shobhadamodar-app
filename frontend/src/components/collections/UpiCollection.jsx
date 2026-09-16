@@ -1,4 +1,248 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+const parseTime = (value) => {
+  if (!/^\d{2}:\d{2}$/.test(value || "")) {
+    return {
+      hour: "",
+      minute: "",
+      period: "AM",
+    };
+  }
+
+  const [h, m] = value.split(":").map(Number);
+
+  return {
+    hour: String(h % 12 || 12).padStart(2, "0"),
+    minute: String(m).padStart(2, "0"),
+    period: h >= 12 ? "PM" : "AM",
+  };
+};
+
+const makeTime = (hour, minute, period) => {
+  const h = Number(hour);
+  const m = Number(minute);
+
+  if (
+    !Number.isInteger(h) ||
+    !Number.isInteger(m) ||
+    h < 1 ||
+    h > 12 ||
+    m < 0 ||
+    m > 59
+  ) {
+    return "";
+  }
+
+  let hour24 = h;
+
+  if (period === "AM" && h === 12) hour24 = 0;
+  if (period === "PM" && h !== 12) hour24 = h + 12;
+
+  return `${String(hour24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+
+const TimeField = ({
+  value,
+  onChange,
+  hourLabel,
+  minuteLabel,
+  periodLabel,
+}) => {
+  const { t } = useTranslation();
+
+  const initial = parseTime(value);
+
+  const [hour, setHour] = useState(initial.hour);
+  const [minute, setMinute] = useState(initial.minute);
+  const [period, setPeriod] = useState(initial.period);
+
+  useEffect(() => {
+    const next = parseTime(value);
+
+    setHour(next.hour);
+    setMinute(next.minute);
+    setPeriod(next.period);
+  }, [value]);
+
+  const update = (
+    nextHour,
+    nextMinute,
+    nextPeriod = period,
+  ) => {
+    setHour(nextHour);
+    setMinute(nextMinute);
+    onChange(
+      makeTime(
+        nextHour,
+        nextMinute,
+        nextPeriod,
+      ),
+    );
+  };
+
+  const handleHourChange = (event) => {
+    let next = event.target.value
+      .replace(/\D/g, "")
+      .slice(0, 2);
+
+    if (next.length === 2) {
+      const n = Number(next);
+
+      if (n < 1) next = "01";
+      if (n > 12) next = "12";
+    }
+
+    update(next, minute);
+  };
+
+  const handleMinuteChange = (event) => {
+    let next = event.target.value
+      .replace(/\D/g, "")
+      .slice(0, 2);
+
+    if (next.length === 2 && Number(next) > 59) {
+      next = "59";
+    }
+
+    update(hour, next);
+  };
+
+  const handlePeriodChange = (nextPeriod) => {
+    setPeriod(nextPeriod);
+
+    onChange(
+      makeTime(
+        hour,
+        minute,
+        nextPeriod,
+      ),
+    );
+  };
+
+  return (
+    <div className="flex w-full items-center gap-2">
+      {/* HH:MM */}
+      <div
+        className="
+          flex
+          h-[42px]
+          w-[78px]
+          shrink-0
+          items-center
+          justify-center
+          rounded-[10px]
+          border
+          border-slate-200
+          bg-slate-50
+          px-1
+          focus-within:border-[#047857]
+          focus-within:bg-white
+        "
+      >
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={2}
+          value={hour}
+          onChange={handleHourChange}
+          onFocus={(e) => e.target.select()}
+          placeholder="HH"
+          aria-label={hourLabel || t("phonepe.hour")}
+          className="
+            h-full
+            w-[24px]
+            bg-transparent
+            p-0
+            text-center
+            text-[12px]
+            font-semibold
+            tabular-nums
+            text-slate-800
+            outline-none
+            placeholder:text-slate-300
+          "
+        />
+
+        <span className="mx-0.5 text-[12px] font-bold text-slate-400">
+          :
+        </span>
+
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={2}
+          value={minute}
+          onChange={handleMinuteChange}
+          onFocus={(e) => e.target.select()}
+          placeholder="MM"
+          aria-label={
+            minuteLabel || t("phonepe.minute")
+          }
+          className="
+            h-full
+            w-[24px]
+            bg-transparent
+            p-0
+            text-center
+            text-[12px]
+            font-semibold
+            tabular-nums
+            text-slate-800
+            outline-none
+            placeholder:text-slate-300
+          "
+        />
+      </div>
+
+      {/* AM / PM */}
+      <div
+        className="
+          flex
+          h-[42px]
+          shrink-0
+          items-center
+          rounded-[10px]
+          border
+          border-slate-200
+          bg-slate-50
+          p-1
+        "
+      >
+        {["AM", "PM"].map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() =>
+              handlePeriodChange(item)
+            }
+            className={`
+              h-[32px]
+              min-w-[31px]
+              rounded-[7px]
+              px-1
+              text-[9px]
+              font-bold
+              transition
+              ${
+                period === item
+                  ? "bg-[#047857] text-white"
+                  : "text-slate-500"
+              }
+            `}
+            aria-label={
+              periodLabel
+                ? `${periodLabel} ${item}`
+                : item
+            }
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const UpiCollection = ({
   upi,
@@ -16,14 +260,13 @@ const UpiCollection = ({
 }) => {
   const { t } = useTranslation();
 
-  const hasAnyUpiData =
-    Boolean(
-      upi ||
-        firstTransactionTime ||
-        firstTransactionAmount ||
-        lastTransactionTime ||
-        lastTransactionAmount,
-    );
+  const hasAnyUpiData = Boolean(
+    upi ||
+      firstTransactionTime ||
+      firstTransactionAmount ||
+      lastTransactionTime ||
+      lastTransactionAmount,
+  );
 
   return (
     <section className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
@@ -36,46 +279,59 @@ const UpiCollection = ({
       </p>
 
       <div className="mt-5 overflow-hidden rounded-[14px] border border-slate-200">
-        <div className="grid grid-cols-[minmax(72px,0.7fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2 bg-slate-50 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.05em] text-slate-500">
-          <span>{t("phonepe.transaction")}</span>
-          <span>{t("phonepe.time")}</span>
-          <span>{t("phonepe.amount")}</span>
+        {/* HEADER */}
+        <div className="grid grid-cols-[48px_150px_minmax(0,1fr)] items-center gap-2 bg-slate-50 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.05em] text-slate-500">
+          <span>
+            {t("phonepe.transaction")}
+          </span>
+
+          <span className="text-center">
+            {t("phonepe.time")}
+          </span>
+
+          <span className="text-right">
+            {t("phonepe.amount")}
+          </span>
         </div>
 
         {/* FIRST */}
-        <div className="grid grid-cols-[minmax(72px,0.7fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 border-t border-slate-100 px-3 py-3">
+        <div className="grid grid-cols-[48px_150px_minmax(0,1fr)] items-center gap-2 border-t border-slate-100 px-3 py-3">
           <span className="text-[12px] font-semibold text-slate-700">
             {t("phonepe.first")}
           </span>
 
-          <input
-            type="time"
+          <TimeField
             value={firstTransactionTime}
-            onChange={(event) =>
-              onFirstTransactionTimeChange(
-                event.target.value,
-              )
+            onChange={
+              onFirstTransactionTimeChange
             }
-            aria-label={t("phonepe.firstTimeAriaLabel")}
+            hourLabel={t(
+              "phonepe.firstHourAriaLabel",
+            )}
+            minuteLabel={t(
+              "phonepe.firstMinuteAriaLabel",
+            )}
+            periodLabel={t(
+              "phonepe.firstPeriodAriaLabel",
+            )}
+          />
+
+          <div
             className="
+              flex
+              h-[42px]
               min-w-0
-              rounded-[8px]
+              items-center
+              rounded-[10px]
               border
               border-slate-200
               bg-slate-50
-              px-2
-              py-2
-              text-[11px]
-              font-semibold
-              text-slate-800
-              outline-none
-              focus:border-[#047857]
-              focus:bg-white
+              px-2.5
+              focus-within:border-[#047857]
+              focus-within:bg-white
             "
-          />
-
-          <div className="flex min-w-0 items-center rounded-[8px] border border-slate-200 bg-slate-50 px-2 py-2 focus-within:border-[#047857] focus-within:bg-white">
-            <span className="mr-1 text-[12px] font-bold text-slate-400">
+          >
+            <span className="mr-1.5 text-[13px] font-semibold text-slate-400">
               ₹
             </span>
 
@@ -88,46 +344,62 @@ const UpiCollection = ({
                   event.target.value,
                 )
               }
-              aria-label={t("phonepe.firstAmountAriaLabel")}
-              className="min-w-0 w-full bg-transparent text-right text-[11px] font-semibold tabular-nums text-slate-800 outline-none"
+              aria-label={t(
+                "phonepe.firstAmountAriaLabel",
+              )}
+              className="
+                min-w-0
+                w-full
+                bg-transparent
+                text-right
+                text-[12px]
+                font-semibold
+                tabular-nums
+                text-slate-800
+                outline-none
+              "
             />
           </div>
         </div>
 
         {/* LAST */}
-        <div className="grid grid-cols-[minmax(72px,0.7fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 border-t border-slate-100 px-3 py-3">
+        <div className="grid grid-cols-[48px_150px_minmax(0,1fr)] items-center gap-2 border-t border-slate-100 px-3 py-3">
           <span className="text-[12px] font-semibold text-slate-700">
             {t("phonepe.last")}
           </span>
 
-          <input
-            type="time"
+          <TimeField
             value={lastTransactionTime}
-            onChange={(event) =>
-              onLastTransactionTimeChange(
-                event.target.value,
-              )
+            onChange={
+              onLastTransactionTimeChange
             }
-            aria-label={t("phonepe.lastTimeAriaLabel")}
+            hourLabel={t(
+              "phonepe.lastHourAriaLabel",
+            )}
+            minuteLabel={t(
+              "phonepe.lastMinuteAriaLabel",
+            )}
+            periodLabel={t(
+              "phonepe.lastPeriodAriaLabel",
+            )}
+          />
+
+          <div
             className="
+              flex
+              h-[42px]
               min-w-0
-              rounded-[8px]
+              items-center
+              rounded-[10px]
               border
               border-slate-200
               bg-slate-50
-              px-2
-              py-2
-              text-[11px]
-              font-semibold
-              text-slate-800
-              outline-none
-              focus:border-[#047857]
-              focus:bg-white
+              px-2.5
+              focus-within:border-[#047857]
+              focus-within:bg-white
             "
-          />
-
-          <div className="flex min-w-0 items-center rounded-[8px] border border-slate-200 bg-slate-50 px-2 py-2 focus-within:border-[#047857] focus-within:bg-white">
-            <span className="mr-1 text-[12px] font-bold text-slate-400">
+          >
+            <span className="mr-1.5 text-[13px] font-semibold text-slate-400">
               ₹
             </span>
 
@@ -140,8 +412,20 @@ const UpiCollection = ({
                   event.target.value,
                 )
               }
-              aria-label={t("phonepe.lastAmountAriaLabel")}
-              className="min-w-0 w-full bg-transparent text-right text-[11px] font-semibold tabular-nums text-slate-800 outline-none"
+              aria-label={t(
+                "phonepe.lastAmountAriaLabel",
+              )}
+              className="
+                min-w-0
+                w-full
+                bg-transparent
+                text-right
+                text-[12px]
+                font-semibold
+                tabular-nums
+                text-slate-800
+                outline-none
+              "
             />
           </div>
         </div>
@@ -172,8 +456,20 @@ const UpiCollection = ({
               onUpiChange(event.target.value);
               onSavedMessage("");
             }}
-            className="min-w-0 flex-1 bg-transparent text-right text-[22px] font-bold tabular-nums text-slate-900 outline-none"
-            aria-label={t("phonepe.totalCollectionAriaLabel")}
+            className="
+              min-w-0
+              flex-1
+              bg-transparent
+              text-right
+              text-[22px]
+              font-bold
+              tabular-nums
+              text-slate-900
+              outline-none
+            "
+            aria-label={t(
+              "phonepe.totalCollectionAriaLabel",
+            )}
           />
         </div>
       </div>

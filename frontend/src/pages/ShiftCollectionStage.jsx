@@ -233,6 +233,45 @@ const ShiftCollectionStage = ({ stage }) => {
     return payload;
   };
 
+  const saveProgress = async () => {
+    if (!shift?._id) {
+      return;
+    }
+
+    const payload = buildPayload();
+
+    await updateCollections(shift._id, payload);
+  };
+
+  useEffect(() => {
+    if (!shift?._id || stage === "udhari") {
+      return;
+    }
+
+    const timer = window.setTimeout(async () => {
+      try {
+        await saveProgress();
+      } catch (err) {
+        console.error(`[${stage} Autosave] Failed:`, err);
+      }
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [
+    stage,
+    shift?._id,
+    cashCounts,
+    coins,
+    upi,
+    firstTransactionTime,
+    firstTransactionAmount,
+    lastTransactionTime,
+    lastTransactionAmount,
+    card,
+  ]);
+
   const handleNext = async () => {
     if (!shift?._id || saving) return;
 
@@ -338,6 +377,7 @@ const ShiftCollectionStage = ({ stage }) => {
             currentStage={stage}
             navigationUnlocked={true}
             mpdId={shift?.mpdId?._id || shift?.mpdId}
+            onBeforeNavigate={saveProgress}
           />
 
           {stage === "cash" && (

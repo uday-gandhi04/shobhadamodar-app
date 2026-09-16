@@ -15,6 +15,7 @@ const WorkflowStatusBar = ({
   currentStage,
   navigationUnlocked = false,
   mpdId,
+  onBeforeNavigate,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ const WorkflowStatusBar = ({
     }
   };
 
-  const handleStageClick = (stage, index) => {
+  const handleStageClick = async (stage, index) => {
     // Current stage does nothing.
     if (index === currentIndex) {
       return;
