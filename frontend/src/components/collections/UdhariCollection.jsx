@@ -8,14 +8,18 @@ import {
 } from "../../services/shiftApi";
 
 const formatCurrency = (paise) => {
-  return `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {
+  return `₹${(
+    Number(paise || 0) / 100
+  ).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 };
 
 const formatOutstanding = (paise) => {
-  return `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {
+  return `₹${(
+    Number(paise || 0) / 100
+  ).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -51,60 +55,90 @@ const UdhariCollection = ({
 }) => {
   const { t } = useTranslation();
 
-  const [customerSearch, setCustomerSearch] = useState("");
-  const [customerResults, setCustomerResults] = useState([]);
-  const [searchingCustomers, setSearchingCustomers] = useState(false);
+  const [customerSearch, setCustomerSearch] =
+    useState("");
 
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [customerName, setCustomerName] = useState("");
-  const [slipNumber, setSlipNumber] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
+  const [customerResults, setCustomerResults] =
+    useState([]);
 
-  const [udhariFuelType, setUdhariFuelType] = useState("DIESEL");
-  const [udhariMode, setUdhariMode] = useState("litres");
+  const [searchingCustomers, setSearchingCustomers] =
+    useState(false);
 
-  const [udhariLitres, setUdhariLitres] = useState("");
-  const [udhariAmount, setUdhariAmount] = useState("");
+  const [selectedCustomer, setSelectedCustomer] =
+    useState(null);
 
-  const [addingUdhari, setAddingUdhari] = useState(false);
+  const [slipNumber, setSlipNumber] =
+    useState("");
 
-  const [removingUdhariId, setRemovingUdhariId] = useState(null);
+  const [vehicleNumber, setVehicleNumber] =
+    useState("");
 
-  const [udhariEntries, setUdhariEntries] = useState(
-    () =>
-      (shift?.udhariEntries || []).map((entry) => ({
-        ...entry,
-        id: entry.id || entry.transactionId,
-      })),
-  );
+  const [udhariFuelType, setUdhariFuelType] =
+    useState("DIESEL");
 
-  const [udhariError, setUdhariError] = useState("");
+  const [udhariMode, setUdhariMode] =
+    useState("litres");
 
-  const handleCustomerSearch = async (value) => {
+  const [udhariLitres, setUdhariLitres] =
+    useState("");
+
+  const [udhariAmount, setUdhariAmount] =
+    useState("");
+
+  const [addingUdhari, setAddingUdhari] =
+    useState(false);
+
+  const [removingUdhariId, setRemovingUdhariId] =
+    useState(null);
+
+  const [udhariEntries, setUdhariEntries] =
+    useState(() =>
+      (shift?.udhariEntries || []).map(
+        (entry) => ({
+          ...entry,
+          id:
+            entry.id ||
+            entry.transactionId,
+        }),
+      ),
+    );
+
+  const [udhariError, setUdhariError] =
+    useState("");
+
+  const handleCustomerSearch = async (
+    value,
+  ) => {
     setCustomerSearch(value);
-    setCustomerName(value);
     setSelectedCustomer(null);
+    setCustomerResults([]);
     setUdhariError("");
 
     const query = value.trim();
 
-    if (query.length < 2) {
-      setCustomerResults([]);
+    if (query.length < 1) {
+      setSearchingCustomers(false);
       return;
     }
 
     try {
       setSearchingCustomers(true);
 
-      const response = await searchCustomers(query);
+      const response =
+        await searchCustomers(query);
 
-      setCustomerResults(response?.data || []);
+      setCustomerResults(
+        response?.data || [],
+      );
     } catch (err) {
       setCustomerResults([]);
 
       setUdhariError(
         err?.response?.data?.message ||
-          t("udhari.error.searchCustomers"),
+          err?.message ||
+          t(
+            "udhari.error.searchCustomers",
+          ),
       );
     } finally {
       setSearchingCustomers(false);
@@ -113,9 +147,15 @@ const UdhariCollection = ({
 
   const selectCustomer = (customer) => {
     setSelectedCustomer(customer);
-    setCustomerName(customer.name || "");
-    setCustomerSearch(customer.name || "");
-    setVehicleNumber(customer.vehicleNumber || "");
+
+    setCustomerSearch(
+      customer?.name || "",
+    );
+
+    setVehicleNumber(
+      customer?.vehicleNumber || "",
+    );
+
     setCustomerResults([]);
     setUdhariError("");
   };
@@ -127,37 +167,52 @@ const UdhariCollection = ({
   const calculatedUdhariAmount =
     udhariLitres !== "" &&
     currentUdhariRatePaise > 0 &&
-    Number.isFinite(Number(udhariLitres))
+    Number.isFinite(
+      Number(udhariLitres),
+    )
       ? Math.round(
-          Number(udhariLitres) * currentUdhariRatePaise,
+          Number(udhariLitres) *
+            currentUdhariRatePaise,
         )
       : 0;
 
-  const enteredAmountPaise = parseRupeesToPaise(udhariAmount);
+  const enteredAmountPaise =
+    parseRupeesToPaise(
+      udhariAmount,
+    );
 
   const calculatedUdhariLitres =
-    enteredAmountPaise > 0 && currentUdhariRatePaise > 0
-      ? enteredAmountPaise / currentUdhariRatePaise
+    enteredAmountPaise > 0 &&
+    currentUdhariRatePaise > 0
+      ? enteredAmountPaise /
+        currentUdhariRatePaise
       : 0;
 
   const handleAddUdhari = async () => {
-    if (addingUdhari || !shift?._id) {
+    if (
+      addingUdhari ||
+      !shift?._id
+    ) {
       return;
     }
 
     setUdhariError("");
 
-    const name =
-      selectedCustomer?.name ||
-      customerName.trim();
-
-    if (name.length < 2) {
-      setUdhariError(t("udhari.error.customerName"));
+    /*
+     * Employee MUST select an existing customer.
+     * Typing a name alone is not enough.
+     */
+    if (!selectedCustomer?._id) {
+      setUdhariError(
+        t("udhari.error.customerName"),
+      );
       return;
     }
 
     if (currentUdhariRatePaise <= 0) {
-      setUdhariError(t("udhari.error.rateUnavailable"));
+      setUdhariError(
+        t("udhari.error.rateUnavailable"),
+      );
       return;
     }
 
@@ -167,89 +222,135 @@ const UdhariCollection = ({
     if (udhariMode === "litres") {
       litres = Number(udhariLitres);
 
-      if (!Number.isFinite(litres) || litres <= 0) {
-        setUdhariError(t("udhari.error.invalidLitres"));
+      if (
+        !Number.isFinite(litres) ||
+        litres <= 0
+      ) {
+        setUdhariError(
+          t(
+            "udhari.error.invalidLitres",
+          ),
+        );
         return;
       }
 
       amountPaise = Math.round(
-        litres * currentUdhariRatePaise,
+        litres *
+          currentUdhariRatePaise,
       );
     } else {
-      amountPaise = enteredAmountPaise;
+      amountPaise =
+        enteredAmountPaise;
 
       if (
-        !Number.isFinite(amountPaise) ||
+        !Number.isFinite(
+          amountPaise,
+        ) ||
         amountPaise <= 0
       ) {
-        setUdhariError(t("udhari.error.invalidAmount"));
+        setUdhariError(
+          t(
+            "udhari.error.invalidAmount",
+          ),
+        );
         return;
       }
 
       litres =
-        amountPaise / currentUdhariRatePaise;
+        amountPaise /
+        currentUdhariRatePaise;
     }
 
     try {
       setAddingUdhari(true);
 
-      const response = await addUdhariTransaction({
-        shiftId: shift._id,
-        customerId: selectedCustomer?._id,
-        customerName: name,
+      const response =
+        await addUdhariTransaction({
+          shiftId: shift._id,
 
-        slipNumber:
-          slipNumber.trim() || undefined,
+          customerId:
+            selectedCustomer._id,
 
-        vehicleNumber:
-          vehicleNumber.trim().toUpperCase() ||
-          undefined,
+          customerName:
+            selectedCustomer.name,
 
-        fuelType: udhariFuelType,
-        ...(udhariMode === "litres" ? { litres } : {}),
-        ratePaise: currentUdhariRatePaise,
-        amountPaise,
-      });
+          slipNumber:
+            slipNumber.trim() ||
+            undefined,
 
-      const result = response?.data;
-      const transaction = result?.transaction;
+          vehicleNumber:
+            vehicleNumber
+              .trim()
+              .toUpperCase() ||
+            undefined,
+
+          fuelType:
+            udhariFuelType,
+
+          ...(udhariMode ===
+          "litres"
+            ? { litres }
+            : {}),
+
+          ratePaise:
+            currentUdhariRatePaise,
+
+          amountPaise,
+        });
+
+      const result =
+        response?.data;
+
+      const transaction =
+        result?.transaction;
+
       const customer =
-        result?.customer || selectedCustomer;
+        result?.customer ||
+        selectedCustomer;
 
       if (!transaction?._id) {
         throw new Error(
-          t("udhari.error.missingTransactionId"),
+          t(
+            "udhari.error.missingTransactionId",
+          ),
         );
       }
 
       const newEntry = {
         id: transaction._id,
-        transactionId: transaction._id,
+
+        transactionId:
+          transaction._id,
 
         customerId:
           customer?._id ||
-          selectedCustomer?._id ||
-          null,
+          selectedCustomer._id,
 
         slipNumber:
           transaction?.slipNumber ||
           slipNumber.trim() ||
           null,
 
-        customer: customer
-          ? {
-              _id: customer._id,
-              name: customer.name,
-              outstandingBalance:
-                customer.outstandingBalance,
-            }
-          : {
-              name,
-            },
+        customer: {
+          _id:
+            customer?._id ||
+            selectedCustomer._id,
+
+          name:
+            customer?.name ||
+            selectedCustomer.name,
+
+          outstandingBalance:
+            customer?.outstandingBalance ??
+            selectedCustomer.outstandingBalance ??
+            0,
+        },
 
         vehicleNumber:
           transaction?.vehicleNumber ||
-          vehicleNumber.trim().toUpperCase() ||
+          vehicleNumber
+            .trim()
+            .toUpperCase() ||
           null,
 
         fuelType:
@@ -269,59 +370,78 @@ const UdhariCollection = ({
           amountPaise,
       };
 
-      setUdhariEntries((current) => [
-        newEntry,
-        ...current,
-      ]);
-
-      const updatedUdhariTotal = Number(
-        result?.shift?.totalUdhariPaise ??
-          shift.totalUdhariPaise ??
-          0,
+      setUdhariEntries(
+        (current) => [
+          newEntry,
+          ...current,
+        ],
       );
 
+      const updatedUdhariTotal =
+        Number(
+          result?.shift
+            ?.totalUdhariPaise ??
+            shift.totalUdhariPaise ??
+            0,
+        );
+
       const finalUdhariTotal =
-        result?.shift?.totalUdhariPaise != null
+        result?.shift
+          ?.totalUdhariPaise !=
+        null
           ? updatedUdhariTotal
-          : updatedUdhariTotal + amountPaise;
+          : updatedUdhariTotal +
+            amountPaise;
 
-      onShiftUpdate((current) => ({
-        ...current,
+      onShiftUpdate(
+        (current) => ({
+          ...current,
 
-        totalUdhariPaise:
-          finalUdhariTotal,
+          totalUdhariPaise:
+            finalUdhariTotal,
 
-        totalCollectedPaise:
-          Number(
-            current?.totalCashPaise || 0,
-          ) +
-          Number(
-            current?.totalUpiPaise || 0,
-          ) +
-          Number(
-            current?.totalCardPaise || 0,
-          ) +
-          finalUdhariTotal,
-      }));
+          totalCollectedPaise:
+            Number(
+              current?.totalCashPaise ||
+                0,
+            ) +
+            Number(
+              current?.totalUpiPaise ||
+                0,
+            ) +
+            Number(
+              current?.totalCardPaise ||
+                0,
+            ) +
+            finalUdhariTotal,
+        }),
+      );
 
       setSlipNumber("");
       setVehicleNumber("");
       setUdhariLitres("");
       setUdhariAmount("");
 
-      onSavedMessage(t("udhari.success.added"));
+      onSavedMessage(
+        t("udhari.success.added"),
+      );
     } catch (err) {
       setUdhariError(
-        err?.response?.data?.message ||
+        err?.response?.data
+          ?.message ||
           err?.message ||
-          t("udhari.error.addFailed"),
+          t(
+            "udhari.error.addFailed",
+          ),
       );
     } finally {
       setAddingUdhari(false);
     }
   };
 
-  const handleRemoveUdhari = async (entry) => {
+  const handleRemoveUdhari = async (
+    entry,
+  ) => {
     if (
       !entry?.id ||
       removingUdhariId ||
@@ -330,28 +450,41 @@ const UdhariCollection = ({
       return;
     }
 
-    const amountPaise = Number(
-      entry.amountPaise || 0,
-    );
+    const amountPaise =
+      Number(
+        entry.amountPaise || 0,
+      );
 
     const customerNameForConfirm =
       entry.customer?.name ||
       entry.customerName ||
-      t("udhari.customerFallback");
+      t(
+        "udhari.customerFallback",
+      );
 
-    const confirmed = window.confirm(
-      `${t("udhari.confirmRemove.title")}\n\n` +
-        `${customerNameForConfirm}\n` +
-        `${formatCurrency(amountPaise)}\n\n` +
-        `${t("udhari.confirmRemove.body")}`,
-    );
+    const confirmed =
+      window.confirm(
+        `${t(
+          "udhari.confirmRemove.title",
+        )}\n\n` +
+          `${customerNameForConfirm}\n` +
+          `${formatCurrency(
+            amountPaise,
+          )}\n\n` +
+          `${t(
+            "udhari.confirmRemove.body",
+          )}`,
+      );
 
     if (!confirmed) {
       return;
     }
 
     try {
-      setRemovingUdhariId(entry.id);
+      setRemovingUdhariId(
+        entry.id,
+      );
+
       setUdhariError("");
 
       const response =
@@ -359,19 +492,24 @@ const UdhariCollection = ({
           entry.id,
         );
 
-      const result = response?.data;
+      const result =
+        response?.data;
 
-      setUdhariEntries((current) =>
-        current.filter(
-          (item) => item.id !== entry.id,
-        ),
+      setUdhariEntries(
+        (current) =>
+          current.filter(
+            (item) =>
+              item.id !== entry.id,
+          ),
       );
 
       const backendUdhariTotal =
-        result?.shift?.totalUdhariPaise;
+        result?.shift
+          ?.totalUdhariPaise;
 
       const newUdhariTotal =
-        backendUdhariTotal != null
+        backendUdhariTotal !=
+        null
           ? Number(
               backendUdhariTotal,
             )
@@ -393,181 +531,299 @@ const UdhariCollection = ({
         );
       }
 
-      onShiftUpdate((current) => ({
-        ...current,
+      onShiftUpdate(
+        (current) => ({
+          ...current,
 
-        totalUdhariPaise:
-          newUdhariTotal,
+          totalUdhariPaise:
+            newUdhariTotal,
 
-        totalCollectedPaise:
-          Number(
-            current?.totalCashPaise || 0,
-          ) +
-          Number(
-            current?.totalUpiPaise || 0,
-          ) +
-          Number(
-            current?.totalCardPaise || 0,
-          ) +
-          newUdhariTotal,
-      }));
+          totalCollectedPaise:
+            Number(
+              current?.totalCashPaise ||
+                0,
+            ) +
+            Number(
+              current?.totalUpiPaise ||
+                0,
+            ) +
+            Number(
+              current?.totalCardPaise ||
+                0,
+            ) +
+            newUdhariTotal,
+        }),
+      );
 
-      onSavedMessage(t("udhari.success.removed"));
+      onSavedMessage(
+        t("udhari.success.removed"),
+      );
     } catch (err) {
       setUdhariError(
-        err?.response?.data?.message ||
+        err?.response?.data
+          ?.message ||
           err?.message ||
-          t("udhari.error.removeFailed"),
+          t(
+            "udhari.error.removeFailed",
+          ),
       );
     } finally {
-      setRemovingUdhariId(null);
+      setRemovingUdhariId(
+        null,
+      );
     }
   };
 
   return (
     <div className="mt-4 space-y-4">
+      {/* MAIN CARD */}
       <section className="rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)]">
-        <div>
-          <p className="text-[16px] font-bold text-slate-900">
-            {t("udhari.title")}
-          </p>
-
-          <p className="mt-1 text-[10px] leading-4 text-slate-500">
-            {t("udhari.description")}
-          </p>
-        </div>
+        <p className="text-[16px] font-bold text-slate-900">
+          {t("udhari.title")}
+        </p>
 
         {/* CUSTOMER */}
         <div className="mt-5">
           <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-            {t("udhari.customerName")}
+            {t(
+              "udhari.customerName",
+            )}
           </label>
 
           <div className="relative mt-2">
-            <input
-              type="text"
-              value={customerSearch}
-              onChange={(event) =>
-                handleCustomerSearch(
-                  event.target.value,
-                )
-              }
+            {/* SEARCH BOX */}
+            <div
               className="
-                h-[48px]
-                w-full
+                flex
+                h-[46px]
+                items-center
                 rounded-[12px]
                 border
                 border-slate-200
                 bg-slate-50
                 px-3
-                pr-10
-                text-[13px]
-                font-semibold
-                text-slate-900
-                outline-none
-                focus:border-[#047857]
-                focus:bg-white
+                transition
+                focus-within:border-[#047857]
+                focus-within:bg-white
               "
-            />
-
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-              aria-hidden="true"
             >
-              <circle
-                cx="11"
-                cy="11"
-                r="7"
+              <input
+                type="text"
+                value={customerSearch}
+                onChange={(event) =>
+                  handleCustomerSearch(
+                    event.target.value,
+                  )
+                }
+                className="
+                  min-w-0
+                  flex-1
+                  bg-transparent
+                  text-[12px]
+                  font-semibold
+                  text-slate-900
+                  outline-none
+                "
               />
-              <path d="m20 20-4-4" />
-            </svg>
 
-            {customerResults.length > 0 && (
-              <div className="absolute left-0 right-0 top-[54px] z-30 overflow-hidden rounded-[14px] border border-slate-100 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.14)]">
-                {customerResults.map(
-                  (customer) => (
-                    <button
-                      key={customer._id}
-                      type="button"
-                      onClick={() =>
-                        selectCustomer(
-                          customer,
-                        )
-                      }
-                      className="
-                        flex
-                        w-full
-                        items-center
-                        justify-between
-                        border-b
-                        border-slate-50
-                        px-4
-                        py-3
-                        text-left
-                        last:border-b-0
-                        hover:bg-slate-50
-                      "
-                    >
-                      <div>
-                        <p className="text-[12px] font-semibold text-slate-900">
-                          {customer.name}
-                        </p>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="ml-2 h-4 w-4 shrink-0 text-slate-400"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="6.5"
+                />
 
-                        {customer.vehicleNumber && (
-                          <p className="mt-0.5 text-[9px] text-slate-400">
-                            {
-                              customer.vehicleNumber
-                            }
-                          </p>
-                        )}
-                      </div>
+                <path d="m16 16 4 4" />
+              </svg>
+            </div>
 
-                      <div className="text-right">
-                        <p className="text-[8px] font-semibold uppercase tracking-[0.04em] text-slate-400">
-                          {t("udhari.owes")}
-                        </p>
+            {/* SEARCHING */}
+            {searchingCustomers && (
+              <div className="absolute left-0 right-0 top-[52px] z-40 rounded-[14px] border border-slate-200 bg-white px-4 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-200 border-t-[#047857]" />
 
-                        <p className="mt-0.5 text-[10px] font-bold text-slate-700">
-                          {formatOutstanding(
-                            customer.outstandingBalance,
-                          )}
-                        </p>
-                      </div>
-                    </button>
-                  ),
-                )}
+                  <p className="text-[10px] font-medium text-slate-500">
+                    {t(
+                      "udhari.searching",
+                    )}
+                  </p>
+                </div>
               </div>
             )}
 
-            {searchingCustomers && (
-              <p className="mt-1 text-[9px] text-slate-400">
-                {t("udhari.searching")}
-              </p>
-            )}
+            {/* RESULTS */}
+            {!searchingCustomers &&
+              !selectedCustomer &&
+              customerResults.length >
+                0 && (
+                <div className="absolute left-0 right-0 top-[52px] z-40 overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.14)]">
+                  <div className="max-h-[220px] overflow-y-auto">
+                    {customerResults.map(
+                      (customer) => (
+                        <button
+                          key={
+                            customer._id
+                          }
+                          type="button"
+                          onClick={() =>
+                            selectCustomer(
+                              customer,
+                            )
+                          }
+                          className="
+                            flex
+                            w-full
+                            items-center
+                            gap-3
+                            border-b
+                            border-slate-100
+                            px-3
+                            py-3
+                            text-left
+                            transition
+                            last:border-b-0
+                            active:bg-slate-50
+                            hover:bg-slate-50
+                          "
+                        >
+                          {/* ICON */}
+                          <div
+                            className="
+                              grid
+                              h-9
+                              w-9
+                              shrink-0
+                              place-items-center
+                              rounded-full
+                              bg-emerald-50
+                              text-[#047857]
+                            "
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <circle
+                                cx="12"
+                                cy="8"
+                                r="3"
+                              />
+
+                              <path d="M5.5 19c.8-3.2 3-5 6.5-5s5.7 1.8 6.5 5" />
+                            </svg>
+                          </div>
+
+                          {/* NAME / VEHICLE */}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[12px] font-bold text-slate-900">
+                              {customer.name}
+                            </p>
+
+                            <p className="mt-0.5 truncate text-[9px] text-slate-400">
+                              {customer.vehicleNumber ||
+                                t(
+                                  "udhari.existingCustomer",
+                                )}
+                            </p>
+                          </div>
+
+                          {/* BALANCE */}
+                          <div className="shrink-0 text-right">
+                            <p className="text-[8px] font-semibold uppercase tracking-[0.03em] text-slate-400">
+                              {t(
+                                "udhari.owes",
+                              )}
+                            </p>
+
+                            <p className="mt-0.5 text-[10px] font-bold text-slate-800">
+                              {formatOutstanding(
+                                customer.outstandingBalance,
+                              )}
+                            </p>
+                          </div>
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
+
+            {/* NO RESULTS */}
+            {!searchingCustomers &&
+              !selectedCustomer &&
+              customerSearch.trim().length >=
+                2 &&
+              customerResults.length ===
+                0 && (
+                <div className="absolute left-0 right-0 top-[52px] z-40 rounded-[14px] border border-slate-200 bg-white px-4 py-4 text-center shadow-[0_12px_30px_rgba(15,23,42,0.10)]">
+                  <p className="text-[10px] font-medium text-slate-400">
+                    {t(
+                      "udhari.noCustomerFound",
+                    )}
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
         {/* SELECTED CUSTOMER */}
         {selectedCustomer && (
-          <div className="mt-3 rounded-[13px] bg-emerald-50 px-3 py-3">
+          <div className="mt-3 rounded-[13px] border border-emerald-100 bg-emerald-50 px-3 py-3">
             <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[12px] font-bold text-slate-900">
-                  {selectedCustomer.name}
-                </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#047857] text-white">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      className="h-3 w-3"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 12 4 4 8-8" />
+                    </svg>
+                  </span>
 
-                <p className="mt-0.5 text-[9px] text-emerald-700">
-                  {t("udhari.existingCustomer")}
-                </p>
+                  <p className="truncate text-[12px] font-bold text-slate-900">
+                    {selectedCustomer.name}
+                  </p>
+                </div>
+
+                <div className="mt-1 pl-7">
+                  {selectedCustomer.vehicleNumber ? (
+                    <p className="text-[9px] text-slate-500">
+                      {
+                        selectedCustomer.vehicleNumber
+                      }
+                    </p>
+                  ) : (
+                    <p className="text-[9px] text-emerald-700">
+                      {t(
+                        "udhari.existingCustomer",
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              <div className="text-right">
+              <div className="shrink-0 text-right">
                 <p className="text-[8px] font-semibold uppercase tracking-[0.04em] text-slate-400">
-                  {t("udhari.outstanding")}
+                  {t(
+                    "udhari.outstanding",
+                  )}
                 </p>
 
                 <p className="mt-0.5 text-[12px] font-bold text-[#047857]">
@@ -585,14 +841,18 @@ const UdhariCollection = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                {t("udhari.slipNumber")}
+                {t(
+                  "udhari.slipNumber",
+                )}
               </label>
 
               <input
                 type="text"
                 value={slipNumber}
                 onChange={(event) =>
-                  setSlipNumber(event.target.value)
+                  setSlipNumber(
+                    event.target.value,
+                  )
                 }
                 className="
                   mt-2
@@ -615,9 +875,14 @@ const UdhariCollection = ({
 
             <div>
               <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                {t("udhari.vehicleNumber")}
+                {t(
+                  "udhari.vehicleNumber",
+                )}
+
                 <span className="ml-1 font-normal normal-case">
-                  {t("udhari.optional")}
+                  {t(
+                    "udhari.optional",
+                  )}
                 </span>
               </label>
 
@@ -625,7 +890,9 @@ const UdhariCollection = ({
                 type="text"
                 value={vehicleNumber}
                 onChange={(event) =>
-                  setVehicleNumber(event.target.value)
+                  setVehicleNumber(
+                    event.target.value,
+                  )
                 }
                 className="
                   mt-2
@@ -652,7 +919,9 @@ const UdhariCollection = ({
         {/* FUEL TYPE */}
         <div className="mt-4">
           <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-            {t("udhari.fuelType")}
+            {t(
+              "udhari.fuelType",
+            )}
           </p>
 
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -676,7 +945,9 @@ const UdhariCollection = ({
                 }
               `}
             >
-              {t("udhari.petrol")}
+              {t(
+                "udhari.petrol",
+              )}
             </button>
 
             <button
@@ -699,7 +970,9 @@ const UdhariCollection = ({
                 }
               `}
             >
-              {t("udhari.diesel")}
+              {t(
+                "udhari.diesel",
+              )}
             </button>
           </div>
         </div>
@@ -714,7 +987,9 @@ const UdhariCollection = ({
             <button
               type="button"
               onClick={() =>
-                setUdhariMode("litres")
+                setUdhariMode(
+                  "litres",
+                )
               }
               className={`
                 min-h-[36px]
@@ -722,19 +997,24 @@ const UdhariCollection = ({
                 text-[10px]
                 font-semibold
                 ${
-                  udhariMode === "litres"
+                  udhariMode ===
+                  "litres"
                     ? "bg-white text-slate-900 shadow-sm"
                     : "text-slate-500"
                 }
               `}
             >
-              {t("udhari.litres")}
+              {t(
+                "udhari.litres",
+              )}
             </button>
 
             <button
               type="button"
               onClick={() =>
-                setUdhariMode("amount")
+                setUdhariMode(
+                  "amount",
+                )
               }
               className={`
                 min-h-[36px]
@@ -742,22 +1022,27 @@ const UdhariCollection = ({
                 text-[10px]
                 font-semibold
                 ${
-                  udhariMode === "amount"
+                  udhariMode ===
+                  "amount"
                     ? "bg-white text-slate-900 shadow-sm"
                     : "text-slate-500"
                 }
               `}
             >
-              {t("udhari.rupees")}
+              {t(
+                "udhari.rupees",
+              )}
             </button>
           </div>
         </div>
 
-        {/* LITRES MODE */}
+        {/* LITRES */}
         {udhariMode === "litres" && (
           <div className="mt-3">
             <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-              {t("udhari.litres")}
+              {t(
+                "udhari.litres",
+              )}
             </label>
 
             <input
@@ -807,7 +1092,9 @@ const UdhariCollection = ({
 
             <div className="mt-2 flex items-center justify-between rounded-[11px] bg-amber-50 px-3 py-2.5">
               <span className="text-[9px] font-semibold text-slate-600">
-                {t("udhari.amount")}
+                {t(
+                  "udhari.amount",
+                )}
               </span>
 
               <span className="text-[14px] font-bold text-slate-900">
@@ -821,11 +1108,13 @@ const UdhariCollection = ({
           </div>
         )}
 
-        {/* AMOUNT / RUPEES MODE */}
+        {/* AMOUNT */}
         {udhariMode === "amount" && (
           <div className="mt-3">
             <label className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-              {t("udhari.amount")}
+              {t(
+                "udhari.amount",
+              )}
             </label>
 
             <div className="mt-2 flex h-[50px] items-center rounded-[12px] border border-slate-200 bg-slate-50 px-3 focus-within:border-[#047857] focus-within:bg-white">
@@ -858,7 +1147,9 @@ const UdhariCollection = ({
 
             <div className="mt-2 flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2">
               <span className="text-[9px] text-slate-500">
-                {t("udhari.rate")}
+                {t(
+                  "udhari.rate",
+                )}
               </span>
 
               <span className="text-[11px] font-semibold text-slate-700">
@@ -874,7 +1165,9 @@ const UdhariCollection = ({
 
             <div className="mt-2 flex items-center justify-between rounded-[11px] bg-emerald-50 px-3 py-2.5">
               <span className="text-[9px] font-semibold text-slate-600">
-                {t("udhari.litres")}
+                {t(
+                  "udhari.litres",
+                )}
               </span>
 
               <span className="text-[14px] font-bold text-[#047857]">
@@ -899,7 +1192,10 @@ const UdhariCollection = ({
         <button
           type="button"
           onClick={handleAddUdhari}
-          disabled={addingUdhari}
+          disabled={
+            addingUdhari ||
+            !selectedCustomer?._id
+          }
           className="
             mt-5
             flex
@@ -916,12 +1212,14 @@ const UdhariCollection = ({
             transition
             active:scale-[0.985]
             disabled:cursor-not-allowed
-            disabled:opacity-60
+            disabled:opacity-50
           "
         >
           {addingUdhari
             ? t("udhari.adding")
-            : t("udhari.addUdhari")}
+            : t(
+                "udhari.addUdhari",
+              )}
         </button>
       </section>
 
@@ -931,19 +1229,28 @@ const UdhariCollection = ({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[13px] font-bold text-slate-900">
-                {t("udhari.thisShift")}
+                {t(
+                  "udhari.thisShift",
+                )}
               </p>
 
               <p className="mt-0.5 text-[9px] text-slate-400">
-                {t("udhari.thisShiftHint")}
+                {t(
+                  "udhari.thisShiftHint",
+                )}
               </p>
             </div>
 
             <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-bold text-amber-700">
               {udhariEntries.length}{" "}
-              {udhariEntries.length === 1
-                ? t("udhari.entry")
-                : t("udhari.entries")}
+              {udhariEntries.length ===
+              1
+                ? t(
+                    "udhari.entry",
+                  )
+                : t(
+                    "udhari.entries",
+                  )}
             </span>
           </div>
 
@@ -980,20 +1287,33 @@ const UdhariCollection = ({
                         <p className="mt-1 text-[9px] font-medium text-slate-500">
                           {entry.fuelType ===
                           "DIESEL"
-                            ? t("udhari.diesel")
-                            : t("udhari.petrol")}
+                            ? t(
+                                "udhari.diesel",
+                              )
+                            : t(
+                                "udhari.petrol",
+                              )}
+
                           {" · "}
+
                           {Number(
                             entry.litres ||
                               0,
-                          ).toFixed(2)}
+                          ).toFixed(
+                            2,
+                          )}
+
                           {" L"}
                         </p>
 
                         {entry.slipNumber && (
                           <p className="mt-0.5 text-[9px] text-slate-400">
-                            {t("udhari.slipLabel")}{" "}
-                            {entry.slipNumber}
+                            {t(
+                              "udhari.slipLabel",
+                            )}{" "}
+                            {
+                              entry.slipNumber
+                            }
                           </p>
                         )}
 
@@ -1015,11 +1335,9 @@ const UdhariCollection = ({
 
                         <button
                           type="button"
-                          disabled={
-                            Boolean(
-                              removingUdhariId,
-                            )
-                          }
+                          disabled={Boolean(
+                            removingUdhariId,
+                          )}
                           onClick={() =>
                             handleRemoveUdhari(
                               entry,
@@ -1046,8 +1364,12 @@ const UdhariCollection = ({
                           "
                         >
                           {isRemoving
-                            ? t("udhari.removing")
-                            : t("udhari.remove")}
+                            ? t(
+                                "udhari.removing",
+                              )
+                            : t(
+                                "udhari.remove",
+                              )}
                         </button>
                       </div>
                     </div>
@@ -1059,7 +1381,9 @@ const UdhariCollection = ({
 
           <div className="mt-3 flex items-center justify-between rounded-[12px] bg-amber-50 px-3 py-3">
             <span className="text-[10px] font-semibold text-slate-600">
-              {t("udhari.shiftUdhari")}
+              {t(
+                "udhari.shiftUdhari",
+              )}
             </span>
 
             <span className="text-[15px] font-bold text-amber-700">
