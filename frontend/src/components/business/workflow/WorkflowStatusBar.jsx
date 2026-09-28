@@ -55,22 +55,25 @@ const WorkflowStatusBar = ({
   };
 
   const handleStageClick = async (stage, index) => {
-    // Current stage does nothing.
-    if (index === currentIndex) {
-      return;
+  if (index === currentIndex) return;
+  if (!navigationUnlocked) return;
+
+  const route = getStageRoute(stage);
+  if (!route) return;
+
+  try {
+    if (onBeforeNavigate) {
+      await onBeforeNavigate();
     }
 
-    // Before nozzle is completed, future navigation is disabled.
-    if (!navigationUnlocked) {
-      return;
-    }
-
-    const route = getStageRoute(stage);
-
-    if (route) {
-      navigate(route);
-    }
-  };
+    navigate(route);
+  } catch (error) {
+    console.error(
+      "[Workflow Navigation] Save failed:",
+      error,
+    );
+  }
+};
 
   return (
     <div className="mt-5 rounded-[18px] bg-white p-3 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">

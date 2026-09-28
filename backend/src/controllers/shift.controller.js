@@ -49,6 +49,13 @@ const normalizeAtmEntries = (atmEntries = []) =>
 const calculateCollections = (collections = {}) => {
   const cashCollections = normalizeCash(collections.cashBreakdown);
 
+  const upiCollection =
+  collections.upiCollection || null;
+
+const coinsPaise = Number(
+  collections.coinsPaise || 0,
+);
+
   const totalCashPaise = cashCollections.reduce(
     (sum, item) => sum + item.denomination * item.count * 100,
     0,
@@ -69,14 +76,16 @@ const calculateCollections = (collections = {}) => {
     totalCashPaise + totalUpiPaise + totalCardPaise + totalUdhariPaise;
 
   return {
-    cashCollections,
-    atmEntries,
-    totalCashPaise,
-    totalUpiPaise,
-    totalCardPaise,
-    totalUdhariPaise,
-    totalCollectedPaise,
-  };
+  cashCollections,
+  coinsPaise,
+  upiCollection,
+  atmEntries,
+  totalCashPaise,
+  totalUpiPaise,
+  totalCardPaise,
+  totalUdhariPaise,
+  totalCollectedPaise,
+};
 };
 
 const calculateFinalResult = async (shift, finalReadings, collections) => {
@@ -378,16 +387,32 @@ export const updateCollections = async (req, res, next) => {
 
     const financials = calculateCollections(req.body);
 
-    shift.cashCollections = financials.cashCollections;
-    shift.coinsPaise = financials.coinsPaise;
-    if (financials.upiCollection)
-      shift.upiCollection = financials.upiCollection;
-    shift.totalCashPaise = financials.totalCashPaise;
-    shift.totalUpiPaise = financials.totalUpiPaise;
-    shift.totalCardPaise = financials.totalCardPaise;
-    shift.totalUdhariPaise = financials.totalUdhariPaise;
-    shift.totalCollectedPaise = financials.totalCollectedPaise;
-    shift.atmEntries = financials.atmEntries;
+    shift.cashCollections =
+  financials.cashCollections;
+
+shift.coinsPaise =
+  financials.coinsPaise;
+
+shift.upiCollection =
+  financials.upiCollection;
+
+shift.totalCashPaise =
+  financials.totalCashPaise;
+
+shift.totalUpiPaise =
+  financials.totalUpiPaise;
+
+shift.totalCardPaise =
+  financials.totalCardPaise;
+
+shift.totalUdhariPaise =
+  financials.totalUdhariPaise;
+
+shift.totalCollectedPaise =
+  financials.totalCollectedPaise;
+
+shift.atmEntries =
+  financials.atmEntries;
     shift.reconciliationStatus = "PENDING";
 
     await shift.save();
@@ -527,7 +552,7 @@ export const endShift = async (req, res, next) => {
     shift.readings = result.processedReadings;
     shift.cashCollections = result.cashCollections;
     shift.coinsPaise = result.coinsPaise;
-    if (result.upiCollection) shift.upiCollection = result.upiCollection;
+    shift.upiCollection = result.upiCollection;
     shift.totalLitresPetrol = result.totalLitresPetrol;
     shift.totalLitresDiesel = result.totalLitresDiesel;
     shift.expectedTotalSalePaise = result.expectedTotalSalePaise;

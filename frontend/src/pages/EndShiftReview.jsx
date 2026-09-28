@@ -61,108 +61,113 @@ const EndShiftReview = () => {
     let mounted = true;
 
     const calculateReview = async () => {
-  try {
-    setLoading(true);
-    setError("");
+      try {
+        setLoading(true);
+        setError("");
 
-    const shiftResponse = await getCurrentShift();
-    const activeShift = shiftResponse?.data || null;
+        const shiftResponse = await getCurrentShift();
+        const activeShift = shiftResponse?.data || null;
 
-    if (!mounted) return;
+        if (!mounted) return;
 
-    if (!activeShift) {
-      navigate("/select-mpd", { replace: true });
-      return;
-    }
+        if (!activeShift) {
+          navigate("/select-mpd", { replace: true });
+          return;
+        }
 
-    setCurrentShift(activeShift);
+        setCurrentShift(activeShift);
 
-    const activeShiftId = activeShift._id || shiftId;
+        const activeShiftId = activeShift._id || shiftId;
 
-    if (!activeShiftId) {
-      setError("Active shift could not be identified.");
-      return;
-    }
+        if (!activeShiftId) {
+          setError("Active shift could not be identified.");
+          return;
+        }
 
-    setResolvedShiftId(activeShiftId);
+        setResolvedShiftId(activeShiftId);
 
-    /*
-     * Prefer the autosaved/current backend readings.
-     */
-    const backendReadings = (activeShift.readings || [])
-      .filter(
-        (reading) =>
-          reading.closingReading !== null &&
-          reading.closingReading !== undefined,
-      )
-      .map((reading) => ({
-        nozzleId: reading.nozzleId,
-        closingReading: Number(reading.closingReading),
-      }));
+        /*
+         * Prefer the autosaved/current backend readings.
+         */
+        const backendReadings = (activeShift.readings || [])
+          .filter(
+            (reading) =>
+              reading.closingReading !== null &&
+              reading.closingReading !== undefined,
+          )
+          .map((reading) => ({
+            nozzleId: reading.nozzleId,
+            closingReading: Number(reading.closingReading),
+          }));
 
-    const persistedReadings =
-      backendReadings.length > 0
-        ? backendReadings
-        : finalReadings || [];
+        const persistedReadings =
+          backendReadings.length > 0 ? backendReadings : finalReadings || [];
 
-    if (
-      !Array.isArray(persistedReadings) ||
-      persistedReadings.length === 0
-    ) {
-      setError("Final nozzle readings are missing.");
-      return;
-    }
+        if (
+          !Array.isArray(persistedReadings) ||
+          persistedReadings.length === 0
+        ) {
+          setError("Final nozzle readings are missing.");
+          return;
+        }
 
-    const persistedCollections = {
-      cashBreakdown: activeShift.cashCollections || [],
-      coinsPaise: Number(activeShift.coinsPaise || 0),
-      upiPaise: Number(activeShift.totalUpiPaise || 0),
-      cardPaise: Number(activeShift.totalCardPaise || 0),
-      udhariPaise: Number(activeShift.totalUdhariPaise || 0),
+        const persistedCollections = {
+          cashBreakdown: activeShift.cashCollections || [],
 
-      ...(activeShift.upiCollection
-        ? {
-            upiCollection: activeShift.upiCollection,
-          }
-        : {}),
+          coinsPaise: Number(activeShift.coinsPaise || 0),
+
+          upiPaise: Number(activeShift.totalUpiPaise || 0),
+
+          atmEntries: (activeShift.atmEntries || []).map((entry) => ({
+            time: entry.time,
+            amountPaise: Number(entry.amountPaise || 0),
+          })),
+
+          udhariPaise: Number(activeShift.totalUdhariPaise || 0),
+
+          ...(activeShift.upiCollection
+            ? {
+                upiCollection: activeShift.upiCollection,
+              }
+            : {}),
+        };
+
+        setResolvedFinalReadings(persistedReadings);
+        setResolvedCollections(persistedCollections);
+
+        /*
+         * IMPORTANT:
+         * These two requests are independent.
+         * Run them at the same time instead of one after another.
+         */
+        const [previewResponse, expenseResponse] = await Promise.all([
+          previewEndShift(activeShiftId, {
+            readings: persistedReadings,
+            collections: persistedCollections,
+          }),
+          getMyShiftExpenses(activeShiftId),
+        ]);
+
+        if (!mounted) return;
+
+        setPreview(previewResponse?.data || null);
+        setExpenses(expenseResponse?.data || []);
+      } catch (err) {
+        if (!mounted) return;
+
+        console.error("[EndShiftReview] Failed to load review:", err);
+
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Unable to calculate final result.",
+        );
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
     };
-
-    setResolvedFinalReadings(persistedReadings);
-    setResolvedCollections(persistedCollections);
-
-    /*
-     * IMPORTANT:
-     * These two requests are independent.
-     * Run them at the same time instead of one after another.
-     */
-    const [previewResponse, expenseResponse] = await Promise.all([
-      previewEndShift(activeShiftId, {
-        readings: persistedReadings,
-        collections: persistedCollections,
-      }),
-      getMyShiftExpenses(activeShiftId),
-    ]);
-
-    if (!mounted) return;
-
-    setPreview(previewResponse?.data || null);
-    setExpenses(expenseResponse?.data || []);
-  } catch (err) {
-    if (!mounted) return;
-
-    console.error("[EndShiftReview] Failed to load review:", err);
-
-    setError(
-      err?.response?.data?.message ||
-        err?.message ||
-        "Unable to calculate final result.",
-    );
-  } finally {
-    if (mounted) {
-      setLoading(false);
-    }
-  }
-};
 
     calculateReview();
 
@@ -186,7 +191,7 @@ const EndShiftReview = () => {
         collections: resolvedCollections || {
           cashBreakdown: [],
           upiPaise: 0,
-          cardPaise: 0,
+          atmEntries: [],
           udhariPaise: 0,
           coinsPaise: 0,
         },
@@ -269,19 +274,19 @@ const EndShiftReview = () => {
 
           {/* LOADING */}
           {loading && (
-  <div className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
-    <div className="animate-pulse">
-      <div className="h-4 w-24 rounded bg-slate-200" />
+            <div className="mt-4 rounded-[20px] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
+              <div className="animate-pulse">
+                <div className="h-4 w-24 rounded bg-slate-200" />
 
-      <div className="mt-5 space-y-4">
-        <div className="h-3 rounded bg-slate-100" />
-        <div className="h-3 rounded bg-slate-100" />
-        <div className="h-3 rounded bg-slate-100" />
-        <div className="h-3 rounded bg-slate-100" />
-      </div>
-    </div>
-  </div>
-)}
+                <div className="mt-5 space-y-4">
+                  <div className="h-3 rounded bg-slate-100" />
+                  <div className="h-3 rounded bg-slate-100" />
+                  <div className="h-3 rounded bg-slate-100" />
+                  <div className="h-3 rounded bg-slate-100" />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ERROR */}
           {!loading && error && (

@@ -918,11 +918,11 @@ const UdhariCollection = ({
 
         {/* FUEL TYPE */}
         <div className="mt-4">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+          {/* <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
             {t(
               "udhari.fuelType",
             )}
-          </p>
+          </p> */}
 
           <div className="mt-2 grid grid-cols-2 gap-2">
             <button
@@ -979,9 +979,9 @@ const UdhariCollection = ({
 
         {/* ENTRY MODE */}
         <div className="mt-4">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+          {/* <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
             {t("udhari.enter")}
-          </p>
+          </p> */}
 
           <div className="mt-2 grid grid-cols-2 gap-1 rounded-[12px] bg-slate-100 p-1">
             <button

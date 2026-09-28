@@ -82,7 +82,6 @@ const ShiftCollectionStage = ({ stage }) => {
   const [firstTransactionAmount, setFirstTransactionAmount] = useState("");
   const [lastTransactionTime, setLastTransactionTime] = useState("");
   const [lastTransactionAmount, setLastTransactionAmount] = useState("");
-  const [card, setCard] = useState("");
   const [atmEntries, setAtmEntries] = useState([]);
   const [coins, setCoins] = useState("");
   const [fuelRates, setFuelRates] = useState({ PETROL: 0, DIESEL: 0 });
@@ -161,11 +160,6 @@ const ShiftCollectionStage = ({ stage }) => {
               )
             : "",
         );
-        setCard(
-          currentShift.totalCardPaise
-            ? String(currentShift.totalCardPaise / 100)
-            : "",
-        );
 
         try {
           const rateResponse = await getCurrentFuelRate(
@@ -219,27 +213,24 @@ const ShiftCollectionStage = ({ stage }) => {
       udhariPaise: Number(shift?.totalUdhariPaise || 0),
     };
 
-    if (stage === "upi") {
-      const hasAnyUpiData = [
-        firstTransactionTime,
-        firstTransactionAmount,
-        lastTransactionTime,
-        lastTransactionAmount,
-        upi,
-      ].some((value) => String(value || "").trim() !== "");
+    const savedUpiCollection =
+      shift?.upiCollection || workflowState?.collections?.upiCollection;
 
-      if (hasAnyUpiData) {
-        payload.upiCollection = {
-          firstTransactionTime,
-          firstTransactionAmountPaise: parseRupeesToPaise(
-            firstTransactionAmount,
-          ),
-          lastTransactionTime,
-          lastTransactionAmountPaise: parseRupeesToPaise(lastTransactionAmount),
-        };
-      }
-    } else if (workflowState?.collections?.upiCollection) {
-      payload.upiCollection = workflowState.collections.upiCollection;
+    if (
+      stage === "upi" &&
+      firstTransactionTime &&
+      firstTransactionAmount &&
+      lastTransactionTime &&
+      lastTransactionAmount
+    ) {
+      payload.upiCollection = {
+        firstTransactionTime,
+        firstTransactionAmountPaise: parseRupeesToPaise(firstTransactionAmount),
+        lastTransactionTime,
+        lastTransactionAmountPaise: parseRupeesToPaise(lastTransactionAmount),
+      };
+    } else if (savedUpiCollection) {
+      payload.upiCollection = savedUpiCollection;
     }
 
     return payload;
@@ -281,7 +272,7 @@ const ShiftCollectionStage = ({ stage }) => {
     firstTransactionAmount,
     lastTransactionTime,
     lastTransactionAmount,
-    card,
+    atmEntries,
   ]);
 
   const handleNext = async () => {
