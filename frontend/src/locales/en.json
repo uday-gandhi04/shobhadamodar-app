@@ -149,7 +149,10 @@
     "closingRequired": "Enter closing reading",
     "closingBelowOpening": "Closing reading cannot be below opening.",
     "finalReadingsHint": "Enter the final totalizer reading for each nozzle.",
-    "enter": "Enter"
+    "enter": "Enter",
+    "petrol": "Petrol",
+    "diesel": "Diesel",
+    "totalFuel": "Total Fuel"
   },
 
   "cash": {

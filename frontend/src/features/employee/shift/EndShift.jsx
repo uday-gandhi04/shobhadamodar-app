@@ -279,6 +279,22 @@ const EndShift = () => {
     0,
   );
 
+  const totalLitresPetrol = nozzleReadings.reduce(
+    (total, reading) =>
+      total +
+      (reading.nozzle.fuelType === "PETROL" ? reading.litresDispensed || 0 : 0),
+    0,
+  );
+
+  const totalLitresDiesel = nozzleReadings.reduce(
+    (total, reading) =>
+      total +
+      (reading.nozzle.fuelType === "DIESEL" ? reading.litresDispensed || 0 : 0),
+    0,
+  );
+
+  const totalFuelLitres = totalLitresPetrol + totalLitresDiesel;
+
   const totalExpectedSalePaise = nozzleReadings.reduce((total, reading) => {
     const ratePaise = fuelRates[reading.nozzle.fuelType] || 0;
     return total + (reading.litresDispensed || 0) * ratePaise;
@@ -354,26 +370,55 @@ const EndShift = () => {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 border-t border-slate-100 bg-slate-50/60 px-4 py-3">
-              <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                  {t("nozzle.totalLitres")}
-                </p>
-                <p className="mt-1 font-mono text-[14px] font-semibold tabular-nums text-slate-800">
-                  {totalLitres.toFixed(2)} L
-                </p>
+            <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3">
+              {/* FUEL TOTALS */}
+              <div className="grid grid-cols-3 divide-x divide-slate-200">
+                <div className="pr-3">
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                    {t("nozzle.petrol")}
+                  </p>
+
+                  <p className="mt-1 font-mono text-[12px] font-bold tabular-nums text-slate-800">
+                    {totalLitresPetrol.toFixed(2)} L
+                  </p>
+                </div>
+
+                <div className="px-3">
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                    {t("nozzle.diesel")}
+                  </p>
+
+                  <p className="mt-1 font-mono text-[12px] font-bold tabular-nums text-slate-800">
+                    {totalLitresDiesel.toFixed(2)} L
+                  </p>
+                </div>
+
+                <div className="pl-3 text-right">
+                  <p className="text-[8px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                    {t("nozzle.totalFuel")}
+                  </p>
+
+                  <p className="mt-1 font-mono text-[13px] font-bold tabular-nums text-[#047857]">
+                    {totalFuelLitres.toFixed(2)} L
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-                  {t("nozzle.totalSale")}
-                </p>
-                <p className="mt-1 font-mono text-[15px] font-bold tabular-nums text-[#047857]">
-                  ₹
-                  {(totalExpectedSalePaise / 100).toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </p>
+
+              {/* TOTAL SALE */}
+              <div className="mt-3 border-t border-slate-200 pt-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                    {t("nozzle.totalSale")}
+                  </p>
+
+                  <p className="font-mono text-[14px] font-bold tabular-nums text-[#047857]">
+                    ₹
+                    {(totalExpectedSalePaise / 100).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
+                </div>
               </div>
             </div>
           </section>
