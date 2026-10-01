@@ -41,8 +41,10 @@ function App() {
         <SyncProvider>
           <IonReactRouter>
             <IonRouterOutlet>
+              {/* Authentication */}
               <Route path="/login" element={<Login />} />
 
+              {/* Employee entry */}
               <Route
                 path="/select-mpd"
                 element={
@@ -61,6 +63,7 @@ function App() {
                 }
               />
 
+              {/* Manager area */}
               <Route
                 path="/manager"
                 element={
@@ -70,6 +73,7 @@ function App() {
                 }
               />
 
+              {/* Employee shift workflow */}
               <Route
                 path="/shift/:mpdId"
                 element={
@@ -86,6 +90,7 @@ function App() {
               <Route path="/shift/expense" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
               <Route path="/shift/review" element={<ProtectedRoute><EndShiftReview /></ProtectedRoute>} />
 
+              {/* Shared operational routes */}
               <Route
                 path="/collections"
                 element={

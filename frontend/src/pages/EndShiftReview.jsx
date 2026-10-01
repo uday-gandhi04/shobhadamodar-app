@@ -1,6 +1,6 @@
 import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { AuthContext } from "../context/AuthContext";
@@ -36,9 +36,13 @@ const EndShiftReview = () => {
 
   const [currentShift, setCurrentShift] = useState(null);
 
-  const workflowState = readShiftWorkflowState(location.state);
+  const workflowState = useMemo(
+    () => readShiftWorkflowState(location.state),
+    [location.state],
+  );
 
   const { shiftId, finalReadings, collections } = workflowState || {};
+  const reviewInputs = useRef({ shiftId, finalReadings, navigate });
 
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +62,23 @@ const EndShiftReview = () => {
   );
 
   useEffect(() => {
+    reviewInputs.current = { shiftId, finalReadings, navigate };
+  }, [shiftId, finalReadings, navigate]);
+
+  useEffect(() => {
+    if (
+      location.pathname !== "/shift/review" &&
+      location.pathname !== "/end-shift-review"
+    ) {
+      return;
+    }
+
     let mounted = true;
+    const {
+      shiftId: entryShiftId,
+      finalReadings: entryFinalReadings,
+      navigate: navigateTo,
+    } = reviewInputs.current;
 
     const calculateReview = async () => {
       try {
@@ -71,13 +91,13 @@ const EndShiftReview = () => {
         if (!mounted) return;
 
         if (!activeShift) {
-          navigate("/select-mpd", { replace: true });
+          navigateTo("/select-mpd", { replace: true });
           return;
         }
 
         setCurrentShift(activeShift);
 
-        const activeShiftId = activeShift._id || shiftId;
+        const activeShiftId = activeShift._id || entryShiftId;
 
         if (!activeShiftId) {
           setError("Active shift could not be identified.");
@@ -101,7 +121,9 @@ const EndShiftReview = () => {
           }));
 
         const persistedReadings =
-          backendReadings.length > 0 ? backendReadings : finalReadings || [];
+          backendReadings.length > 0
+            ? backendReadings
+            : entryFinalReadings || [];
 
         if (
           !Array.isArray(persistedReadings) ||
@@ -174,7 +196,7 @@ const EndShiftReview = () => {
     return () => {
       mounted = false;
     };
-  }, [shiftId, navigate, finalReadings, t]);
+  }, [location.key, location.pathname]);
 
   const handleEndShift = async () => {
     if (!resolvedShiftId || !preview || ending) {

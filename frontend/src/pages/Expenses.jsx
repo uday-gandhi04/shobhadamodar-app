@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useContext, useState } from "react";
+import { useCallback, useEffect, useContext, useRef, useState } from "react";
 import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -58,6 +58,7 @@ const Expenses = () => {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const lastLoadedLocationKey = useRef(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -99,8 +100,20 @@ const Expenses = () => {
   }, [navigate]);
 
   useEffect(() => {
+    if (
+      location.pathname !== "/shift/expense" &&
+      location.pathname !== "/expenses"
+    ) {
+      return;
+    }
+
+    if (lastLoadedLocationKey.current === location.key) {
+      return;
+    }
+
+    lastLoadedLocationKey.current = location.key;
     loadData();
-  }, [loadData]);
+  }, [location.key, location.pathname, loadData]);
 
   const handleSave = async () => {
     if (saving) return;

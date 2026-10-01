@@ -1,6 +1,7 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { clearShiftServiceCache } from '../services/shiftApi';
 
 export const AuthContext = createContext();
 
@@ -22,6 +23,8 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (employeeId, password, persistSession = true) => {
+    clearShiftServiceCache();
+
     try {
       const response = await api.post('/auth/login', { employeeId, password });
       
@@ -65,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     }
     setToken(null);
     setUser(null);
+    clearShiftServiceCache();
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
