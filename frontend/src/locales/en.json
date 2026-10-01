@@ -131,7 +131,10 @@
     },
     "employee": "Employee",
     "back": "Back",
-    "started": "Started"
+    "started": "Started",
+    "language": "Language",
+    "logout": "Logout",
+    "profileMenu": "Profile menu"
   },
 
   "nozzle": {

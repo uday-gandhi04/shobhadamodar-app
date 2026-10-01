@@ -129,7 +129,10 @@
     },
     "employee": "कर्मचारी",
     "back": "वापस",
-    "started": "शुरू"
+    "started": "शुरू",
+    "language": "भाषा",
+    "logout": "लॉग आउट",
+    "profileMenu": "प्रोफ़ाइल मेनू"
   },
 
   "nozzle": {
