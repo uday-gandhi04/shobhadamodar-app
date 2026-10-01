@@ -3,15 +3,15 @@ import { IonPage, IonContent } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { AuthContext } from '../context/AuthContext';
-import { getCurrentShift } from '../services/shiftApi';
-import { getBusinessDate } from '../utils/businessDate';
+import { AuthContext } from '../../../context/AuthContext';
+import { getCurrentShift } from '../../../services/shiftApi';
+import { getBusinessDate } from '../../../utils/businessDate';
 import { useContext } from 'react';
 
-import DashboardHeader from '../components/business/dashboard/DashboardHeader';
-import ShiftCard from '../components/business/dashboard/ShiftCard';
-import ShiftProgress from '../components/business/dashboard/ShiftProgress';
-import QuickActions, { EndShiftButton } from '../components/business/dashboard/QuickActions';
+import DashboardHeader from '../../../components/business/dashboard/DashboardHeader';
+import ShiftCard from '../../../components/business/dashboard/ShiftCard';
+import ShiftProgress from '../../../components/business/dashboard/ShiftProgress';
+import QuickActions, { EndShiftButton } from '../../../components/business/dashboard/QuickActions';
 
 const formatDate = (date, language) => {
   const locale = language === 'mr' ? 'mr-IN' : language === 'hi' ? 'hi-IN' : 'en-IN';

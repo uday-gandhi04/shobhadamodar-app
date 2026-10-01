@@ -6,18 +6,18 @@ import {
   getCurrentFuelRate,
   getCurrentShift,
   updateCollections,
-} from "../services/shiftApi";
-import CashCollection from "../components/collections/CashCollection";
-import UpiCollection from "../components/collections/UpiCollection";
-import AtmCollection from "../components/collections/AtmCollection";
-import UdhariCollection from "../components/collections/UdhariCollection";
-import { AuthContext } from "../context/AuthContext";
-import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
-import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
+} from "../../../services/shiftApi";
+import CashCollection from "../../../components/collections/CashCollection";
+import UpiCollection from "../../../components/collections/UpiCollection";
+import AtmCollection from "../../../components/collections/AtmCollection";
+import UdhariCollection from "../../../components/collections/UdhariCollection";
+import { AuthContext } from "../../../context/AuthContext";
+import EmployeeShiftHeader from "../../../components/business/workflow/EmployeeShiftHeader";
+import WorkflowStatusBar from "../../../components/business/workflow/WorkflowStatusBar";
 import {
   readShiftWorkflowState,
   saveShiftWorkflowState,
-} from "../utils/shiftWorkflow";
+} from "../../../utils/shiftWorkflow";
 
 const DENOMINATIONS = [500, 200, 100, 50, 20, 10];
 const LEGACY_COIN_DENOMINATIONS = [5, 2, 1];

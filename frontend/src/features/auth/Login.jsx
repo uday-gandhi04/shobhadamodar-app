@@ -1,10 +1,10 @@
 import { IonContent, IonPage } from "@ionic/react";
 import { useTranslation } from "react-i18next";
 
-import LoginWelcome from "../components/business/LoginWelcome";
-import LoginForm from "../components/business/LoginForm";
-import LoginStationVisual from "../components/business/LoginStationVisual";
-import LanguageSwitcher from "../components/ui/LanguageSwitcher";
+import LoginWelcome from "../../components/business/LoginWelcome";
+import LoginForm from "../../components/business/LoginForm";
+import LoginStationVisual from "../../components/business/LoginStationVisual";
+import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 
 const Login = () => {
   const { i18n } = useTranslation();

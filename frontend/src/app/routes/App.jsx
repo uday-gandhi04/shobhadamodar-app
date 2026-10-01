@@ -11,20 +11,20 @@ import "@ionic/react/css/structure.css";
 import "@ionic/react/css/typography.css";
 
 /* Pages & Contexts */
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import SelectMpd from "./pages/SelectMpd";
-import EndShift from "./pages/EndShift";
-import Collections from "./pages/Collections";
-import ManagerDashboard from "./pages/ManagerDashboard";
-import { AuthProvider, AuthContext } from "./context/AuthContext";
-import { SyncProvider } from "./context/SyncContext";
-import EndShiftReview from "./pages/EndShiftReview";
-import Expenses from "./pages/Expenses";
-import CashCollectionPage from "./pages/CashCollectionPage";
-import UpiCollectionPage from "./pages/UpiCollectionPage";
-import CardCollectionPage from "./pages/CardCollectionPage";
-import UdhariCollectionPage from "./pages/UdhariCollectionPage";
+import Login from "../../features/auth/Login";
+import Dashboard from "../../features/employee/shift/Dashboard";
+import SelectMpd from "../../features/employee/shift/SelectMpd";
+import EndShift from "../../features/employee/shift/EndShift";
+import Collections from "../../features/employee/collections/Collections";
+import ManagerDashboard from "../../features/manager/ManagerDashboard";
+import { AuthProvider, AuthContext } from "../../context/AuthContext";
+import { SyncProvider } from "../../context/SyncContext";
+import EndShiftReview from "../../features/employee/review/EndShiftReview";
+import Expenses from "../../features/employee/expenses/Expenses";
+import CashCollectionPage from "../../features/employee/collections/CashCollectionPage";
+import UpiCollectionPage from "../../features/employee/collections/UpiCollectionPage";
+import CardCollectionPage from "../../features/employee/collections/CardCollectionPage";
+import UdhariCollectionPage from "../../features/employee/collections/UdhariCollectionPage";
 setupIonicReact();
 
 // Wrapper to prevent unauthenticated users from seeing the dashboard

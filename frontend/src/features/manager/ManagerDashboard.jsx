@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { IonPage, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons } from '@ionic/react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import { dbService } from '../database/sqlite';
+import api from '../../services/api';
+import { dbService } from '../../database/sqlite';
 
 const ManagerDashboard = () => {
   const navigate = useNavigate();

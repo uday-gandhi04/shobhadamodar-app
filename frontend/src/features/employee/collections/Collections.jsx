@@ -6,11 +6,11 @@ import {
   getCurrentShift,
   updateCollections,
   getCurrentFuelRate,
-} from "../services/shiftApi";
-import CashCollection from "../components/collections/CashCollection";
-import UpiCollection from "../components/collections/UpiCollection";
-import AtmCollection from "../components/collections/AtmCollection";
-import UdhariCollection from "../components/collections/UdhariCollection";
+} from "../../../services/shiftApi";
+import CashCollection from "../../../components/collections/CashCollection";
+import UpiCollection from "../../../components/collections/UpiCollection";
+import AtmCollection from "../../../components/collections/AtmCollection";
+import UdhariCollection from "../../../components/collections/UdhariCollection";
 
 const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1];
 

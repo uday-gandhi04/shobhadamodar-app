@@ -3,22 +3,22 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../../context/AuthContext";
 import {
   getCurrentFuelRate,
   getCurrentShift,
   updateReadings,
-} from "../services/shiftApi";
-import NozzleReadingRow from "../components/business/nozzle/NozzleReadingRow";
-import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
-import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
+} from "../../../services/shiftApi";
+import NozzleReadingRow from "../../../components/business/nozzle/NozzleReadingRow";
+import EmployeeShiftHeader from "../../../components/business/workflow/EmployeeShiftHeader";
+import WorkflowStatusBar from "../../../components/business/workflow/WorkflowStatusBar";
 import {
   formatReading,
   getFuelType,
   getNozzleNumber,
-} from "../components/business/nozzle/nozzleUtils";
+} from "../../../components/business/nozzle/nozzleUtils";
 
-import { saveShiftWorkflowState } from "../utils/shiftWorkflow";
+import { saveShiftWorkflowState } from "../../../utils/shiftWorkflow";
 
 const calculateLitresDispensed = (opening, final) => {
   const openingValue = Number(opening);

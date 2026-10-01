@@ -3,23 +3,23 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../../context/AuthContext";
 
-import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
-import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
+import EmployeeShiftHeader from "../../../components/business/workflow/EmployeeShiftHeader";
+import WorkflowStatusBar from "../../../components/business/workflow/WorkflowStatusBar";
 
 import {
   getCurrentShift,
   previewEndShift,
   endShift,
-} from "../services/shiftApi";
+} from "../../../services/shiftApi";
 
-import { getMyShiftExpenses } from "../services/expenseApi";
+import { getMyShiftExpenses } from "../../../services/expenseApi";
 
 import {
   clearShiftWorkflowState,
   readShiftWorkflowState,
-} from "../utils/shiftWorkflow";
+} from "../../../utils/shiftWorkflow";
 
 const formatMoney = (paise) => {
   return `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {

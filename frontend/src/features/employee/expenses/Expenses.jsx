@@ -3,21 +3,21 @@ import { IonContent, IonPage } from "@ionic/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../../context/AuthContext";
 
-import EmployeeShiftHeader from "../components/business/workflow/EmployeeShiftHeader";
-import WorkflowStatusBar from "../components/business/workflow/WorkflowStatusBar";
+import EmployeeShiftHeader from "../../../components/business/workflow/EmployeeShiftHeader";
+import WorkflowStatusBar from "../../../components/business/workflow/WorkflowStatusBar";
 
 import {
   readShiftWorkflowState,
   saveShiftWorkflowState,
-} from "../utils/shiftWorkflow";
+} from "../../../utils/shiftWorkflow";
 
-import { getCurrentShift } from "../services/shiftApi";
+import { getCurrentShift } from "../../../services/shiftApi";
 import {
   createExpense,
   getMyShiftExpenses,
-} from "../services/expenseApi";
+} from "../../../services/expenseApi";
 
 const formatMoney = (paise) =>
   `₹${(
