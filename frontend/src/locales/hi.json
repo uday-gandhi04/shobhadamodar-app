@@ -1,4 +1,26 @@
 {
+  "manager": {
+    "dashboard": "डैशबोर्ड",
+    "dashboardTitle": "Shobhadamodar Petroleum",
+    "dashboardHeading": "मैनेजर डैशबोर्ड",
+    "dashboardSubtitle": "स्टेशन संचालन, हिसाब और कर्मचारियों का प्रबंधन करें।",
+    "accounting": "बिक्री और हिसाब",
+    "accountingDescription": "दैनिक, साप्ताहिक और मासिक बिक्री व संग्रह।",
+    "operations": "संचालन",
+    "operationsDescription": "MPD, शिफ्ट और नोज़ल विवरण।",
+    "stock": "स्टॉक और रेट",
+    "stockDescription": "ईंधन स्टॉक, रसीद, डिप और ईंधन दरें।",
+    "udhari": "उधारी",
+    "udhariDescription": "ग्राहक खाते और भुगतान निपटान।",
+    "employees": "कर्मचारी",
+    "employeesDescription": "कर्मचारी प्रोफ़ाइल और एक्सेस प्रबंधन।",
+    "manager": "मैनेजर",
+    "language": "भाषा",
+    "logout": "लॉग आउट",
+    "profileMenu": "प्रोफ़ाइल मेनू",
+    "back": "वापस"
+  },
+
   "login": {
     "welcome": "नमस्ते!",
     "employeeId": "कर्मचारी आईडी",

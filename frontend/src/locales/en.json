@@ -1,4 +1,26 @@
 {
+  "manager": {
+    "dashboard": "Dashboard",
+    "dashboardTitle": "Shobhadamodar Petroleum",
+    "dashboardHeading": "Manager Dashboard",
+    "dashboardSubtitle": "Manage station operations, accounts and employees.",
+    "accounting": "Sales & Accounting",
+    "accountingDescription": "Daily, weekly and monthly sales and collections.",
+    "operations": "Operations",
+    "operationsDescription": "MPDs, shifts and nozzle details.",
+    "stock": "Stock & Rates",
+    "stockDescription": "Fuel stock, receipts, dip and fuel rates.",
+    "udhari": "Udhari",
+    "udhariDescription": "Customer accounts and settlements.",
+    "employees": "Employees",
+    "employeesDescription": "Manage employee profiles and access.",
+    "manager": "Manager",
+    "language": "Language",
+    "logout": "Logout",
+    "profileMenu": "Profile menu",
+    "back": "Back"
+  },
+
   "login": {
     "welcome": "Welcome Back",
     "employeeId": "Employee ID",

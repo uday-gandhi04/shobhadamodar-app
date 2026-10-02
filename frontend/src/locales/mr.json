@@ -1,4 +1,26 @@
 {
+  "manager": {
+    "dashboard": "डॅशबोर्ड",
+    "dashboardTitle": "Shobhadamodar Petroleum",
+    "dashboardHeading": "मॅनेजर डॅशबोर्ड",
+    "dashboardSubtitle": "स्टेशनचे कामकाज, हिशोब आणि कर्मचाऱ्यांचे व्यवस्थापन करा.",
+    "accounting": "विक्री आणि हिशोब",
+    "accountingDescription": "दैनिक, साप्ताहिक आणि मासिक विक्री व जमा रक्कम.",
+    "operations": "कामकाज",
+    "operationsDescription": "MPD, शिफ्ट आणि नोजल तपशील.",
+    "stock": "स्टॉक आणि दर",
+    "stockDescription": "इंधन स्टॉक, पावत्या, डिप आणि इंधन दर.",
+    "udhari": "उधारी",
+    "udhariDescription": "ग्राहक खाती आणि पेमेंट सेटलमेंट.",
+    "employees": "कर्मचारी",
+    "employeesDescription": "कर्मचारी प्रोफाइल आणि प्रवेश व्यवस्थापन.",
+    "manager": "मॅनेजर",
+    "language": "भाषा",
+    "logout": "लॉग आउट",
+    "profileMenu": "प्रोफाइल मेनू",
+    "back": "मागे"
+  },
+  
   "login": {
     "welcome": "नमस्कार!",
     "employeeId": "कर्मचारी आयडी",
@@ -151,11 +173,10 @@
     "closingBelowOpening": "क्लोजिंग रीडिंग ओपनिंगपेक्षा कमी असू शकत नाही.",
     "finalReadingsHint": "प्रत्येक नोजलची अंतिम टोटलायझर रीडिंग भरा.",
     "enter": "दर्ज करा",
-    
+
     "petrol": "पेट्रोल",
     "diesel": "डिझेल",
     "totalFuel": "एकूण इंधन"
-
   },
 
   "cash": {
