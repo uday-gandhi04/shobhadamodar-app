@@ -12,6 +12,7 @@ import customerRoutes from './src/routes/customer.routes.js';
 import udhariRoutes from './src/routes/udhari.routes.js';
 import fuelRateRoutes from './src/routes/fuelRate.routes.js';
 import expenseRoutes from './src/routes/expense.routes.js';
+import managerRoutes from "./src/routes/manager.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +35,8 @@ app.use('/api/sync', syncRoutes);
 app.use('/api/shifts', shiftRoutes);
 
 app.use('/api/users', userRoutes);
+
+app.use("/api/manager", managerRoutes);
 
 app.use('/api/customers',customerRoutes,);
 

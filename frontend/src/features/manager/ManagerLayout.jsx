@@ -4,11 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ManagerHeader from "./ManagerHeader";
 import ManagerBottomNav from "./ManagerBottomNav";
 
-const ManagerLayout = ({
-  title,
-  showBack = false,
-  children,
-}) => {
+const ManagerLayout = ({ title, showBack = false, onBack, children }) => {
   const navigate = useNavigate();
 
   return (
@@ -35,12 +31,10 @@ const ManagerLayout = ({
           <ManagerHeader
             title={title}
             showBack={showBack}
-            onBack={() => navigate("/manager")}
+            onBack={onBack || (() => navigate("/manager"))}
           />
 
-          <section className="mt-6">
-            {children}
-          </section>
+          <section className="mt-6">{children}</section>
         </main>
 
         <ManagerBottomNav />
