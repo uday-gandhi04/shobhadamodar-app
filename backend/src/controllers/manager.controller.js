@@ -1,6 +1,8 @@
 import Mpd from "../models/Mpd.js";
 import Shift from "../models/Shift.js";
 import FuelRate from "../models/FuelRate.js";
+import Expense from "../models/Expense.js";
+import UdhariTransaction from "../models/UdhariTransaction.js";
 
 const getBusinessDate = (value) => {
   if (value) return value;
@@ -34,37 +36,27 @@ const buildShiftSummary = (shift) => {
     ? shift.readings
     : [];
 
-  const petrolLitres = readings.reduce(
-    (sum, reading) =>
-      sum +
-      Number(
-        reading.dispensedLitres ||
-          (reading.closingReading != null
-            ? Math.max(
-                Number(reading.closingReading) -
-                  Number(reading.openingReading),
-                0,
-              )
-            : 0),
-      ),
-    0,
-  );
+  const litresForFuel = (fuelType) =>
+    readings
+      .filter((reading) => reading.fuelType === fuelType)
+      .reduce(
+        (sum, reading) =>
+          sum +
+          Number(
+            reading.dispensedLitres ||
+              (reading.closingReading != null
+                ? Math.max(
+                    Number(reading.closingReading) -
+                      Number(reading.openingReading),
+                    0,
+                  )
+                : 0),
+          ),
+        0,
+      );
 
-  const dieselLitres = readings.reduce(
-    (sum, reading) =>
-      sum +
-      Number(
-        reading.dispensedLitres ||
-          (reading.closingReading != null
-            ? Math.max(
-                Number(reading.closingReading) -
-                  Number(reading.openingReading),
-                0,
-              )
-            : 0),
-      ),
-    0,
-  );
+  const petrolLitres = litresForFuel("PETROL");
+  const dieselLitres = litresForFuel("DIESEL");
 
   return {
     _id: shift._id,
@@ -92,37 +84,11 @@ const buildShiftSummary = (shift) => {
 
     totalLitresPetrol:
       Number(shift.totalLitresPetrol || 0) ||
-      readings
-        .filter((reading) => reading.fuelType === "PETROL")
-        .reduce(
-          (sum, reading) =>
-            sum +
-            (reading.closingReading != null
-              ? Math.max(
-                  Number(reading.closingReading) -
-                    Number(reading.openingReading),
-                  0,
-                )
-              : 0),
-          0,
-        ),
+      petrolLitres,
 
     totalLitresDiesel:
       Number(shift.totalLitresDiesel || 0) ||
-      readings
-        .filter((reading) => reading.fuelType === "DIESEL")
-        .reduce(
-          (sum, reading) =>
-            sum +
-            (reading.closingReading != null
-              ? Math.max(
-                  Number(reading.closingReading) -
-                    Number(reading.openingReading),
-                  0,
-                )
-              : 0),
-          0,
-        ),
+      dieselLitres,
 
     expectedTotalSalePaise: Number(
       shift.expectedTotalSalePaise || 0,
@@ -472,6 +438,20 @@ export const getManagerShiftDetail = async (
         0,
       );
 
+    const petrolSalePaise = (shift.readings || [])
+      .filter((reading) => reading.fuelType === "PETROL")
+      .reduce(
+        (sum, reading) => sum + Number(reading.expectedSalePaise || 0),
+        0,
+      );
+
+    const dieselSalePaise = (shift.readings || [])
+      .filter((reading) => reading.fuelType === "DIESEL")
+      .reduce(
+        (sum, reading) => sum + Number(reading.expectedSalePaise || 0),
+        0,
+      );
+
     return res.status(200).json({
       success: true,
 
@@ -529,6 +509,10 @@ export const getManagerShiftDetail = async (
           Number(
             shift.totalLitresDiesel || 0,
           ),
+
+        petrolSalePaise,
+
+        dieselSalePaise,
 
         expectedTotalSalePaise:
           Number(

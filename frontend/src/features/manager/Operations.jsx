@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import ManagerLayout from "./ManagerLayout";
@@ -8,16 +8,21 @@ import {
 } from "../../services/managerOperationsApi";
 import { getBusinessDate } from "../../utils/businessDate";
 
-const formatMoney = (paise) =>
-  `₹${(Number(paise || 0) / 100).toLocaleString("en-IN", {
+const formatMoney = (paise) => {
+  const amount = Number(paise || 0) / 100;
+  const sign = amount < 0 ? "-" : "";
+
+  return `${sign}₹${Math.abs(amount).toLocaleString("en-IN", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   })}`;
+};
 
 const formatDate = (date) => {
   if (!date) return "—";
 
   return new Date(date).toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -28,6 +33,7 @@ const formatTime = (date) => {
   if (!date) return "—";
 
   return new Date(date).toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -43,75 +49,122 @@ const statusLabel = (status, t) => {
   );
 };
 
+const sortShiftsChronologically = (shiftList) =>
+  [...shiftList].sort(
+    (left, right) =>
+      new Date(left.startedAt).getTime() -
+      new Date(right.startedAt).getTime(),
+  );
+
 const Operations = () => {
   const { t } = useTranslation();
 
-  const [activeTab, setActiveTab] = useState("MPDS");
+  const [activeTab, setActiveTab] = useState("LIVE");
 
   const [businessDate, setBusinessDate] = useState(getBusinessDate());
 
   const [mpds, setMpds] = useState([]);
-  const [activeShifts, setActiveShifts] = useState([]);
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [selectedMpdId, setSelectedMpdId] = useState("");
-
+  const [historyMpdId, setHistoryMpdId] = useState(null);
   const [selectedShiftId, setSelectedShiftId] = useState(null);
-
   const [selectedShift, setSelectedShift] = useState(null);
-
   const [shiftDetailLoading, setShiftDetailLoading] = useState(false);
-
   const [shiftDetailError, setShiftDetailError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
+  const requestInFlight = useRef(false);
+  const hasLoaded = useRef(false);
+  const isMounted = useRef(false);
 
-  const loadOperations = async (date = businessDate) => {
+  const loadOperations = useCallback(async () => {
+    if (requestInFlight.current) return;
+
+    requestInFlight.current = true;
+    if (!hasLoaded.current) setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
-      setError("");
-
+      const date = getBusinessDate();
       const response = await getManagerOperations(date);
-
       const data = response?.data || {};
 
-      setMpds(data.mpds || []);
-      setActiveShifts(data.activeShifts || []);
-      setShifts(data.shifts || []);
-
-      setSelectedMpdId((current) => {
-        if (
-          current &&
-          (data.mpds || []).some((mpd) => String(mpd._id) === String(current))
-        ) {
-          return current;
-        }
-
-        return data.mpds?.[0]?._id || "";
-      });
+      if (isMounted.current) {
+        setBusinessDate(data.businessDate || date);
+        setMpds(data.mpds || []);
+        setShifts(data.shifts || []);
+      }
     } catch (err) {
       console.error("[Manager Operations]", err);
 
-      setError(
-        err?.response?.data?.message ||
-          err?.message ||
-          t("manager.operationsLoadError"),
-      );
+      if (isMounted.current) {
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            t("manager.operationsLoadError"),
+        );
+      }
     } finally {
-      setLoading(false);
+      requestInFlight.current = false;
+      if (isMounted.current) {
+        hasLoaded.current = true;
+        setLoading(false);
+      }
     }
-  };
+  }, [t]);
 
   useEffect(() => {
-    loadOperations(businessDate);
-  }, [businessDate]);
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
-  const selectedMpd = useMemo(
-    () => mpds.find((mpd) => String(mpd._id) === String(selectedMpdId)) || null,
-    [mpds, selectedMpdId],
+  useEffect(() => {
+    if (activeTab !== "LIVE" || historyMpdId || selectedShiftId) {
+      return undefined;
+    }
+
+    const initialRequestId = window.setTimeout(loadOperations, 0);
+    const intervalId = window.setInterval(loadOperations, 12000);
+
+    return () => {
+      window.clearTimeout(initialRequestId);
+      window.clearInterval(intervalId);
+    };
+  }, [activeTab, historyMpdId, loadOperations, retryCount, selectedShiftId]);
+
+  const historyMpd = useMemo(
+    () => mpds.find((mpd) => String(mpd._id) === String(historyMpdId)) || null,
+    [mpds, historyMpdId],
   );
 
+  const historyShifts = useMemo(
+    () =>
+      historyMpdId
+        ? sortShiftsChronologically(
+            shifts.filter((shift) => String(shift.mpd?._id) === String(historyMpdId)),
+          )
+        : [],
+    [historyMpdId, shifts],
+  );
+
+  const closeShiftDetail = () => {
+    setSelectedShiftId(null);
+    setSelectedShift(null);
+    setShiftDetailError("");
+  };
+
+  const closeMpdHistory = () => setHistoryMpdId(null);
+
+  const openMpdHistory = (mpdId) => {
+    setHistoryMpdId(mpdId);
+  };
+
   const openShiftDetail = async (shiftId) => {
+    setSelectedShiftId(shiftId);
+    setSelectedShift(null);
     try {
       setShiftDetailLoading(true);
       setShiftDetailError("");
@@ -119,8 +172,6 @@ const Operations = () => {
       const response = await getManagerShiftDetail(shiftId);
 
       setSelectedShift(response?.data || null);
-
-      setSelectedShiftId(shiftId);
     } catch (err) {
       console.error("[Manager Shift Detail]", err);
 
@@ -134,13 +185,23 @@ const Operations = () => {
     }
   };
 
+  const handleBack = selectedShiftId
+    ? closeShiftDetail
+    : historyMpdId
+      ? closeMpdHistory
+      : undefined;
+
   return (
     <ManagerLayout
       title={
-        selectedShiftId ? t("manager.shiftDetail") : t("manager.operations")
+        selectedShiftId
+          ? t("manager.shiftDetail")
+          : historyMpdId
+            ? t("manager.mpdTodayShifts", { mpd: historyMpd?.mpdNumber || "MPD" })
+            : t("manager.operations")
       }
       showBack
-      onBack={selectedShiftId ? closeShiftDetail : undefined}
+      onBack={handleBack}
     >
       {selectedShiftId ? (
         <ShiftDetailView
@@ -152,7 +213,6 @@ const Operations = () => {
         />
       ) : (
         <div className="space-y-4">
-          {/* Page intro */}
           <div>
             <p className="text-[21px] font-bold tracking-[-0.02em] text-slate-900">
               {t("manager.operationsHeading")}
@@ -163,18 +223,17 @@ const Operations = () => {
             </p>
           </div>
 
-          {/* Tabs */}
-          <div className="grid grid-cols-3 rounded-[14px] border border-slate-100 bg-white p-1 shadow-[0_4px_14px_rgba(15,23,42,0.04)]">
-            {[
-              ["MPDS", t("manager.mpds")],
-              ["SHIFTS", t("manager.shifts")],
-              ["NOZZLES", t("manager.nozzleReadings")],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setActiveTab(value)}
-                className={`
+          {!historyMpdId && (
+            <div className="grid grid-cols-2 rounded-[14px] border border-slate-100 bg-white p-1 shadow-[0_4px_14px_rgba(15,23,42,0.04)]">
+              {[
+                ["LIVE", t("manager.liveMpds")],
+                ["TODAY", t("manager.todaysShifts")],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setActiveTab(value)}
+                  className={`
                 min-h-[38px]
                 rounded-[10px]
                 px-2
@@ -187,43 +246,21 @@ const Operations = () => {
                     : "text-slate-500"
                 }
               `}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {/* Date */}
-          {activeTab !== "MPDS" && (
-            <div className="flex items-center justify-between rounded-[16px] bg-white px-4 py-3 shadow-[0_4px_14px_rgba(15,23,42,0.04)]">
-              <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.07em] text-slate-400">
-                  {t("manager.businessDate")}
-                </p>
-
-                <p className="mt-1 text-[13px] font-semibold text-slate-900">
-                  {formatDate(businessDate)}
-                </p>
-              </div>
-
-              <input
-                type="date"
-                value={businessDate}
-                onChange={(event) => setBusinessDate(event.target.value)}
-                className="
-                h-9
-                rounded-[10px]
-                border
-                border-slate-200
-                bg-white
-                px-2
-                text-[10px]
-                font-semibold
-                text-slate-700
-                outline-none
-                focus:border-bpcl-emerald
-              "
-              />
+          {historyMpdId && (
+            <div className="flex items-center justify-between px-1">
+              <p className="text-[12px] font-bold text-slate-900">
+                {historyMpd?.mpdNumber || "MPD"} · {t("manager.todaysShifts")}
+              </p>
+              <span className="text-[10px] font-semibold text-slate-400">
+                {formatDate(businessDate)}
+              </span>
             </div>
           )}
 
@@ -242,7 +279,7 @@ const Operations = () => {
 
               <button
                 type="button"
-                onClick={() => loadOperations(businessDate)}
+                onClick={() => setRetryCount((count) => count + 1)}
                 className="mt-3 rounded-[10px] bg-white px-3 py-2 text-[10px] font-semibold text-red-700 shadow-sm"
               >
                 {t("manager.retry")}
@@ -250,7 +287,7 @@ const Operations = () => {
             </div>
           )}
 
-          {!loading && !error && activeTab === "MPDS" && (
+          {!loading && !error && activeTab === "LIVE" && !historyMpdId && (
             <div className="space-y-4">
               {mpds.length === 0 && <EmptyState text={t("manager.noMpds")} />}
 
@@ -258,114 +295,32 @@ const Operations = () => {
                 <MpdCard
                   key={mpd._id}
                   mpd={mpd}
+                  lastShift={shifts.find(
+                    (shift) => String(shift.mpd?._id) === String(mpd._id),
+                  )}
                   t={t}
-                  onViewNozzles={() => {
-                    setSelectedMpdId(mpd._id);
-                    setActiveTab("NOZZLES");
-                  }}
-                  onViewPastShifts={() => setActiveTab("SHIFTS")}
+                  onViewTodayHistory={() => openMpdHistory(mpd._id)}
                 />
               ))}
             </div>
           )}
 
-          {!loading && !error && activeTab === "SHIFTS" && (
-            <div className="space-y-4">
-              {/* Active shifts */}
-              <section>
-                <div className="mb-2 flex items-center justify-between px-1">
-                  <p className="text-[12px] font-bold text-slate-900">
-                    {t("manager.activeShifts")}
-                  </p>
-
-                  <span className="rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-bold text-bpcl-emerald">
-                    {activeShifts.length}
-                  </span>
-                </div>
-
-                {activeShifts.length === 0 ? (
-                  <EmptyState text={t("manager.noActiveShifts")} />
-                ) : (
-                  <div className="space-y-2">
-                    {activeShifts.map((shift) => (
-                      <ShiftCard
-                        key={shift._id}
-                        shift={shift}
-                        t={t}
-                        onClick={() => openShiftDetail(shift._id)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              {/* Selected day */}
-              <section>
-                <div className="mb-2 flex items-center justify-between px-1">
-                  <p className="text-[12px] font-bold text-slate-900">
-                    {t("manager.selectedDayShifts")}
-                  </p>
-
-                  <span className="text-[9px] font-semibold text-slate-400">
-                    {formatDate(businessDate)}
-                  </span>
-                </div>
-
-                {shifts.length === 0 ? (
-                  <EmptyState text={t("manager.noShiftsForDate")} />
-                ) : (
-                  <div className="space-y-2">
-                    {shifts.map((shift) => (
-                      <ShiftCard
-                        key={shift._id}
-                        shift={shift}
-                        t={t}
-                        onClick={() => openShiftDetail(shift._id)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-            </div>
+          {!loading && !error && historyMpdId && (
+            <MpdShiftList
+              shifts={historyShifts}
+              t={t}
+              onOpenShift={openShiftDetail}
+            />
           )}
 
-          {!loading && !error && activeTab === "NOZZLES" && (
-            <div className="space-y-4">
-              {/* MPD selector */}
-              <div className="grid grid-cols-2 gap-2">
-                {mpds.map((mpd) => {
-                  const selected = String(selectedMpdId) === String(mpd._id);
-
-                  return (
-                    <button
-                      key={mpd._id}
-                      type="button"
-                      onClick={() => setSelectedMpdId(mpd._id)}
-                      className={`
-                        min-h-[44px]
-                        rounded-[13px]
-                        border
-                        text-[11px]
-                        font-semibold
-                        ${
-                          selected
-                            ? "border-bpcl-emerald bg-emerald-50 text-bpcl-emerald"
-                            : "border-slate-200 bg-white text-slate-600"
-                        }
-                      `}
-                    >
-                      {mpd.mpdNumber}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {selectedMpd ? (
-                <NozzleReadings mpd={selectedMpd} t={t} />
-              ) : (
-                <EmptyState text={t("manager.selectMpd")} />
-              )}
-            </div>
+          {!loading && !error && activeTab === "TODAY" && !historyMpdId && (
+            <TodayShiftGroups
+              mpds={mpds}
+              shifts={shifts}
+              businessDate={businessDate}
+              t={t}
+              onOpenShift={openShiftDetail}
+            />
           )}
         </div>
       )}
@@ -373,7 +328,71 @@ const Operations = () => {
   );
 };
 
-const MpdCard = ({ mpd, t, onViewNozzles, onViewPastShifts }) => (
+const MpdShiftList = ({ shifts, t, onOpenShift }) => (
+  <section className="space-y-2">
+    {shifts.length === 0 ? (
+      <EmptyState text={t("manager.noShiftsForDate")} />
+    ) : (
+      shifts.map((shift) => (
+        <ShiftCard
+          key={shift._id}
+          shift={shift}
+          active={shift.status === "IN_PROGRESS"}
+          t={t}
+          onClick={() => onOpenShift(shift._id)}
+        />
+      ))
+    )}
+  </section>
+);
+
+const TodayShiftGroups = ({ mpds, shifts, businessDate, t, onOpenShift }) => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between px-1">
+      <p className="text-[12px] font-bold text-slate-900">
+        {t("manager.todaysShifts")}
+      </p>
+      <span className="text-[10px] font-semibold text-slate-400">
+        {formatDate(businessDate)}
+      </span>
+    </div>
+    {mpds.map((mpd) => {
+      const mpdShifts = sortShiftsChronologically(
+        shifts.filter((shift) => String(shift.mpd?._id) === String(mpd._id)),
+      );
+
+      return (
+        <section key={mpd._id}>
+          <div className="mb-2 flex items-center justify-between px-1">
+            <p className="text-[12px] font-bold text-slate-900">
+              {mpd.mpdNumber}
+            </p>
+            <span className="text-[9px] font-semibold text-slate-400">
+              {mpd.status === "ACTIVE" ? t("manager.live") : t("manager.free")}
+            </span>
+          </div>
+          {mpdShifts.length === 0 ? (
+            <EmptyState text={t("manager.noShiftsForDate")} />
+          ) : (
+            <div className="space-y-2">
+              {mpdShifts.map((shift) => (
+                <ShiftCard
+                  key={shift._id}
+                  shift={shift}
+                  active={shift.status === "IN_PROGRESS"}
+                  t={t}
+                  onClick={() => onOpenShift(shift._id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      );
+    })}
+  </div>
+);
+
+const MpdCard = ({ mpd, lastShift, t, onViewTodayHistory }) => (
   <section className="rounded-[22px] border border-white bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
@@ -421,6 +440,13 @@ const MpdCard = ({ mpd, t, onViewNozzles, onViewPastShifts }) => (
     </div>
 
     {mpd.activeShift && (
+      <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase text-bpcl-emerald">
+        <span className="h-2 w-2 rounded-full bg-bpcl-emerald" />
+        {t("manager.live")}
+      </div>
+    )}
+
+    {mpd.activeShift ? (
       <div className="mt-4 flex items-center justify-between rounded-[13px] bg-slate-50 px-3 py-2.5">
         <div>
           <p className="text-[8px] uppercase tracking-[0.06em] text-slate-400">
@@ -430,6 +456,11 @@ const MpdCard = ({ mpd, t, onViewNozzles, onViewPastShifts }) => (
           <p className="mt-1 text-[11px] font-semibold text-slate-900">
             {mpd.activeShift.employee?.name}
           </p>
+          {mpd.activeShift.employee?.employeeId && (
+            <p className="mt-0.5 text-[9px] text-slate-500">
+              {mpd.activeShift.employee.employeeId}
+            </p>
+          )}
         </div>
 
         <div className="text-right">
@@ -442,53 +473,78 @@ const MpdCard = ({ mpd, t, onViewNozzles, onViewPastShifts }) => (
           </p>
         </div>
       </div>
+    ) : (
+      <div className="mt-4 rounded-[13px] bg-slate-50 px-3 py-3">
+        <p className="text-[11px] font-semibold text-slate-700">
+          {t("manager.noActiveShift")}
+        </p>
+        {lastShift && (
+          <p className="mt-1 text-[9px] text-slate-500">
+            {t("manager.lastShift")}: {lastShift.employee?.name || t("manager.employeeUnknown")}
+            {lastShift.endedAt ? ` · ${formatTime(lastShift.endedAt)}` : ""}
+          </p>
+        )}
+      </div>
     )}
 
-    <div className="mt-4 grid grid-cols-4 gap-2">
+    <div className="mt-4 grid grid-cols-4 gap-1.5">
       {mpd.nozzles.map((nozzle) => (
         <div
           key={nozzle.nozzleId}
-          className="rounded-[13px] border border-slate-100 bg-slate-50 p-2"
+          className="min-w-0 rounded-[12px] border border-slate-100 bg-slate-50 p-2"
         >
-          <p className="text-center text-[9px] font-bold text-slate-700">
-            {nozzle.nozzleId.toUpperCase()}
-          </p>
-
-          <div
-            className={`
-                mx-auto
-                mt-2
-                grid
-                h-7
-                w-7
-                place-items-center
-                rounded-full
-                text-[9px]
-                font-bold
-                ${
-                  nozzle.fuelType === "PETROL"
-                    ? "bg-green-50 text-fuel-petrol"
-                    : "bg-blue-50 text-fuel-diesel"
-                }
-              `}
-          >
-            {nozzle.fuelType === "PETROL" ? "P" : "D"}
+          <div className="flex flex-col items-start gap-1">
+            <p className="text-[10px] font-bold text-slate-800">
+              {nozzle.nozzleId.toUpperCase()}
+            </p>
+            <span className={`rounded-full px-1 py-0.5 text-[7px] font-bold ${nozzle.fuelType === "PETROL" ? "bg-green-50 text-fuel-petrol" : "bg-blue-50 text-fuel-diesel"}`}>
+              {nozzle.fuelType}
+            </span>
           </div>
-
-          <p className="mt-2 text-center text-[9px] font-bold text-slate-800">
-            {nozzle.litres.toFixed(2)} L
-          </p>
-
-          <p className="mt-1 text-center text-[7px] text-slate-400">
-            {nozzle.readingEntered
-              ? t("manager.readingEntered")
-              : t("manager.readingPending")}
-          </p>
+          {mpd.activeShift ? (
+            <>
+              <p className="mt-2 break-all text-[8px] font-semibold leading-tight text-slate-600">
+                {t("manager.opening")}
+              </p>
+              <p className="break-all text-[9px] font-bold leading-tight text-slate-800">
+                {Number(nozzle.openingReading || 0).toFixed(2)}
+              </p>
+              <p className="mt-1 break-all text-[8px] font-semibold leading-tight text-slate-600">
+                {t("manager.currentReading")}
+              </p>
+              <p className="break-all text-[9px] font-bold leading-tight text-slate-800">
+                {Number(nozzle.currentReading || 0).toFixed(2)}
+              </p>
+              <p className="mt-1 text-[8px] font-bold text-slate-700">
+                {t("manager.sold")}: {Number(nozzle.litres || 0).toFixed(2)} L
+              </p>
+              <p className="mt-1 min-h-[20px] text-[7px] leading-tight text-slate-400">
+                {nozzle.readingEntered ? t("manager.readingEntered") : t("manager.readingPending")}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-2 break-all text-[8px] font-semibold leading-tight text-slate-600">
+                {t("manager.currentReading")}
+              </p>
+              <p className="break-all text-[9px] font-bold leading-tight text-slate-800">
+                {Number(nozzle.currentReading || 0).toFixed(2)}
+              </p>
+            </>
+          )}
         </div>
       ))}
     </div>
 
-    <div className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+    {mpd.activeShift && <section className="mt-4 border-t border-slate-100 pt-3">
+      <p className="mb-2 text-[9px] font-bold uppercase text-slate-400">
+        {t("manager.currentShift")}
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <Metric label={t("manager.petrol")} value={`${Number(mpd.totalPetrolLitres || 0).toFixed(2)} L`} />
+        <Metric label={t("manager.diesel")} value={`${Number(mpd.totalDieselLitres || 0).toFixed(2)} L`} />
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-3">
       <div>
         <p className="text-[8px] font-semibold uppercase tracking-[0.05em] text-slate-400">
           {t("manager.totalLitres")}
@@ -508,34 +564,13 @@ const MpdCard = ({ mpd, t, onViewNozzles, onViewPastShifts }) => (
           {formatMoney(mpd.estimatedSalePaise)}
         </p>
       </div>
-    </div>
+      </div>
+    </section>}
 
     <div className="mt-3 space-y-2">
       <button
         type="button"
-        onClick={onViewNozzles}
-        className="flex min-h-[42px] w-full items-center justify-between rounded-[14px] border border-slate-100 bg-white px-3 text-[10px] font-semibold text-slate-700 shadow-[0_4px_12px_rgba(15,23,42,0.04)] active:scale-[0.99]"
-      >
-        <span className="flex items-center gap-2">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className="h-4 w-4"
-          >
-            <path d="M7 4h8v16H7z" />
-            <path d="M15 7h2l2 2v7h-4" />
-            <circle cx="10" cy="8" r="1" />
-          </svg>
-          {t("manager.viewNozzleDetails")}
-        </span>
-        <span className="text-slate-300">→</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={onViewPastShifts}
+        onClick={onViewTodayHistory}
         className="flex min-h-[42px] w-full items-center justify-between rounded-[14px] border border-slate-100 bg-white px-3 text-[10px] font-semibold text-slate-700 shadow-[0_4px_12px_rgba(15,23,42,0.04)] active:scale-[0.99]"
       >
         <span className="flex items-center gap-2">
@@ -549,7 +584,7 @@ const MpdCard = ({ mpd, t, onViewNozzles, onViewPastShifts }) => (
             <path d="M4.5 6.75h15v12h-15z" />
             <path d="M8 10.5h8M8 14h5" />
           </svg>
-          {t("manager.viewPastShifts")}
+          {t("manager.todaysShiftHistory")}
         </span>
         <span className="text-slate-300">→</span>
       </button>
@@ -586,12 +621,11 @@ const ShiftCard = ({ shift, t, active = false, onClick }) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <p className="text-[13px] font-bold text-slate-900">
-              {shift.mpd?.mpdNumber || "MPD"}
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[12px] font-bold text-slate-900">
+              {formatTime(shift.startedAt)} – {active ? t("manager.live") : formatTime(shift.endedAt)}
             </p>
-
-            <span className="rounded-full bg-slate-100 px-2 py-1 text-[8px] font-bold text-slate-500">
+            <span className={`rounded-full px-2 py-1 text-[8px] font-bold ${active ? "bg-emerald-50 text-bpcl-emerald" : "bg-slate-100 text-slate-500"}`}>
               {statusLabel(shift.status, t)}
             </span>
           </div>
@@ -603,12 +637,6 @@ const ShiftCard = ({ shift, t, active = false, onClick }) => {
           </p>
         </div>
 
-        {active && (
-          <span className="rounded-full bg-emerald-50 px-2 py-1 text-[8px] font-bold text-bpcl-emerald">
-            {t("manager.live")}
-          </span>
-        )}
-
         {!active && onClick && (
           <span className="text-[16px] text-slate-300">→</span>
         )}
@@ -616,13 +644,13 @@ const ShiftCard = ({ shift, t, active = false, onClick }) => {
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Metric
-          label={t("manager.started")}
-          value={formatTime(shift.startedAt)}
+          label={t("manager.petrol")}
+          value={`${Number(shift.totalLitresPetrol || 0).toFixed(2)} L`}
         />
 
         <Metric
-          label={t("manager.ended")}
-          value={shift.endedAt ? formatTime(shift.endedAt) : "—"}
+          label={t("manager.diesel")}
+          value={`${Number(shift.totalLitresDiesel || 0).toFixed(2)} L`}
         />
 
         <Metric
@@ -656,81 +684,13 @@ const ShiftCard = ({ shift, t, active = false, onClick }) => {
 };
 
 const Metric = ({ label, value }) => (
-  <div className="rounded-[11px] bg-slate-50 px-3 py-2">
-    <p className="text-[8px] font-semibold uppercase tracking-[0.04em] text-slate-400">
+  <div className="rounded-[11px] bg-slate-50 px-3 py-2.5">
+    <p className="text-[9px] font-semibold uppercase tracking-[0.04em] text-slate-500">
       {label}
     </p>
 
-    <p className="mt-1 text-[11px] font-bold text-slate-800">{value}</p>
+    <p className="mt-1 text-[12px] font-bold text-slate-900">{value}</p>
   </div>
-);
-
-const NozzleReadings = ({ mpd, t }) => (
-  <section className="rounded-[22px] bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
-    <div className="mb-4 flex items-center justify-between">
-      <div>
-        <p className="text-[15px] font-bold text-slate-900">{mpd.mpdNumber}</p>
-
-        <p className="mt-1 text-[9px] text-slate-400">
-          {t("manager.nozzleReadings")}
-        </p>
-      </div>
-    </div>
-
-    <div className="space-y-2">
-      {mpd.nozzles.map((nozzle) => (
-        <div
-          key={nozzle.nozzleId}
-          className="rounded-[15px] border border-slate-100 p-3"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-slate-800">
-                {nozzle.nozzleId.toUpperCase()}
-              </span>
-
-              <span
-                className={`
-                    rounded-full
-                    px-2
-                    py-1
-                    text-[8px]
-                    font-bold
-                    ${
-                      nozzle.fuelType === "PETROL"
-                        ? "bg-green-50 text-fuel-petrol"
-                        : "bg-blue-50 text-fuel-diesel"
-                    }
-                  `}
-              >
-                {nozzle.fuelType}
-              </span>
-            </div>
-
-            <span className="text-[11px] font-bold text-slate-900">
-              {nozzle.litres.toFixed(2)} L
-            </span>
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <Metric
-              label={t("manager.opening")}
-              value={Number(nozzle.openingReading || 0).toFixed(2)}
-            />
-
-            <Metric
-              label={t("manager.closing")}
-              value={
-                nozzle.closingReading != null
-                  ? Number(nozzle.closingReading).toFixed(2)
-                  : "—"
-              }
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
 );
 
 const EmptyState = ({ text }) => (
@@ -849,6 +809,11 @@ const ShiftDetailView = ({
                   "manager.employeeUnknown",
                 )}
             </p>
+            {shift.employee?.employeeId && (
+              <p className="mt-0.5 text-[9px] text-slate-400">
+                {shift.employee.employeeId}
+              </p>
+            )}
           </div>
 
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[8px] font-bold text-slate-600">
@@ -923,6 +888,9 @@ const ShiftDetailView = ({
               ).toFixed(2)}{" "}
               L
             </p>
+            <p className="mt-1 text-[10px] font-semibold text-slate-700">
+              {formatMoney(shift.petrolSalePaise)}
+            </p>
           </div>
 
           <div className="rounded-[14px] bg-blue-50 p-3">
@@ -936,6 +904,9 @@ const ShiftDetailView = ({
                   0,
               ).toFixed(2)}{" "}
               L
+            </p>
+            <p className="mt-1 text-[10px] font-semibold text-slate-700">
+              {formatMoney(shift.dieselSalePaise)}
             </p>
           </div>
         </div>
@@ -970,11 +941,11 @@ const ShiftDetailView = ({
                 key={
                   reading.nozzleId
                 }
-                className="rounded-[14px] border border-slate-100 p-3"
+                className="rounded-[16px] border border-slate-100 bg-white p-4 shadow-[0_3px_12px_rgba(15,23,42,0.035)]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-slate-800">
+                    <span className="text-[12px] font-bold text-slate-900">
                       {String(
                         reading.nozzleId,
                       ).toUpperCase()}
@@ -985,7 +956,7 @@ const ShiftDetailView = ({
                         rounded-full
                         px-2
                         py-1
-                        text-[7px]
+                        text-[8px]
                         font-bold
                         ${
                           reading.fuelType ===
@@ -999,16 +970,12 @@ const ShiftDetailView = ({
                     </span>
                   </div>
 
-                  <span className="text-[10px] font-bold text-slate-900">
-                    {Number(
-                      reading.dispensedLitres ||
-                        0,
-                    ).toFixed(2)}{" "}
-                    L
+                  <span className="text-[10px] font-bold text-slate-700">
+                    {t("manager.dispensed")}: {Number(reading.dispensedLitres || 0).toFixed(2)} L
                   </span>
                 </div>
 
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <Metric
                     label={t(
                       "manager.opening",
@@ -1065,6 +1032,11 @@ const ShiftDetailView = ({
           />
 
           <CollectionRow
+            label={t("manager.coins")}
+            value={formatMoney(shift.coinsPaise)}
+          />
+
+          <CollectionRow
             label={t("manager.upi")}
             value={formatMoney(
               shift.totalUpiPaise,
@@ -1077,6 +1049,14 @@ const ShiftDetailView = ({
               shift.totalCardPaise,
             )}
           />
+
+          {(shift.atmEntries || []).map((entry, index) => (
+            <CollectionRow
+              key={`${entry.time}-${index}`}
+              label={`${t("manager.atmEntry")} · ${entry.time}`}
+              value={formatMoney(entry.amountPaise)}
+            />
+          ))}
 
           <CollectionRow
             label={t(
@@ -1119,11 +1099,13 @@ const ShiftDetailView = ({
                 shift.reconciliationStatus ===
                 "MATCHED"
                   ? "bg-emerald-50 text-bpcl-emerald"
+                  : shift.reconciliationStatus === "SHORT"
+                    ? "bg-red-50 text-red-600"
                   : "bg-amber-50 text-amber-600"
               }
             `}
           >
-            {shift.reconciliationStatus}
+            {t(`manager.reconciliationStatus.${String(shift.reconciliationStatus || "PENDING").toLowerCase()}`)}
           </span>
         </div>
 
@@ -1272,6 +1254,9 @@ const ShiftDetailView = ({
                       L
                     </p>
                   </div>
+                  <p className="mt-1 text-[8px] text-slate-400">
+                    {formatDate(transaction.createdAt)} · {formatTime(transaction.createdAt)}
+                  </p>
                 </div>
               ),
             )}
