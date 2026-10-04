@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 import { AuthContext } from "../../context/AuthContext";
 
-const ManagerHeader = ({ title, showBack = false, onBack }) => {
+const ManagerHeader = ({ title, showBack = false, onBack, variant = "default" }) => {
   const { t, i18n } = useTranslation();
   const { user, logout } = useContext(AuthContext);
 
@@ -15,6 +15,7 @@ const ManagerHeader = ({ title, showBack = false, onBack }) => {
     user?.name ||
     user?.employeeId ||
     "Manager";
+  const dashboard = variant === "dashboard";
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -51,7 +52,7 @@ const ManagerHeader = ({ title, showBack = false, onBack }) => {
   };
 
   return (
-    <header className="relative z-20 flex items-center gap-3">
+    <header className={`relative z-20 flex items-center gap-2.5 ${dashboard ? "rounded-[15px] bg-gradient-to-r from-[#075b45] via-[#08785a] to-[#075b45] px-3 py-2.5 text-white shadow-[0_7px_20px_rgba(4,92,67,0.18)]" : "gap-3"}`}>
       {showBack && (
         <button
           type="button"
@@ -85,11 +86,11 @@ const ManagerHeader = ({ title, showBack = false, onBack }) => {
       )}
 
       <div className="min-w-0 flex-1">
-        <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-bpcl-navy">
-          BPCL AUTHORISED OUTLET
+        <p className={`text-[8px] font-bold uppercase tracking-[0.08em] ${dashboard ? "text-emerald-50/75" : "text-bpcl-navy"}`}>
+          {dashboard ? t("manager.manager") : "BPCL AUTHORISED OUTLET"}
         </p>
 
-        <p className="mt-0.5 truncate text-[15px] font-semibold tracking-[-0.01em] text-slate-900">
+        <p className={`mt-0.5 truncate text-[14px] font-bold ${dashboard ? "text-white" : "text-slate-900"}`}>
           {title || "Shobhadamodar Petroleum"}
         </p>
       </div>
@@ -101,21 +102,12 @@ const ManagerHeader = ({ title, showBack = false, onBack }) => {
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
-          className="
-            flex
-            items-center
-            gap-2
-            rounded-[12px]
-            px-1
-            py-1
-            transition
-            active:scale-[0.98]
-          "
+          className={`flex items-center gap-1.5 rounded-[10px] px-1 py-1 transition active:scale-[0.98] ${dashboard ? "text-white" : "gap-2 rounded-[12px]"}`}
           aria-expanded={menuOpen}
           aria-haspopup="menu"
           aria-label={t("manager.profileMenu")}
         >
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-50 text-[#047857]">
+          <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${dashboard ? "bg-white/15 text-white" : "h-9 w-9 bg-emerald-50 text-[#047857]"}`}>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -129,12 +121,12 @@ const ManagerHeader = ({ title, showBack = false, onBack }) => {
             </svg>
           </div>
 
-          <div className="hidden min-w-0 text-left sm:block">
-            <p className="max-w-[80px] truncate text-[10px] font-semibold leading-none text-slate-900">
+          <div className={`${dashboard ? "block max-w-[48px]" : "hidden sm:block"} min-w-0 text-left`}>
+            <p className={`max-w-[80px] truncate text-[9px] font-semibold leading-none ${dashboard ? "text-white" : "text-slate-900"}`}>
               {managerName}
             </p>
 
-            <p className="mt-1 text-[7px] font-medium uppercase tracking-[0.05em] text-slate-400">
+            <p className={`mt-1 text-[6px] font-medium uppercase tracking-[0.04em] ${dashboard ? "text-emerald-50/75" : "text-slate-400"}`}>
               {t("manager.manager")}
             </p>
           </div>
@@ -144,7 +136,7 @@ const ManagerHeader = ({ title, showBack = false, onBack }) => {
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
-            className={`h-3 w-3 text-slate-400 transition-transform ${
+            className={`h-3 w-3 transition-transform ${dashboard ? "text-white/75" : "text-slate-400"} ${
               menuOpen ? "rotate-180" : ""
             }`}
             aria-hidden="true"

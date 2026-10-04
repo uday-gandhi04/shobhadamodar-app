@@ -4,6 +4,11 @@
     "dashboardTitle": "Shobhadamodar Petroleum",
     "dashboardHeading": "Manager Dashboard",
     "dashboardSubtitle": "Manage station operations, accounts and employees.",
+    "dashboardOverview": {
+      "todayAtGlance": "Today at a glance",
+      "viewDetails": "View details",
+      "openShifts": "Open Shifts"
+    },
     "accounting": "Sales & Accounting",
     "accountingDescription": "Daily, weekly and monthly sales and collections.",
     "accountingLabels": {

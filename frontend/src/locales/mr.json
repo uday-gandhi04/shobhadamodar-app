@@ -4,6 +4,11 @@
     "dashboardTitle": "Shobhadamodar Petroleum",
     "dashboardHeading": "मॅनेजर डॅशबोर्ड",
     "dashboardSubtitle": "स्टेशनचे कामकाज, हिशोब आणि कर्मचाऱ्यांचे व्यवस्थापन करा.",
+    "dashboardOverview": {
+      "todayAtGlance": "आजचा थोडक्यात आढावा",
+      "viewDetails": "तपशील पाहा",
+      "openShifts": "सुरू शिफ्ट"
+    },
     "accounting": "विक्री आणि हिशोब",
     "accountingDescription": "दैनिक, साप्ताहिक आणि मासिक विक्री व जमा रक्कम.",
     "accountingLabels": {
