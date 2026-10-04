@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import ManagerLayout from "./ManagerLayout";
 import { getManagerAccounting } from "../../services/managerAccountingApi";
+import { getManagerOperations } from "../../services/managerOperationsApi";
 import { getBusinessDate } from "../../utils/businessDate";
 
 const actionTones = {
@@ -101,14 +102,28 @@ const ManagerDashboard = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [overview, setOverview] = useState(null);
+  const [liveShiftSummary, setLiveShiftSummary] = useState({
+    activeShiftCount: 0,
+    mpdCount: 0,
+  });
   const businessDate = getBusinessDate();
 
   useEffect(() => {
     let mounted = true;
 
-    getManagerAccounting("today", businessDate)
-      .then((response) => {
-        if (mounted) setOverview(response?.data || null);
+    Promise.all([
+      getManagerAccounting("today", businessDate),
+      getManagerOperations(businessDate),
+    ])
+      .then(([accountingResponse, operationsResponse]) => {
+        if (!mounted) return;
+
+        setOverview(accountingResponse?.data || null);
+        setLiveShiftSummary({
+          activeShiftCount:
+            Number(operationsResponse?.data?.activeShifts?.length || 0),
+          mpdCount: Number(operationsResponse?.data?.mpds?.length || 0),
+        });
       })
       .catch((error) => {
         console.error("[Manager Dashboard Overview]", error);
@@ -153,10 +168,8 @@ const ManagerDashboard = () => {
   ];
 
   const summary = overview?.summary || {};
-  const shifts = overview?.shifts || [];
-  const openShiftCount = shifts.filter(
-    (shift) => shift.status === "IN_PROGRESS",
-  ).length;
+  const openShiftCount = liveShiftSummary.activeShiftCount;
+  const totalMpdCount = liveShiftSummary.mpdCount || overview?.mpds?.length || 0;
   const hasOverview = Boolean(overview);
   const openAccounting = () =>
     navigate("/manager/accounting", {
@@ -244,7 +257,7 @@ const ManagerDashboard = () => {
             />
             <OverviewMetric
               label={t("manager.dashboardOverview.openShifts")}
-              value={hasOverview ? `${openShiftCount} / ${overview.mpds?.length || 0}` : "—"}
+              value={hasOverview ? `${openShiftCount} / ${totalMpdCount}` : "—"}
               tone="rose"
               icon="shifts"
             />
