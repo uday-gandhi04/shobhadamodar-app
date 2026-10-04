@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import ManagerLayout from "./ManagerLayout";
 import {
@@ -58,6 +59,8 @@ const sortShiftsChronologically = (shiftList) =>
 
 const Operations = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("LIVE");
 
@@ -69,7 +72,9 @@ const Operations = () => {
   const [error, setError] = useState("");
 
   const [historyMpdId, setHistoryMpdId] = useState(null);
-  const [selectedShiftId, setSelectedShiftId] = useState(null);
+  const [selectedShiftId, setSelectedShiftId] = useState(
+    () => location.state?.accountingShiftId || null,
+  );
   const [selectedShift, setSelectedShift] = useState(null);
   const [shiftDetailLoading, setShiftDetailLoading] = useState(false);
   const [shiftDetailError, setShiftDetailError] = useState("");
@@ -151,6 +156,13 @@ const Operations = () => {
   );
 
   const closeShiftDetail = () => {
+    if (location.state?.accountingReturn) {
+      navigate("/manager/accounting", {
+        state: location.state.accountingReturn,
+      });
+      return;
+    }
+
     setSelectedShiftId(null);
     setSelectedShift(null);
     setShiftDetailError("");
@@ -162,7 +174,7 @@ const Operations = () => {
     setHistoryMpdId(mpdId);
   };
 
-  const openShiftDetail = async (shiftId) => {
+  const openShiftDetail = useCallback(async (shiftId) => {
     setSelectedShiftId(shiftId);
     setSelectedShift(null);
     try {
@@ -183,7 +195,19 @@ const Operations = () => {
     } finally {
       setShiftDetailLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    const accountingShiftId = location.state?.accountingShiftId;
+    if (!accountingShiftId) return undefined;
+
+    const timeoutId = window.setTimeout(
+      () => openShiftDetail(accountingShiftId),
+      0,
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [location.key, location.state, openShiftDetail]);
 
   const handleBack = selectedShiftId
     ? closeShiftDetail

@@ -109,6 +109,372 @@ const buildShiftSummary = (shift) => {
   };
 };
 
+const accountingTotalFields = [
+  "totalLitresPetrol",
+  "totalLitresDiesel",
+  "petrolSalePaise",
+  "dieselSalePaise",
+  "expectedTotalSalePaise",
+  "totalCashPaise",
+  "coinsPaise",
+  "totalUpiPaise",
+  "totalCardPaise",
+  "totalUdhariPaise",
+  "totalCollectedPaise",
+  "differencePaise",
+  "shiftCount",
+  "pendingShiftCount",
+  "shortShiftCount",
+  "excessShiftCount",
+];
+
+const emptyAccountingTotals = () =>
+  Object.fromEntries(accountingTotalFields.map((field) => [field, 0]));
+
+const addAccountingTotals = (target, source) => {
+  for (const field of accountingTotalFields) {
+    target[field] += Number(source[field] || 0);
+  }
+};
+
+const addBusinessDays = (businessDate, amount) => {
+  const date = new Date(`${businessDate}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + amount);
+  return date.toISOString().slice(0, 10);
+};
+
+const getAccountingRange = (period, anchorBusinessDate) => {
+  if (period === "today") {
+    return {
+      startBusinessDate: anchorBusinessDate,
+      endBusinessDate: anchorBusinessDate,
+    };
+  }
+
+  if (period === "week") {
+    const weekday = new Date(
+      `${anchorBusinessDate}T00:00:00.000Z`,
+    ).getUTCDay();
+    const daysSinceMonday = (weekday + 6) % 7;
+    const startBusinessDate = addBusinessDays(
+      anchorBusinessDate,
+      -daysSinceMonday,
+    );
+
+    return {
+      startBusinessDate,
+      endBusinessDate: addBusinessDays(startBusinessDate, 6),
+    };
+  }
+
+  const [year, month] = anchorBusinessDate
+    .slice(0, 7)
+    .split("-")
+    .map(Number);
+
+  return {
+    startBusinessDate: `${anchorBusinessDate.slice(0, 7)}-01`,
+    endBusinessDate: new Date(Date.UTC(year, month, 0))
+      .toISOString()
+      .slice(0, 10),
+  };
+};
+
+const getBusinessDates = (startBusinessDate, endBusinessDate) => {
+  const dates = [];
+  let businessDate = startBusinessDate;
+
+  while (businessDate <= endBusinessDate) {
+    dates.push(businessDate);
+    businessDate = addBusinessDays(businessDate, 1);
+  }
+
+  return dates;
+};
+
+const reconciliationStatusForTotals = (totals) => {
+  if (totals.shiftCount === 0 || totals.pendingShiftCount > 0) {
+    return "PENDING";
+  }
+
+  if (totals.differencePaise === 0) return "MATCHED";
+  return totals.differencePaise < 0 ? "SHORT" : "EXCESS";
+};
+
+const saleForFuelExpression = (fuelType) => ({
+  $reduce: {
+    input: { $ifNull: ["$readings", []] },
+    initialValue: 0,
+    in: {
+      $cond: [
+        { $eq: ["$$this.fuelType", fuelType] },
+        {
+          $add: [
+            "$$value",
+            { $ifNull: ["$$this.expectedSalePaise", 0] },
+          ],
+        },
+        "$$value",
+      ],
+    },
+  },
+});
+
+export const getManagerAccounting = async (req, res, next) => {
+  try {
+    const { period, date: anchorBusinessDate } = req.query;
+    const { startBusinessDate, endBusinessDate } = getAccountingRange(
+      period,
+      anchorBusinessDate || getBusinessDate(),
+    );
+    const resolvedAnchorDate = anchorBusinessDate || getBusinessDate();
+    const businessDateFilter = {
+      $gte: startBusinessDate,
+      $lte: endBusinessDate,
+    };
+    const finalizedStatuses = ["ENDED", "FORCE_CLOSED"];
+
+    const [groupedShifts, expenseGroups, shifts, mpdDocuments] =
+      await Promise.all([
+        Shift.aggregate([
+          {
+            $match: {
+              businessDate: businessDateFilter,
+              status: { $in: finalizedStatuses },
+            },
+          },
+          {
+            $project: {
+              businessDate: 1,
+              mpdId: 1,
+              totalLitresPetrol: { $ifNull: ["$totalLitresPetrol", 0] },
+              totalLitresDiesel: { $ifNull: ["$totalLitresDiesel", 0] },
+              petrolSalePaise: saleForFuelExpression("PETROL"),
+              dieselSalePaise: saleForFuelExpression("DIESEL"),
+              expectedTotalSalePaise: {
+                $ifNull: ["$expectedTotalSalePaise", 0],
+              },
+              totalCashPaise: { $ifNull: ["$totalCashPaise", 0] },
+              coinsPaise: { $ifNull: ["$coinsPaise", 0] },
+              totalUpiPaise: { $ifNull: ["$totalUpiPaise", 0] },
+              totalCardPaise: { $ifNull: ["$totalCardPaise", 0] },
+              totalUdhariPaise: { $ifNull: ["$totalUdhariPaise", 0] },
+              totalCollectedPaise: {
+                $ifNull: ["$totalCollectedPaise", 0],
+              },
+              differencePaise: { $ifNull: ["$differencePaise", 0] },
+              reconciliationStatus: {
+                $ifNull: ["$reconciliationStatus", "PENDING"],
+              },
+            },
+          },
+          {
+            $group: {
+              _id: {
+                businessDate: "$businessDate",
+                mpdId: "$mpdId",
+              },
+              totalLitresPetrol: { $sum: "$totalLitresPetrol" },
+              totalLitresDiesel: { $sum: "$totalLitresDiesel" },
+              petrolSalePaise: { $sum: "$petrolSalePaise" },
+              dieselSalePaise: { $sum: "$dieselSalePaise" },
+              expectedTotalSalePaise: { $sum: "$expectedTotalSalePaise" },
+              totalCashPaise: { $sum: "$totalCashPaise" },
+              coinsPaise: { $sum: "$coinsPaise" },
+              totalUpiPaise: { $sum: "$totalUpiPaise" },
+              totalCardPaise: { $sum: "$totalCardPaise" },
+              totalUdhariPaise: { $sum: "$totalUdhariPaise" },
+              totalCollectedPaise: { $sum: "$totalCollectedPaise" },
+              differencePaise: { $sum: "$differencePaise" },
+              shiftCount: { $sum: 1 },
+              pendingShiftCount: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$reconciliationStatus", "PENDING"] },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              shortShiftCount: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$reconciliationStatus", "SHORT"] },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              excessShiftCount: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$reconciliationStatus", "EXCESS"] },
+                    1,
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+          { $sort: { "_id.businessDate": 1, "_id.mpdId": 1 } },
+        ]),
+        Expense.aggregate([
+          { $match: { businessDate: businessDateFilter } },
+          {
+            $group: {
+              _id: "$businessDate",
+              totalExpensePaise: { $sum: "$amountPaise" },
+            },
+          },
+        ]),
+        Shift.find({
+          businessDate: businessDateFilter,
+          status: { $in: [...finalizedStatuses, "IN_PROGRESS"] },
+        })
+          .populate("employeeId", "name employeeId")
+          .populate("mpdId", "mpdNumber serialNumber")
+          .sort({ businessDate: -1, startedAt: 1 })
+          .lean(),
+        Mpd.find({})
+          .select("_id mpdNumber serialNumber isActive")
+          .lean(),
+      ]);
+
+    const summary = emptyAccountingTotals();
+    const dailyTotals = new Map(
+      getBusinessDates(startBusinessDate, endBusinessDate).map(
+        (businessDate) => [businessDate, emptyAccountingTotals()],
+      ),
+    );
+    const mpdTotals = new Map(
+      mpdDocuments.map((mpd) => [String(mpd._id), emptyAccountingTotals()]),
+    );
+
+    for (const group of groupedShifts) {
+      addAccountingTotals(summary, group);
+      addAccountingTotals(dailyTotals.get(group._id.businessDate), group);
+
+      const mpdId = String(group._id.mpdId);
+      if (!mpdTotals.has(mpdId)) {
+        mpdTotals.set(mpdId, emptyAccountingTotals());
+      }
+      addAccountingTotals(mpdTotals.get(mpdId), group);
+    }
+
+    const expensesByDate = new Map(
+      expenseGroups.map((group) => [
+        group._id,
+        Number(group.totalExpensePaise || 0),
+      ]),
+    );
+    const totalExpensePaise = expenseGroups.reduce(
+      (total, group) => total + Number(group.totalExpensePaise || 0),
+      0,
+    );
+    const activeShiftsByDate = new Map();
+    for (const shift of shifts) {
+      if (shift.status !== "IN_PROGRESS") continue;
+      activeShiftsByDate.set(
+        shift.businessDate,
+        (activeShiftsByDate.get(shift.businessDate) || 0) + 1,
+      );
+    }
+
+    const summaryResponse = {
+      totalLitresPetrol: summary.totalLitresPetrol,
+      totalLitresDiesel: summary.totalLitresDiesel,
+      totalLitres: summary.totalLitresPetrol + summary.totalLitresDiesel,
+      petrolSalePaise: summary.petrolSalePaise,
+      dieselSalePaise: summary.dieselSalePaise,
+      expectedTotalSalePaise: summary.expectedTotalSalePaise,
+      totalCashPaise: summary.totalCashPaise,
+      coinsPaise: summary.coinsPaise,
+      totalUpiPaise: summary.totalUpiPaise,
+      totalCardPaise: summary.totalCardPaise,
+      totalUdhariPaise: summary.totalUdhariPaise,
+      totalCollectedPaise: summary.totalCollectedPaise,
+      totalExpensePaise,
+      differencePaise: summary.differencePaise,
+      reconciliationStatus: reconciliationStatusForTotals(summary),
+      shiftCount: summary.shiftCount,
+      pendingShiftCount: summary.pendingShiftCount,
+      shortShiftCount: summary.shortShiftCount,
+      excessShiftCount: summary.excessShiftCount,
+    };
+
+    const dailyBreakdown = [...dailyTotals.entries()].map(
+      ([businessDate, totals]) => ({
+        businessDate,
+        totalLitresPetrol: totals.totalLitresPetrol,
+        totalLitresDiesel: totals.totalLitresDiesel,
+        totalLitres: totals.totalLitresPetrol + totals.totalLitresDiesel,
+        petrolSalePaise: totals.petrolSalePaise,
+        dieselSalePaise: totals.dieselSalePaise,
+        expectedTotalSalePaise: totals.expectedTotalSalePaise,
+        totalCashPaise: totals.totalCashPaise,
+        coinsPaise: totals.coinsPaise,
+        totalUpiPaise: totals.totalUpiPaise,
+        totalCardPaise: totals.totalCardPaise,
+        totalUdhariPaise: totals.totalUdhariPaise,
+        totalCollectedPaise: totals.totalCollectedPaise,
+        totalExpensePaise: expensesByDate.get(businessDate) || 0,
+        differencePaise: totals.differencePaise,
+        reconciliationStatus: reconciliationStatusForTotals(totals),
+        shiftCount: totals.shiftCount,
+        pendingShiftCount: totals.pendingShiftCount,
+        shortShiftCount: totals.shortShiftCount,
+        excessShiftCount: totals.excessShiftCount,
+        activeShiftCount: activeShiftsByDate.get(businessDate) || 0,
+      }),
+    );
+
+    const mpds = mpdDocuments
+      .map((mpd) => {
+        const totals = mpdTotals.get(String(mpd._id)) || emptyAccountingTotals();
+        return {
+          _id: mpd._id,
+          mpdNumber: mpd.mpdNumber,
+          serialNumber: mpd.serialNumber,
+          totalLitresPetrol: totals.totalLitresPetrol,
+          totalLitresDiesel: totals.totalLitresDiesel,
+          totalLitres: totals.totalLitresPetrol + totals.totalLitresDiesel,
+          petrolSalePaise: totals.petrolSalePaise,
+          dieselSalePaise: totals.dieselSalePaise,
+          expectedTotalSalePaise: totals.expectedTotalSalePaise,
+          shiftCount: totals.shiftCount,
+        };
+      })
+      .sort((left, right) =>
+        left.mpdNumber.localeCompare(right.mpdNumber, undefined, {
+          numeric: true,
+        }),
+      );
+
+    const shiftSummaries = shifts.map((shift) => {
+      const { readings, ...compactShift } = buildShiftSummary(shift);
+      return compactShift;
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        period: {
+          type: period,
+          anchorBusinessDate: resolvedAnchorDate,
+          startBusinessDate,
+          endBusinessDate,
+        },
+        summary: summaryResponse,
+        mpds,
+        dailyBreakdown,
+        shifts: shiftSummaries,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getManagerOperations = async (
   req,
   res,
