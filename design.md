@@ -1,128 +1,588 @@
-# Shobhadamodar Petroleum - UI/UX Design System Specification
+# design.md — Shobhadamodar Petroleum UI/UX Design System
 
-### 1. Core Design Philosophy
-*   **Field-Ready Clarity:** High contrast and large typography designed specifically for outdoor, daylight visibility.
-*   **Tactile Speed:** Oversized touch targets (minimum 48px height) for critical actions to prevent mis-taps by busy pump attendants.
-*   **Bilingual Harmony:** Equal visual weight and perfect rendering for English, Hindi, and Marathi scripts.
-*   **Trust & Precision:** A premium, banking-level aesthetic that reassures users of accurate financial calculations.
+## 1. Design Status
 
----
+**Version:** V1.0 — First Deployment / Manager Approval Baseline  
+**Last Updated:** 04 October 2026
 
-### 2. Typography System
-To achieve the clean, modern look while properly supporting Devanagari scripts (Hindi/Marathi), we will use a dual-font strategy.
-
-*   **Primary Font (English & Numerals):** `Inter`
-    *   *Why:* Highly legible, geometric, excellent for tabular financial data, and looks premium.
-*   **Secondary Font (Hindi/Marathi):** `Mukta` (Google Fonts)
-    *   *Why:* Specifically designed for Indian scripts. It lacks the heavy, traditional calligraphic strokes of older fonts and pairs perfectly with the modern look of `Inter`.
-
-**Type Scale (Tailwind / CSS mapping):**
-*   **Display / Hero Numerals:** 32px, Bold (e.g., Total Sales `₹1,24,560`)
-*   **H1 (Screen Headers):** 24px, Semi-Bold (e.g., "नमस्ते, रमेश")
-*   **H2 (Card Titles):** 18px, Semi-Bold (e.g., "आज की बिक्री")
-*   **Body 1 (Primary Text):** 16px, Medium (e.g., Standard list items, Input values)
-*   **Body 2 (Secondary Text):** 14px, Regular (e.g., Subtitles, labels)
-*   **Caption (Microcopy):** 12px, Medium (e.g., "Synced", timestamps)
+The Manager UI must feel like the same product as the Employee UI, not a separate generic administration dashboard.
 
 ---
 
-### 3. Color Palette
-The palette borrows the trust and heritage of Bharat Petroleum (BPCL) but refines it for a modern software interface.
+## 2. Core Design Philosophy
 
-**Brand Colors:**
-*   **BPCL Navy:** `#1E3A8A` (Used for splash screens, primary brand backgrounds)
-*   **BPCL Gold:** `#FBBF24` (Used for accents, subtle highlights, stars)
+### Field-ready clarity
 
-**Application UI Colors:**
-*   **Primary Action (Emerald):** `#059669` (Main CTA buttons, active states, checkmarks)
-*   **Primary Action Hover/Press:** `#047857`
-*   **Background (App-wide):** `#F3F4F6` (Cool, light grey to make white cards pop)
-*   **Surface (Cards/Modals):** `#FFFFFF` (Pure white)
+The application is used in a real petrol-pump environment. Prioritize:
 
-**Text Colors:**
-*   **Text High Contrast:** `#111827` (Deep charcoal, never pure black for less eye strain)
-*   **Text Muted:** `#6B7280` (For secondary labels and disabled states)
+- readability
+- high contrast
+- clear grouping
+- large touch targets
+- fast scanning
+- low cognitive load
 
-**Semantic & Fuel Colors:**
-*   **Petrol Marker:** `#16A34A` (Green)
-*   **Diesel Marker:** `#2563EB` (Blue)
-*   **Error/Shortfall:** `#DC2626` (Red - e.g., "₹1,500 कम")
-*   **Warning/Pending:** `#F59E0B` (Amber)
-*   **Success (Reconciliation Match):** `#059669` (Green)
+### Manager-first information hierarchy
 
----
+The manager should immediately understand:
 
-### 4. Layout & Spacing (Grid System)
-Use a strict **8pt grid system** to ensure consistent rhythm across all devices.
-*   **App Padding:** 16px or 20px on the left and right margins of the screen.
-*   **Component Spacing:** 16px between vertical cards (e.g., `gap-4` in Tailwind).
-*   **Internal Card Padding:** 20px (e.g., `p-5`) for comfortable breathing room.
+```text
+What is happening now?
+↓
+What happened today?
+↓
+Why do the numbers look this way?
+```
 
----
+### Practical, not decorative
 
-### 5. UI Component Specifications
+Do not design the Manager UI as a generic SaaS dashboard.
 
-#### A. Buttons
-*   **Primary Button:**
-    *   **Background:** `#059669` (Emerald)
-    *   **Text:** `#FFFFFF`, 16px, Semi-Bold
-    *   **Border Radius:** 9999px (Fully rounded / Pill shape)
-    *   **Height:** 56px (Large, for easy tapping)
-    *   **Icon:** Trailing right arrow (→) aligned to the right edge.
-*   **Secondary/Tab Button (Active):**
-    *   **Background:** `#E0F2FE` (Light Blue)
-    *   **Text:** `#0369A1` (Deep Blue)
-    *   **Border Radius:** 12px
+Avoid:
 
-#### B. Cards (Surfaces)
-*   **Standard Card:**
-    *   **Background:** `#FFFFFF`
-    *   **Border Radius:** 16px or 24px (Soft, friendly corners)
-    *   **Shadow:** `box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)` (Very soft, elegant elevation).
-*   **Hero Card (Dashboard):**
-    *   **Background:** Gradient or Solid Emerald/Navy.
-    *   **Border Radius:** 24px
-    *   **Content:** White text, clear numeric hierarchy.
-
-#### C. Forms & Inputs
-*   **Input Fields:**
-    *   **Style:** Minimalist. Bottom border only (`border-b-2`) or soft grey background (`bg-gray-100`) with no border.
-    *   **Label:** Floating or small top-aligned (12px, Muted Text).
-    *   **Value:** 18px, High Contrast Text.
-*   **Cash Grid Rows:**
-    *   **Layout:** Flexbox row (`justify-between`, `items-center`).
-    *   **Components:** `[Denomination (e.g., ₹500)]` + `[Qty Input Box]` + `[Calculated Total]`.
-    *   **Qty Input Box:** 48px height, rounded-lg, centered text, grey background.
-
-#### D. Status Chips & Indicators
-*   **Pill Chip (e.g., "● Live" or "Shift A"):**
-    *   **Height:** 28px
-    *   **Padding:** 4px 12px
-    *   **Border Radius:** 999px
-    *   **Content:** 12px text with a 6px pulsing colored dot.
+- excessive charts
+- decorative gradients
+- glassmorphism
+- tiny data-dense tables
+- excessive colors
+- large empty hero areas
 
 ---
 
-### 6. Specialized App Elements
+## 3. Relationship to Employee UI
 
-*   **Task Checklist (Dashboard):** 
-    *   A vertical stepper showing shift progress (e.g., 1. Nozzle Reading, 2. Cash Collection, 3. Reconciliation). 
-    *   *Visuals:* Inactive steps are grey rings. Completed steps are solid green circles with white checkmarks.
-*   **Nozzle UI Modules:**
-    *   Use high-quality PNG renders of physical nozzles (Green for Petrol, Blue for Diesel) acting as toggle buttons or visual anchors.
-    *   When selected, the active nozzle card elevates and gets a 2px Emerald border.
-*   **Reconciliation Success State:**
-    *   A massive centered green checkmark inside a soft green circular background (`#D1FAE5`).
-    *   Confetti or subtle particle effects should be used sparingly (only opacity animations, no heavy physics) upon submission.
+Reuse the same visual language:
 
-### 7. Iconography
-*   **Family:** *Heroicons* (Outline for inactive, Solid for active) or *Phosphor Icons*.
-*   **Stroke Weight:** 2px consistent stroke.
-*   **Usage:** Keep icons monochromatic (usually muted grey or emerald) to avoid clashing with the primary data. 
+- same brand colors
+- same typography
+- same rounded-card language
+- same icon family
+- same spacing rhythm
+- same language switcher
+- same general header/bottom-navigation style
+
+The Manager UI may use denser information than Employee UI, but it must remain touch-friendly.
 
 ---
 
-### 8. Implementation Notes for Frontend (React/Ionic)
-*   **CSS Framework:** Tailwind CSS is highly recommended to implement this design system quickly using utility classes like `rounded-2xl`, `shadow-sm`, `text-gray-900`, etc.
-*   **Keyboard Management:** For the Cash Grid and Nozzle Readings, disable the native OS alphanumeric keyboard. Trigger the OS `numeric` keypad, or better yet, build a custom React NumPad component that slides up, ensuring massive touch targets for the pump attendants.
-*   **Animations:** Use CSS transitions for button presses (`scale-95`, duration `150ms`) to provide immediate tactile feedback.
+## 4. Typography
+
+### English and numerals
+
+Primary: **Inter**
+
+### Hindi / Marathi
+
+Primary: **Mukta** or the existing equivalent already configured in the application.
+
+### Scale guidance
+
+Use responsive sizing rather than forcing oversized type into every small card.
+
+Suggested levels:
+
+- Screen title: 20–24px
+- Section title: 14–18px
+- Primary financial number: 22–32px depending on context
+- Primary content: 14–16px
+- Secondary text: 11–13px
+- Micro labels: 9–11px
+
+The current implementation may use smaller mobile text than this where space requires it, but readability must remain the priority.
+
+---
+
+## 5. Color Palette
+
+### Brand/UI
+
+- Emerald Primary: `#059669`
+- Emerald Dark / Press: `#047857`
+- Background: `#F3F4F6`
+- Surface: `#FFFFFF`
+- Primary Text: `#111827`
+- Muted Text: `#6B7280`
+- Border: soft slate/gray
+
+### Fuel semantics
+
+- Petrol: green family
+- Diesel: blue family
+
+### Status semantics
+
+- Active / Match / Healthy: green
+- Pending / Attention: amber
+- Shortage / Error / Destructive: red
+- Neutral / Free / Inactive: slate/gray
+
+Use red sparingly. A red state should mean something important.
+
+---
+
+## 6. Layout Rules
+
+Use the existing app's 8-point spacing rhythm.
+
+General guidance:
+
+- page horizontal padding: 16–20px
+- major card spacing: 12–16px
+- card internal padding: 16–20px
+- small metric spacing: 8–12px
+- bottom navigation safe-area padding must be preserved
+
+Do not compress cards merely to fit more data on one screen.
+
+---
+
+## 7. Standard Components
+
+### Header
+
+Manager pages use the shared ManagerHeader.
+
+It includes:
+
+- back control where appropriate
+- station/app identity
+- current page title
+- manager profile
+- language switcher
+- logout in profile menu
+
+### Manager bottom navigation
+
+Use the shared ManagerBottomNav.
+
+Primary destinations:
+
+- Dashboard
+- Operations
+- Accounting
+- Stock
+- Udhari
+- Employees
+
+Do not add more bottom-nav items unless the information architecture is deliberately changed.
+
+### Tabs
+
+Use tabs only when switching between closely related datasets.
+
+Manager V1 examples:
+
+Operations:
+
+```text
+Live MPDs | Today's Shifts
+```
+
+Stock:
+
+```text
+Current Stock | Receipts & Density | Rates
+```
+
+Do not use tabs to hide unrelated features.
+
+### Cards
+
+Standard:
+
+- white background
+- 18–22px radius
+- soft shadow
+- clear internal sections
+
+Avoid excessive nested cards. A card inside a card should only be used when it improves hierarchy.
+
+---
+
+# 8. DASHBOARD DESIGN
+
+The Manager Dashboard is intentionally minimal.
+
+Use a 2-column action grid:
+
+```text
+┌──────────────┐ ┌──────────────┐
+│ Sales &      │ │ Operations   │
+│ Accounting   │ │              │
+└──────────────┘ └──────────────┘
+
+┌──────────────┐ ┌──────────────┐
+│ Stock &      │ │ Udhari       │
+│ Rates        │ │              │
+└──────────────┘ └──────────────┘
+
+┌──────────────┐
+│ Employees    │
+└──────────────┘
+```
+
+Each card should contain:
+
+- icon
+- title
+- one-line description
+- chevron/arrow
+
+No large statistic cards are required in V1.
+
+---
+
+# 9. OPERATIONS DESIGN
+
+## 9.1 Live MPDs
+
+The MPD is the primary visual object.
+
+Recommended hierarchy:
+
+```text
+MPD 1                    ● ACTIVE
+Rahul
+Started 08:12 AM
+
+N1        N2        N3        N4
+PETROL    DIESEL    DIESEL    PETROL
+Current   Current   Current   Current
+Reading   Reading   Reading   Reading
+Shift L   Shift L   Shift L   Shift L
+
+Current Shift
+Petrol     xxx L
+Diesel     xxx L
+Total      xxxx L
+Sale       ₹xxxxx
+
+Today's Shift History →
+```
+
+### Nozzle cards
+
+Four nozzles should remain clearly visible.
+
+Do not reduce them to tiny decorative chips.
+
+A live nozzle should prioritize:
+
+1. Nozzle ID
+2. Fuel type
+3. Current totalizer
+4. Current-shift dispensed litres
+5. Opening reading as secondary information
+
+For a free MPD:
+
+- always show current totalizer readings
+- show no active shift
+- show last completed shift when useful
+- do not show fake live-sale totals
+
+### Status
+
+Use a clear pill:
+
+- `● ACTIVE`
+- `● FREE`
+
+The status color must be immediately recognizable.
+
+---
+
+## 9.2 Today's Shifts
+
+Group by MPD.
+
+```text
+TODAY'S SHIFTS
+02 Oct 2026
+
+MPD 1
+────────────────
+08:00 AM – 02:00 PM
+Amit              ● ENDED
+
+Petrol     620.40 L
+Diesel     580.20 L
+Total    1,200.60 L
+Sale       ₹1,40,330
+
+                    →
+```
+
+Each shift card should have a strong primary row, then metrics.
+
+Avoid dense tables on the small screen.
+
+---
+
+## 9.3 Shift Detail
+
+Use clear stacked sections:
+
+1. Shift header
+2. Fuel Sales
+3. Nozzle Readings
+4. Collections
+5. Expenses
+6. Udhari
+7. Reconciliation
+
+All four nozzles must be individually readable.
+
+The detail view should feel like an organized digital shift report, not a form.
+
+---
+
+# 10. SALES & ACCOUNTING DESIGN
+
+Top:
+
+```text
+Today | Week | Month
+```
+
+Then:
+
+- selected period/date
+- station totals
+- petrol/diesel summary
+- MPD comparison
+- collections
+- reconciliation
+- expenses
+
+Financial values should have stronger typography than their labels.
+
+Example:
+
+```text
+TOTAL SALE
+₹2,84,530
+```
+
+Do not make every number huge.
+
+Use tables only when comparison truly benefits from tabular layout.
+
+---
+
+# 11. STOCK & RATES DESIGN
+
+Top tabs:
+
+```text
+Current Stock | Receipts & Density | Rates
+```
+
+## 11.1 Current Stock
+
+Show product selector:
+
+```text
+Petrol (MS) | Diesel (HSD)
+```
+
+Stock Calculation section:
+
+```text
+Opening Stock
++ Receipt Stock
+──────────────
+Total Available
+
+Actual Sales
+──────────────
+Calculated Closing
+```
+
+Then a visually distinct:
+
+**Physical Verification**
+
+```text
+Product Dip
+Actual Dip Stock
+Variation
+Water Dip
+Water Dip Volume
+```
+
+The manager should be able to distinguish:
+
+- calculated/accounting value
+- physical observation
+
+### Variation
+
+Positive variation can use green/neutral emphasis.
+Negative variation can use red/amber depending on the configured business semantics.
+
+---
+
+## 11.2 Receipts & Density
+
+Secondary tabs:
+
+```text
+Daily Density | Fuel Receipts
+```
+
+Daily Density should use a clean mobile table/card hybrid:
+
+```text
+Date | Hydrometer | Temp | Density @15°C
+```
+
+Fuel Receipts should be a list of receipt cards showing:
+
+- invoice
+- date
+- product
+- quantity
+- density-check summary
+
+Tap to open Receipt Detail.
+
+Receipt Detail sections:
+
+- receipt identity
+- before receipt
+- challan details
+- after decantation
+- differences
+
+Use subtle section colors only where they communicate a semantic difference.
+
+---
+
+## 11.3 Rates
+
+Current rate cards:
+
+```text
+Petrol
+₹112.15 / L
+Effective 01 Oct 2026
+
+Diesel
+₹98.77 / L
+Effective 01 Oct 2026
+```
+
+Then Rate History.
+
+The edit action must be visually obvious but not dominant.
+
+---
+
+# 12. UDHARI DESIGN
+
+Primary screen:
+
+- Total Outstanding
+- Customer Count
+- Search
+- Add Customer
+- customer list
+
+Customer rows should show:
+
+- avatar/initial
+- name
+- contact/secondary detail
+- outstanding amount
+- status
+- chevron
+
+Customer detail should show outstanding balance prominently.
+
+Settlement should use a simple amount + payment method flow.
+
+Do not turn Udhari into a spreadsheet.
+
+---
+
+# 13. EMPLOYEES DESIGN
+
+Employee list:
+
+```text
+Amit Kumar
+EMP002
+● Active
+
+Rahul
+EMP003
+● Active
+
+Suresh
+EMP004
+● Banned
+```
+
+Use clear status chips.
+
+Employee Detail should separate:
+
+- Profile
+- Current Shift
+- Shift History
+- Actions
+
+Destructive actions such as Ban should never be placed directly beside a normal edit control without confirmation.
+
+---
+
+# 14. Forms
+
+Manager forms should use:
+
+- top-aligned labels
+- large enough values
+- clear validation
+- strong primary action
+- cancel/back behavior
+
+Financial amount fields must support decimal rupee input safely.
+
+Density, temperature and meter values should use numeric-friendly input handling.
+
+---
+
+# 15. Accessibility and Usability
+
+Clickable elements should generally be at least 48x48px.
+
+Ensure:
+
+- sufficient text contrast
+- icons have accessible labels
+- buttons have visible states
+- important status is not communicated by color alone
+- Hindi/Marathi do not overflow containers
+
+---
+
+# 16. Motion
+
+Use only subtle interaction feedback:
+
+- scale/press feedback
+- short transitions
+- small state changes
+
+Do not use heavy animated dashboards.
+
+Live refresh should update data without making the whole screen visibly jump.
+
+---
+
+# 17. First Deployment Design Principle
+
+The Manager should be able to operate the app after seeing the six-page structure once.
+
+If a screen requires an explanation of where to find a basic operational function, the navigation is too complicated.
