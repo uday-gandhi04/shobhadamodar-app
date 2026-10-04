@@ -174,6 +174,12 @@ export const addUdhariTransaction = async (req, res, next) => {
         });
       }
 
+      if (customer.isBlocked) {
+        const error = new Error("Customer account is blocked from further Udhari credit.");
+        error.status = 403;
+        throw error;
+      }
+
       /*
        * 6. Create immutable transaction.
        */
@@ -191,6 +197,8 @@ export const addUdhariTransaction = async (req, res, next) => {
             slipNumber: slipNumber?.trim() || null,
 
             vehicleNumber: vehicleNumber?.trim()?.toUpperCase() || null,
+
+            transactionType: "CREDIT",
 
             fuelType,
 

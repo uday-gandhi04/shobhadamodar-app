@@ -21,11 +21,29 @@ const customerSchema = new mongoose.Schema(
       default: null,
     },
 
+    address: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
+    notes: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
     outstandingBalance: {
       type: Number,
       default: 0,
       min: 0,
       set: (value) => Math.round(value),
+    },
+
+    isBlocked: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
   },
   {
@@ -38,6 +56,10 @@ const customerSchema = new mongoose.Schema(
  */
 customerSchema.index({
   name: 1,
+});
+
+customerSchema.index({
+  phoneNumber: 1,
 });
 
 /*

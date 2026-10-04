@@ -12,7 +12,7 @@ const udhariTransactionSchema = new mongoose.Schema(
     shiftId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Shift",
-      required: true,
+      default: null,
       index: true,
     },
 
@@ -27,6 +27,25 @@ const udhariTransactionSchema = new mongoose.Schema(
       type: String,
       required: true,
       index: true,
+    },
+
+    transactionType: {
+      type: String,
+      enum: ["CREDIT", "SETTLEMENT"],
+      default: "CREDIT",
+      index: true,
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ["CASH", "UPI", "CARD", null],
+      default: null,
+    },
+
+    referenceNumber: {
+      type: String,
+      trim: true,
+      default: null,
     },
 
     /*
@@ -48,19 +67,19 @@ const udhariTransactionSchema = new mongoose.Schema(
 
     fuelType: {
       type: String,
-      enum: ["PETROL", "DIESEL"],
-      required: true,
+      enum: ["PETROL", "DIESEL", null],
+      default: null,
     },
 
     litres: {
       type: Number,
-      required: true,
+      default: 0,
       min: 0,
     },
 
     ratePaise: {
       type: Number,
-      required: true,
+      default: 0,
       min: 0,
     },
 
