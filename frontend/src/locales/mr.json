@@ -12,6 +12,13 @@
     "accounting": "विक्री आणि हिशोब",
     "accountingDescription": "दैनिक, साप्ताहिक आणि मासिक विक्री व जमा रक्कम.",
     "accountingLabels": {
+      "activeOvernightShifts": "सक्रिय / रात्रभरच्या शिफ्ट",
+      "todaysCompletedShifts": "आजच्या पूर्ण शिफ्ट",
+      "currentEstimated": "सध्याचे / अंदाजे",
+      "notIncludedInFinalized": "आजच्या अंतिम हिशोबात समाविष्ट नाही",
+      "noActiveShifts": "सध्या कोणतीही सक्रिय शिफ्ट नाही.",
+      "noCompletedShifts": "या तारखेसाठी कोणतीही पूर्ण शिफ्ट सापडली नाही.",
+      "startedEarlier": "आधी सुरू झाले",
       "today": "आज",
       "week": "आठवडा",
       "month": "महिना",

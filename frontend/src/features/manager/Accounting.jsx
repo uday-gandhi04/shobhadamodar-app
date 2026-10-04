@@ -382,7 +382,30 @@ const Accounting = () => {
             {period === "today" && (
               <section className="rounded-[16px] bg-white p-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)]">
                 <div className="flex items-center justify-between gap-2">
-                  <SectionHeading title={t("manager.accountingLabels.shiftSummary")} />
+                  <SectionHeading title={t("manager.accountingLabels.activeOvernightShifts")} />
+                  <span className="text-[9px] font-semibold text-slate-400">
+                    {(report?.activeShifts || []).length} {t("manager.shifts").toLowerCase()}
+                  </span>
+                </div>
+                <div className="mt-2 space-y-2">
+                  {(report?.activeShifts || []).map((shift) => (
+                    <ActiveShiftSummaryRow
+                      key={shift._id}
+                      shift={shift}
+                      t={t}
+                      selectedBusinessDate={businessDate}
+                      onClick={() => navigateToOperationsShift(shift._id)}
+                    />
+                  ))}
+                  {(report?.activeShifts || []).length === 0 && (
+                    <p className="py-3 text-center text-[10px] text-slate-400">
+                      {t("manager.accountingLabels.noActiveShifts")}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-4">
+                  <SectionHeading title={t("manager.accountingLabels.todaysCompletedShifts")} />
                   <span className="text-[9px] font-semibold text-slate-400">
                     {(report?.shifts || []).length} {t("manager.shifts").toLowerCase()}
                   </span>
@@ -398,7 +421,7 @@ const Accounting = () => {
                   ))}
                   {(report?.shifts || []).length === 0 && (
                     <p className="py-3 text-center text-[10px] text-slate-400">
-                      {t("manager.noShiftsForDate")}
+                      {t("manager.accountingLabels.noCompletedShifts")}
                     </p>
                   )}
                 </div>
@@ -551,7 +574,6 @@ const StatusBadge = ({ status, t }) => {
 };
 
 const ShiftSummaryRow = ({ shift, t, onClick }) => {
-  const active = shift.status === "IN_PROGRESS";
   const difference = Number(shift.differencePaise || 0);
 
   return (
@@ -579,16 +601,47 @@ const ShiftSummaryRow = ({ shift, t, onClick }) => {
       </div>
       <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-2">
         <span className="text-[8px] font-semibold text-slate-400">
-          {active
-            ? t("manager.accountingLabels.activePending")
-            : t(`manager.reconciliationStatus.${String(shift.reconciliationStatus || "PENDING").toLowerCase()}`)}
+          {t(`manager.reconciliationStatus.${String(shift.reconciliationStatus || "PENDING").toLowerCase()}`)}
         </span>
-        {!active && (
-          <span className={`text-[9px] font-bold ${difference < 0 ? "text-red-600" : difference > 0 ? "text-amber-600" : "text-emerald-700"}`}>
-            {difference > 0 ? "+" : ""}{formatMoney(difference)}
-          </span>
-        )}
+        <span className={`text-[9px] font-bold ${difference < 0 ? "text-red-600" : difference > 0 ? "text-amber-600" : "text-emerald-700"}`}>
+          {difference > 0 ? "+" : ""}{formatMoney(difference)}
+        </span>
       </div>
+    </button>
+  );
+};
+
+const ActiveShiftSummaryRow = ({ shift, t, selectedBusinessDate, onClick }) => {
+  const isOvernight = shift.businessDate < selectedBusinessDate;
+  const petrolLitres = Number(shift.totalLitresPetrol || 0);
+  const dieselLitres = Number(shift.totalLitresDiesel || 0);
+
+  return (
+    <button type="button" onClick={onClick} className="w-full rounded-[12px] border border-emerald-100 bg-emerald-50/40 p-3 text-left active:bg-emerald-50">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-extrabold text-slate-800">
+            {shift.mpd?.mpdNumber || t("manager.accountingLabels.unknownMpd")}
+            <span className="font-medium text-slate-500"> · {shift.employee?.name || t("manager.employeeUnknown")}</span>
+          </p>
+          <p className="mt-1 text-[9px] text-slate-500">
+            {isOvernight ? t("manager.accountingLabels.startedEarlier") : t("manager.started")} · {formatTime(shift.startedAt)}
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[8px] font-extrabold text-emerald-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" /> {t("manager.active")}
+        </span>
+      </div>
+      <div className="mt-2 grid grid-cols-3 gap-1.5 border-y border-emerald-100 py-2 text-[8px]">
+        <span className="text-slate-500">{t("manager.petrol")} <strong className="block text-[10px] text-slate-800">{formatLitres(petrolLitres)}</strong></span>
+        <span className="text-slate-500">{t("manager.diesel")} <strong className="block text-[10px] text-slate-800">{formatLitres(dieselLitres)}</strong></span>
+        <span className="text-right text-slate-500">{t("manager.accountingLabels.total")} <strong className="block text-[10px] text-slate-800">{formatLitres(petrolLitres + dieselLitres)}</strong></span>
+      </div>
+      <div className="mt-2 flex items-end justify-between gap-2">
+        <span className="text-[8px] font-semibold text-slate-500">{t("manager.accountingLabels.currentEstimated")}</span>
+        <span className="text-[11px] font-extrabold text-slate-900">{formatMoney(shift.expectedTotalSalePaise)}</span>
+      </div>
+      <p className="mt-1.5 text-[8px] font-semibold text-emerald-700">{t("manager.accountingLabels.notIncludedInFinalized")}</p>
     </button>
   );
 };

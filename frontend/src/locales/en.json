@@ -12,6 +12,13 @@
     "accounting": "Sales & Accounting",
     "accountingDescription": "Daily, weekly and monthly sales and collections.",
     "accountingLabels": {
+      "activeOvernightShifts": "Active / Overnight Shifts",
+      "todaysCompletedShifts": "Today's Completed Shifts",
+      "currentEstimated": "Current / Estimated",
+      "notIncludedInFinalized": "Not included in today's finalized accounting",
+      "noActiveShifts": "No active shifts right now.",
+      "noCompletedShifts": "No completed shifts found for this date.",
+      "startedEarlier": "Started earlier",
       "today": "Today",
       "week": "Week",
       "month": "Month",

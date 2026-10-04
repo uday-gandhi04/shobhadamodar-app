@@ -12,6 +12,13 @@
     "accounting": "बिक्री और हिसाब",
     "accountingDescription": "दैनिक, साप्ताहिक और मासिक बिक्री व संग्रह।",
     "accountingLabels": {
+      "activeOvernightShifts": "सक्रिय / रात भर की शिफ्ट",
+      "todaysCompletedShifts": "आज की पूर्ण हुई शिफ्ट",
+      "currentEstimated": "वर्तमान / अनुमानित",
+      "notIncludedInFinalized": "आज के अंतिम हिसाब में शामिल नहीं है",
+      "noActiveShifts": "अभी कोई सक्रिय शिफ्ट नहीं है।",
+      "noCompletedShifts": "इस तारीख के लिए कोई पूर्ण हुई शिफ्ट नहीं मिली।",
+      "startedEarlier": "पहले शुरू हुई",
       "today": "आज",
       "week": "सप्ताह",
       "month": "महीना",

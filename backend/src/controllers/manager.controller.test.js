@@ -61,6 +61,7 @@ const originalMethods = {
 const withMocks = async (query) => {
   let shiftPipeline;
   let expensePipeline;
+  const shiftFindQueries = [];
   const finalizedShifts = [
     {
       _id: "aaaaaaaaaaaaaaaaaaaaaaaa",
@@ -80,7 +81,7 @@ const withMocks = async (query) => {
     },
     {
       _id: "bbbbbbbbbbbbbbbbbbbbbbbb",
-      businessDate: reportDate,
+      businessDate: "2026-10-03",
       status: "IN_PROGRESS",
       startedAt: new Date("2026-10-04T09:00:00.000Z"),
       endedAt: null,
@@ -100,11 +101,18 @@ const withMocks = async (query) => {
     shiftPipeline = pipeline;
     return Promise.resolve(groups);
   };
-  Shift.find = () => {
+  Shift.find = (query) => {
+    shiftFindQueries.push(query);
     const queryBuilder = {
       populate() { return this; },
       sort() { return this; },
-      lean() { return Promise.resolve(finalizedShifts); },
+      lean() {
+        return Promise.resolve(
+          query.status === "IN_PROGRESS"
+            ? finalizedShifts.filter((shift) => shift.status === "IN_PROGRESS")
+            : finalizedShifts.filter((shift) => shift.status !== "IN_PROGRESS"),
+        );
+      },
     };
     return queryBuilder;
   };
@@ -145,7 +153,7 @@ const withMocks = async (query) => {
       },
     );
 
-    return { statusCode, responseBody, shiftPipeline, expensePipeline };
+    return { statusCode, responseBody, shiftPipeline, expensePipeline, shiftFindQueries };
   } finally {
     Shift.aggregate = originalMethods.shiftAggregate;
     Shift.find = originalMethods.shiftFind;
@@ -170,7 +178,7 @@ test("uses selected date for today and Monday-Sunday week boundaries", async () 
 
 test("aggregates only completed shift totals and keeps expense and coins separate", async () => {
   const result = await withMocks({ period: "today", date: reportDate });
-  const { summary, mpds, shifts } = result.responseBody.data;
+  const { summary, mpds, shifts, activeShifts } = result.responseBody.data;
   const shiftMatch = result.shiftPipeline.find((stage) => stage.$match).$match;
   const expenseMatch = result.expensePipeline.find((stage) => stage.$match).$match;
 
@@ -189,6 +197,12 @@ test("aggregates only completed shift totals and keeps expense and coins separat
   assert.equal(summary.totalCollectedPaise, 40000);
   assert.equal(mpds.find((mpd) => mpd._id === mpdOneId).shiftCount, 2);
   assert.equal(mpds.find((mpd) => mpd._id === mpdOneId).expectedTotalSalePaise, 30000);
-  assert.equal(shifts.length, 2);
-  assert.equal(shifts.find((shift) => shift.status === "IN_PROGRESS").expectedTotalSalePaise, 500000);
+  assert.equal(shifts.length, 1);
+  assert.equal(activeShifts.length, 1);
+  assert.equal(activeShifts[0].businessDate, "2026-10-03");
+  assert.equal(activeShifts[0].expectedTotalSalePaise, 500000);
+  assert.deepEqual(
+    result.shiftFindQueries.find((query) => query.status === "IN_PROGRESS"),
+    { status: "IN_PROGRESS" },
+  );
 });

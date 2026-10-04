@@ -234,7 +234,7 @@ export const getManagerAccounting = async (req, res, next) => {
     };
     const finalizedStatuses = ["ENDED", "FORCE_CLOSED"];
 
-    const [groupedShifts, expenseGroups, shifts, mpdDocuments] =
+    const [groupedShifts, expenseGroups, shifts, activeShifts, mpdDocuments] =
       await Promise.all([
         Shift.aggregate([
           {
@@ -329,11 +329,20 @@ export const getManagerAccounting = async (req, res, next) => {
         ]),
         Shift.find({
           businessDate: businessDateFilter,
-          status: { $in: [...finalizedStatuses, "IN_PROGRESS"] },
+          status: { $in: finalizedStatuses },
         })
           .populate("employeeId", "name employeeId")
           .populate("mpdId", "mpdNumber serialNumber")
           .sort({ businessDate: -1, startedAt: 1 })
+          .lean(),
+        // Live shifts deliberately ignore the accounting business-date range.
+        // They are returned separately and never enter finalized totals.
+        Shift.find({
+          status: "IN_PROGRESS",
+        })
+          .populate("employeeId", "name employeeId")
+          .populate("mpdId", "mpdNumber serialNumber")
+          .sort({ startedAt: 1 })
           .lean(),
         Mpd.find({})
           .select("_id mpdNumber serialNumber isActive")
@@ -372,8 +381,8 @@ export const getManagerAccounting = async (req, res, next) => {
       0,
     );
     const activeShiftsByDate = new Map();
-    for (const shift of shifts) {
-      if (shift.status !== "IN_PROGRESS") continue;
+    for (const shift of activeShifts) {
+      if (shift.businessDate < startBusinessDate || shift.businessDate > endBusinessDate) continue;
       activeShiftsByDate.set(
         shift.businessDate,
         (activeShiftsByDate.get(shift.businessDate) || 0) + 1,
@@ -468,6 +477,10 @@ export const getManagerAccounting = async (req, res, next) => {
         mpds,
         dailyBreakdown,
         shifts: shiftSummaries,
+        activeShifts: activeShifts.map((shift) => {
+          const { readings, ...compactShift } = buildShiftSummary(shift);
+          return compactShift;
+        }),
       },
     });
   } catch (error) {
