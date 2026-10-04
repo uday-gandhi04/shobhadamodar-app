@@ -73,7 +73,7 @@ const Operations = () => {
 
   const [historyMpdId, setHistoryMpdId] = useState(null);
   const [selectedShiftId, setSelectedShiftId] = useState(
-    () => location.state?.accountingShiftId || null,
+    () => location.state?.accountingShiftId || location.state?.employeeShiftId || null,
   );
   const [selectedShift, setSelectedShift] = useState(null);
   const [shiftDetailLoading, setShiftDetailLoading] = useState(false);
@@ -163,6 +163,13 @@ const Operations = () => {
       return;
     }
 
+    if (location.state?.employeeReturn) {
+      navigate("/manager/employees", {
+        state: location.state.employeeReturn,
+      });
+      return;
+    }
+
     setSelectedShiftId(null);
     setSelectedShift(null);
     setShiftDetailError("");
@@ -198,11 +205,12 @@ const Operations = () => {
   }, [t]);
 
   useEffect(() => {
-    const accountingShiftId = location.state?.accountingShiftId;
-    if (!accountingShiftId) return undefined;
+    const routeShiftId =
+      location.state?.accountingShiftId || location.state?.employeeShiftId;
+    if (!routeShiftId) return undefined;
 
     const timeoutId = window.setTimeout(
-      () => openShiftDetail(accountingShiftId),
+      () => openShiftDetail(routeShiftId),
       0,
     );
 

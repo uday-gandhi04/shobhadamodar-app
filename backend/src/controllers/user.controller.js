@@ -40,6 +40,7 @@ export const createEmployee = async (req, res, next) => {
       password,
       role: 'EMPLOYEE',
       isActive: true,
+      accountStatus: 'ACTIVE',
       createdBy: req.user._id,
     });
 
@@ -52,6 +53,7 @@ export const createEmployee = async (req, res, next) => {
         employeeId: employee.employeeId,
         role: employee.role,
         isActive: employee.isActive,
+        accountStatus: employee.accountStatus,
         createdAt: employee.createdAt,
       },
     });

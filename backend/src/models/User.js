@@ -41,6 +41,11 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    accountStatus: {
+      type: String,
+      enum: ['ACTIVE', 'INACTIVE', 'BANNED'],
+    },
+
     tokenVersion: {
       type: Number,
       default: 0,
