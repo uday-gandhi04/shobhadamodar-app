@@ -1,0 +1,34 @@
+import Station from "../models/Station.js";
+import DailyStock from "../models/DailyStock.js";
+import FuelReceipt from "../models/FuelReceipt.js";
+import DailyDensity from "../models/DailyDensity.js";
+import Shift from "../models/Shift.js";
+
+const products = ["PETROL", "DIESEL"];
+const activeStation = async () => {
+  const station = await Station.findOne({ isActive: true }).lean();
+  if (!station) { const error = new Error("No active station is configured."); error.status = 503; throw error; }
+  return station;
+};
+
+export const getManagerStock = async (req, res, next) => {
+  try {
+    const station = await activeStation(); const { date: businessDate } = req.query;
+    const [stockRows, receiptGroups, sales] = await Promise.all([
+      DailyStock.find({ stationId: station._id, businessDate }).lean(),
+      FuelReceipt.aggregate([{ $match: { stationId: station._id, businessDate } }, { $group: { _id: "$product", receiptStockLitres: { $sum: "$quantityLitres" } } }]),
+      Shift.aggregate([{ $match: { businessDate, status: { $in: ["ENDED", "FORCE_CLOSED"] } } }, { $group: { _id: null, petrol: { $sum: "$totalLitresPetrol" }, diesel: { $sum: "$totalLitresDiesel" } } }]),
+    ]);
+    const stored = new Map(stockRows.map((row) => [row.product, row])); const receipts = new Map(receiptGroups.map((row) => [row._id, Number(row.receiptStockLitres || 0)])); const salesRow = sales[0] || {};
+    const stock = products.map((product) => {
+      const row = stored.get(product); const openingStockLitres = Number(row?.openingStockLitres || 0); const receiptStockLitres = receipts.get(product) || 0; const actualSalesLitres = Number(product === "PETROL" ? salesRow.petrol || 0 : salesRow.diesel || 0); const totalAvailableLitres = openingStockLitres + receiptStockLitres; const calculatedClosingStockLitres = totalAvailableLitres - actualSalesLitres; const actualDipStockLitres = row?.actualDipStockLitres ?? null;
+      return { product, openingStockLitres, productDip: row?.productDip ?? null, actualDipStockLitres, waterDip: row?.waterDip ?? null, waterDipVolumeLitres: row?.waterDipVolumeLitres ?? null, receiptStockLitres, totalAvailableLitres, actualSalesLitres, calculatedClosingStockLitres, variationLitres: actualDipStockLitres == null ? null : actualDipStockLitres - calculatedClosingStockLitres };
+    });
+    res.json({ success: true, data: { businessDate, stock } });
+  } catch (error) { next(error); }
+};
+export const upsertManagerStock = async (req, res, next) => { try { const station = await activeStation(); const { businessDate, product, ...values } = req.body; const stock = await DailyStock.findOneAndUpdate({ stationId: station._id, businessDate, product }, { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } }, { new: true, upsert: true, runValidators: true }); res.json({ success: true, data: stock }); } catch (error) { next(error); } };
+export const getManagerDensity = async (req, res, next) => { try { const station = await activeStation(); const records = await DailyDensity.find({ stationId: station._id, businessDate: req.query.date }).lean(); res.json({ success: true, data: records }); } catch (error) { next(error); } };
+export const upsertManagerDensity = async (req, res, next) => { try { const station = await activeStation(); const { businessDate, product, ...values } = req.body; const record = await DailyDensity.findOneAndUpdate({ stationId: station._id, businessDate, product }, { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } }, { new: true, upsert: true, runValidators: true }); res.json({ success: true, data: record }); } catch (error) { next(error); } };
+export const getManagerReceipts = async (req, res, next) => { try { const station = await activeStation(); const receipts = await FuelReceipt.find({ stationId: station._id, businessDate: req.query.date }).sort({ createdAt: -1 }).lean(); res.json({ success: true, data: receipts }); } catch (error) { next(error); } };
+export const createManagerReceipt = async (req, res, next) => { try { const station = await activeStation(); const receipt = await FuelReceipt.create({ ...req.body, stationId: station._id }); res.status(201).json({ success: true, data: receipt }); } catch (error) { next(error); } };

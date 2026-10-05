@@ -1,25 +1,25 @@
-import ManagerLayout from "./ManagerLayout";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import ManagerLayout from "./ManagerLayout";
+import { getBusinessDate } from "../../utils/businessDate";
+import { createFuelRate, createManagerReceipt, getFuelRateHistory, getManagerDensity, getManagerReceipts, getManagerStock, upsertManagerDensity, upsertManagerStock } from "../../services/managerStockApi";
+
+const n = (value) => Number(value || 0);
+const Input = ({ label, value, onChange, type = "number" }) => <label className="block text-[10px] font-bold text-slate-600">{label}<input type={type} value={value} onChange={onChange} className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 px-3 text-sm" /></label>;
+const Button = ({ children, onClick }) => <button type="button" onClick={onClick} className="min-h-11 w-full rounded-xl bg-bpcl-emerald text-xs font-bold text-white">{children}</button>;
+const Read = ({ label, value }) => <div className="flex justify-between rounded-xl bg-slate-50 p-3 text-sm"><span className="text-slate-500">{label}</span><b>{value == null ? "—" : `${Number(value).toFixed(2)} L`}</b></div>;
 
 const Stock = () => {
-  const { t } = useTranslation();
-
-  return (
-    <ManagerLayout
-      title={t("manager.stock")}
-      showBack
-    >
-      <div className="rounded-[22px] bg-white p-5 shadow-sm">
-        <p className="text-[18px] font-bold text-slate-900">
-          {t("manager.stock")}
-        </p>
-
-        <p className="mt-2 text-[12px] leading-5 text-slate-500">
-          Stock screen will be built next.
-        </p>
-      </div>
-    </ManagerLayout>
-  );
+  const { t } = useTranslation(); const [tab, setTab] = useState("stock"); const [date, setDate] = useState(getBusinessDate()); const [product, setProduct] = useState("PETROL"); const [stock, setStock] = useState([]); const [density, setDensity] = useState([]); const [receipts, setReceipts] = useState([]); const [rates, setRates] = useState([]); const [notice, setNotice] = useState("");
+  const [form, setForm] = useState({ openingStockLitres: "", productDip: "", actualDipStockLitres: "", waterDip: "", waterDipVolumeLitres: "" }); const [densityForm, setDensityForm] = useState({ hydrometerReading: "", temperatureC: "", density15: "" }); const [receipt, setReceipt] = useState({ invoiceNumber: "", quantityLitres: "", supplierName: "", tankerNumber: "" }); const [rate, setRate] = useState({ businessDate: getBusinessDate(), petrolRatePaise: "", dieselRatePaise: "" });
+  const load = async () => { try { const [s,d,r,h] = await Promise.all([getManagerStock(date),getManagerDensity(date),getManagerReceipts(date),getFuelRateHistory()]); setStock(s.data.stock); setDensity(d.data); setReceipts(r.data); setRates(h.data); } catch (e) { setNotice(e.response?.data?.message || t("manager.stockLabels.loadError")); } };
+  useEffect(() => { load(); }, [date]);
+  const row = stock.find((x) => x.product === product) || {}; const change = (setter, key) => (e) => setter((old) => ({ ...old, [key]: e.target.value }));
+  useEffect(() => { setForm({ openingStockLitres: row.openingStockLitres ?? "", productDip: row.productDip ?? "", actualDipStockLitres: row.actualDipStockLitres ?? "", waterDip: row.waterDip ?? "", waterDipVolumeLitres: row.waterDipVolumeLitres ?? "" }); const found = density.find((x) => x.product === product); setDensityForm({ hydrometerReading: found?.hydrometerReading ?? "", temperatureC: found?.temperatureC ?? "", density15: found?.density15 ?? "" }); }, [product, stock, density]);
+  const save = async (fn) => { try { await fn(); setNotice(t("manager.stockLabels.saved")); load(); } catch (e) { setNotice(e.response?.data?.message || t("manager.stockLabels.saveError")); } };
+  return <ManagerLayout title={t("manager.stock")} showBack><div className="space-y-4"><div className="grid grid-cols-3 rounded-xl bg-white p-1 shadow-sm">{[["stock","stockTab"],["records","recordsTab"],["rates","ratesTab"]].map(([x,l]) => <button key={x} onClick={() => setTab(x)} className={`rounded-lg py-2 text-[10px] font-bold ${tab === x ? "bg-bpcl-emerald text-white" : "text-slate-500"}`}>{t(`manager.stockLabels.${l}`)}</button>)}</div><Input type="date" label={t("manager.stockLabels.businessDate")} value={date} onChange={(e) => setDate(e.target.value)} />{notice && <p className="rounded-xl bg-emerald-50 p-3 text-xs text-emerald-700">{notice}</p>}{tab !== "rates" && <div className="grid grid-cols-2 rounded-xl bg-white p-1">{["PETROL","DIESEL"].map((x) => <button key={x} onClick={() => setProduct(x)} className={`rounded-lg py-2 text-xs font-bold ${product === x ? "bg-slate-900 text-white" : "text-slate-500"}`}>{t(`manager.${x.toLowerCase()}`)}</button>)}</div>}
+  {tab === "stock" && <section className="space-y-3 rounded-2xl bg-white p-4 shadow-sm"><h2 className="font-bold">{t("manager.stockLabels.stockDetails")}</h2>{Object.keys(form).map((key) => <Input key={key} label={t(`manager.stockLabels.${key}`)} value={form[key]} onChange={change(setForm,key)} />)}<Read label={t("manager.stockLabels.receiptStock")} value={row.receiptStockLitres}/><Read label={t("manager.stockLabels.totalAvailable")} value={row.totalAvailableLitres}/><Read label={t("manager.stockLabels.actualSales")} value={row.actualSalesLitres}/><Read label={t("manager.stockLabels.calculatedClosing")} value={row.calculatedClosingStockLitres}/><Read label={t("manager.stockLabels.variation")} value={row.variationLitres}/><Button onClick={() => save(() => upsertManagerStock({ businessDate: date, product, ...Object.fromEntries(Object.entries(form).map(([k,v]) => [k,n(v)])) }))}>{t("manager.stockLabels.save")}</Button></section>}
+  {tab === "records" && <section className="space-y-3 rounded-2xl bg-white p-4 shadow-sm"><h2 className="font-bold">{t("manager.stockLabels.dailyDensity")}</h2>{Object.keys(densityForm).map((key) => <Input key={key} label={t(`manager.stockLabels.${key}`)} value={densityForm[key]} onChange={change(setDensityForm,key)} />)}<Button onClick={() => save(() => upsertManagerDensity({ businessDate: date, product, ...Object.fromEntries(Object.entries(densityForm).map(([k,v]) => [k,n(v)])) }))}>{t("manager.stockLabels.saveDensity")}</Button><h2 className="border-t pt-4 font-bold">{t("manager.stockLabels.fuelReceipts")}</h2>{Object.keys(receipt).map((key) => <Input key={key} type={key === "quantityLitres" ? "number" : "text"} label={t(`manager.stockLabels.${key}`)} value={receipt[key]} onChange={change(setReceipt,key)} />)}<Button onClick={() => save(() => createManagerReceipt({ businessDate: date, product, ...receipt, quantityLitres: n(receipt.quantityLitres) }))}>{t("manager.stockLabels.saveReceipt")}</Button>{receipts.map((x) => <p key={x._id} className="border-t py-2 text-xs">{x.invoiceNumber} · {x.product} · {x.quantityLitres} L</p>)}</section>}
+  {tab === "rates" && <section className="space-y-3 rounded-2xl bg-white p-4 shadow-sm"><h2 className="font-bold">{t("manager.stockLabels.addRate")}</h2><Input type="date" label={t("manager.stockLabels.effectiveDate")} value={rate.businessDate} onChange={change(setRate,"businessDate")} /><Input label={t("manager.stockLabels.petrolRatePaise")} value={rate.petrolRatePaise} onChange={change(setRate,"petrolRatePaise")} /><Input label={t("manager.stockLabels.dieselRatePaise")} value={rate.dieselRatePaise} onChange={change(setRate,"dieselRatePaise")} /><Button onClick={() => save(() => createFuelRate({ ...rate, petrolRatePaise:n(rate.petrolRatePaise), dieselRatePaise:n(rate.dieselRatePaise) }))}>{t("manager.stockLabels.saveRate")}</Button>{rates.map((x) => <p key={x._id} className="border-t py-2 text-xs">{x.businessDate} · {x.petrolRatePaise} / {x.dieselRatePaise}</p>)}</section>}</div></ManagerLayout>;
 };
-
 export default Stock;

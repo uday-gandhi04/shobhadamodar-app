@@ -23,8 +23,17 @@ import {
   protect,
   authorize,
 } from "../middlewares/auth.middleware.js";
+import { getManagerStock, upsertManagerStock, getManagerDensity, upsertManagerDensity, getManagerReceipts, createManagerReceipt } from "../controllers/managerStock.controller.js";
+import { stockDateSchema, stockSchema, densitySchema, receiptSchema } from "../validations/managerStock.validation.js";
 
 const router = express.Router();
+
+router.get("/stock", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerStock);
+router.put("/stock", protect, authorize("MANAGER"), validate(stockSchema), upsertManagerStock);
+router.get("/stock/density", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerDensity);
+router.post("/stock/density", protect, authorize("MANAGER"), validate(densitySchema), upsertManagerDensity);
+router.get("/stock/receipts", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerReceipts);
+router.post("/stock/receipts", protect, authorize("MANAGER"), validate(receiptSchema), createManagerReceipt);
 
 router.get(
   "/employees",

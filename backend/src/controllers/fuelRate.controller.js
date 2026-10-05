@@ -45,3 +45,22 @@ export const getCurrentFuelRate = async (
     next(error);
   }
 };
+
+export const getFuelRateHistory = async (req, res, next) => {
+  try {
+    const rates = await FuelRate.find({}).sort({ businessDate: -1 }).lean();
+    res.json({ success: true, data: rates });
+  } catch (error) { next(error); }
+};
+
+export const createFuelRate = async (req, res, next) => {
+  try {
+    const existing = await FuelRate.exists({ businessDate: req.body.businessDate });
+    if (existing) return res.status(409).json({ success: false, message: "A fuel rate already exists for this business date.", code: "FUEL_RATE_DATE_EXISTS" });
+    const rate = await FuelRate.create({ ...req.body, setBy: req.user._id });
+    return res.status(201).json({ success: true, data: rate });
+  } catch (error) {
+    if (error?.code === 11000) return res.status(409).json({ success: false, message: "A fuel rate already exists for this business date.", code: "FUEL_RATE_DATE_EXISTS" });
+    next(error);
+  }
+};

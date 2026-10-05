@@ -1,5 +1,8 @@
 {
   "manager": {
+    "stockLabels": {
+      "stockTab":"Stock", "recordsTab":"Receipts & Density", "ratesTab":"Rates", "businessDate":"Business Date", "stockDetails":"Stock Details", "openingStockLitres":"Opening Stock", "productDip":"Product Dip", "actualDipStockLitres":"Actual Dip Stock", "waterDip":"Water Dip", "waterDipVolumeLitres":"Water Dip Volume", "receiptStock":"Receipt Stock", "totalAvailable":"Total Available", "actualSales":"Actual Sales", "calculatedClosing":"Calculated Closing", "variation":"Variation", "dailyDensity":"Daily Density", "hydrometerReading":"Hydrometer", "temperatureC":"Temperature (°C)", "density15":"Density @15°C", "saveDensity":"Save Density", "fuelReceipts":"Fuel Receipts", "invoiceNumber":"Invoice Number", "quantityLitres":"Quantity (L)", "supplierName":"Supplier", "tankerNumber":"Tanker Number", "saveReceipt":"Save Receipt", "addRate":"Add New Rate", "effectiveDate":"Effective Business Date", "petrolRatePaise":"Petrol Rate (paise)", "dieselRatePaise":"Diesel Rate (paise)", "saveRate":"Save Rate", "save":"Save Stock", "saved":"Saved successfully.", "loadError":"Unable to load stock data.", "saveError":"Unable to save changes."
+    },
     "dashboard": "Dashboard",
     "dashboardTitle": "Shobhadamodar Petroleum",
     "dashboardHeading": "Manager Dashboard",
