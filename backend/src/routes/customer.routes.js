@@ -15,6 +15,15 @@ import {
   authorize,
 } from '../middlewares/auth.middleware.js';
 
+import {
+  validate,
+} from '../middlewares/validate.middleware.js';
+
+import {
+  createCustomerSchema,
+  updateCustomerSchema,
+} from '../validations/customer.validation.js';
+
 const router = express.Router();
 
 router.get(
@@ -41,6 +50,7 @@ router.post(
   '/',
   protect,
   authorize('MANAGER'),
+  validate(createCustomerSchema),
   createCustomer,
 );
 
@@ -48,6 +58,7 @@ router.patch(
   '/:customerId',
   protect,
   authorize('MANAGER'),
+  validate(updateCustomerSchema),
   updateCustomer,
 );
 

@@ -40,6 +40,16 @@ const customerSchema = new mongoose.Schema(
       set: (value) => Math.round(value),
     },
 
+    creditLimitPaise: {
+      type: Number,
+      default: 0,
+      min: 0,
+      validate: {
+        validator: Number.isSafeInteger,
+        message: 'Credit limit must be an integer number of paise.',
+      },
+    },
+
     isBlocked: {
       type: Boolean,
       default: false,

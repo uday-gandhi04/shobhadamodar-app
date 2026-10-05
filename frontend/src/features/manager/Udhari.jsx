@@ -11,6 +11,15 @@ const formatMoney = (paise) =>
     maximumFractionDigits: 0,
   }).format(Number(paise || 0) / 100);
 
+const rupeesToPaise = (value) => {
+  const normalized = String(value ?? "").trim();
+  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) return null;
+
+  const [rupees, decimal = ""] = normalized.split(".");
+  const paise = BigInt(rupees) * 100n + BigInt(decimal.padEnd(2, "0"));
+  return paise <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(paise) : null;
+};
+
 const formatLedgerDate = (isoDate, locale) => {
   if (!isoDate) return "—";
 
@@ -64,6 +73,7 @@ const Udhari = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
   const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [editingCustomerId, setEditingCustomerId] = useState(null);
   const [showSettlement, setShowSettlement] = useState(false);
   const [customerForm, setCustomerForm] = useState({
     name: "",
@@ -71,6 +81,7 @@ const Udhari = () => {
     vehicleNumber: "",
     address: "",
     notes: "",
+    creditLimit: "0",
   });
   const [settlementForm, setSettlementForm] = useState({
     amount: "",
@@ -187,33 +198,62 @@ const Udhari = () => {
   const handleCreateOrUpdateCustomer = async (event) => {
     event.preventDefault();
 
+    const creditLimitPaise = rupeesToPaise(customerForm.creditLimit);
+    if (creditLimitPaise === null) {
+      setActionMessage(t("manager.udhariPage.invalidCreditLimit"));
+      return;
+    }
+
     const payload = {
       name: customerForm.name,
       phoneNumber: customerForm.phoneNumber,
       vehicleNumber: customerForm.vehicleNumber,
       address: customerForm.address,
       notes: customerForm.notes,
+      creditLimitPaise,
     };
 
     try {
       setSubmitting(true);
       setActionMessage("");
-      await api.post("/customers", payload);
+      const response = editingCustomerId
+        ? await api.patch(`/customers/${editingCustomerId}`, payload)
+        : await api.post("/customers", payload);
+      const customer = response.data?.data;
       setShowCustomerForm(false);
+      setEditingCustomerId(null);
       setCustomerForm({
         name: "",
         phoneNumber: "",
         vehicleNumber: "",
         address: "",
         notes: "",
+        creditLimit: "0",
       });
       setActionMessage(t("manager.udhariPage.customerSaved"));
-      fetchCustomers();
+      await fetchCustomers();
+      if (customer?._id) {
+        setSelectedCustomerId(customer._id);
+        await fetchCustomerDetail(customer._id);
+      }
     } catch (submitError) {
       setActionMessage(submitError.message || t("manager.udhariPage.saveFailed"));
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const openCustomerForm = (customer = null) => {
+    setEditingCustomerId(customer?._id || null);
+    setCustomerForm({
+      name: customer?.name || "",
+      phoneNumber: customer?.phoneNumber || "",
+      vehicleNumber: customer?.vehicleNumber || "",
+      address: customer?.address || "",
+      notes: customer?.notes || "",
+      creditLimit: String(Number(customer?.creditLimitPaise || 0) / 100),
+    });
+    setShowCustomerForm(true);
   };
 
   const handleToggleBlock = async () => {
@@ -301,7 +341,7 @@ const Udhari = () => {
             />
             <button
               type="button"
-              onClick={() => setShowCustomerForm(true)}
+              onClick={() => openCustomerForm()}
               className="rounded-[12px] bg-emerald-600 px-3 py-2 text-[12px] font-semibold text-white"
             >
               {t("manager.udhariPage.addCustomer")}
@@ -389,6 +429,20 @@ const Udhari = () => {
               <p className="text-[20px] font-bold text-slate-900">{formatMoney(selectedCustomer.outstandingBalance)}</p>
             </div>
 
+            <div className="mb-3 grid grid-cols-2 gap-2">
+              <div className="rounded-[14px] bg-slate-50 p-3">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500">{t("manager.udhariPage.customerId")}</p>
+                <p className="mt-1 break-all text-[11px] font-semibold text-slate-700">{selectedCustomer._id}</p>
+              </div>
+              <div className="rounded-[14px] bg-slate-50 p-3">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500">{t("manager.udhariPage.creditLimit")}</p>
+                <p className="mt-1 text-[16px] font-bold text-slate-900">{formatMoney(selectedCustomer.creditLimitPaise)}</p>
+                <p className={`mt-1 text-[10px] font-semibold ${Number(selectedCustomer.outstandingBalance || 0) > Number(selectedCustomer.creditLimitPaise || 0) ? "text-red-700" : "text-emerald-700"}`}>
+                  {Number(selectedCustomer.outstandingBalance || 0) > Number(selectedCustomer.creditLimitPaise || 0) ? t("manager.udhariPage.aboveCreditLimit") : t("manager.udhariPage.withinCreditLimit")}
+                </p>
+              </div>
+            </div>
+
             <div className="mb-3 flex gap-2">
               {[
                 { key: "overview", label: t("manager.udhariPage.overview") },
@@ -435,6 +489,13 @@ const Udhari = () => {
                 </div>
 
                 <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openCustomerForm(selectedCustomer)}
+                    className="flex-1 rounded-[12px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-[12px] font-semibold text-emerald-700"
+                  >
+                    {t("manager.udhariPage.editCustomer")}
+                  </button>
                   <button
                     type="button"
                     onClick={handleToggleBlock}
@@ -566,8 +627,8 @@ const Udhari = () => {
         <div className="fixed inset-0 z-30 flex items-end bg-slate-900/40 p-3">
           <div className="w-full rounded-[22px] bg-white p-4 shadow-xl">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[18px] font-bold text-slate-900">{t("manager.udhariPage.addCustomer")}</p>
-              <button type="button" onClick={() => setShowCustomerForm(false)} className="text-slate-500">✕</button>
+              <p className="text-[18px] font-bold text-slate-900">{editingCustomerId ? t("manager.udhariPage.editCustomer") : t("manager.udhariPage.addCustomer")}</p>
+              <button type="button" onClick={() => { setShowCustomerForm(false); setEditingCustomerId(null); }} className="text-slate-500">✕</button>
             </div>
 
             <form onSubmit={handleCreateOrUpdateCustomer} className="space-y-3">
@@ -614,6 +675,18 @@ const Udhari = () => {
                   value={customerForm.notes}
                   onChange={(event) => setCustomerForm((current) => ({ ...current, notes: event.target.value }))}
                   className="mt-1 min-h-[74px] w-full rounded-[12px] border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-800 outline-none focus:border-emerald-400"
+                />
+              </label>
+
+              <label className="block text-[12px] font-semibold text-slate-700">
+                {t("manager.udhariPage.creditLimit")}
+                <input
+                  required
+                  type="text"
+                  inputMode="decimal"
+                  value={customerForm.creditLimit}
+                  onChange={(event) => setCustomerForm((current) => ({ ...current, creditLimit: event.target.value }))}
+                  className="mt-1 w-full rounded-[12px] border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-800 outline-none focus:border-emerald-400"
                 />
               </label>
 

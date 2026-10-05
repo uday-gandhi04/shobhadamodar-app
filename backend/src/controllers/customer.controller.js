@@ -34,6 +34,7 @@ const formatCustomer = (customer) => {
 
   const normalized = { ...customer };
   normalized.outstandingBalance = Number(normalized.outstandingBalance || 0);
+  normalized.creditLimitPaise = Number(normalized.creditLimitPaise || 0);
   normalized.isBlocked = Boolean(normalized.isBlocked);
   normalized.status = getCustomerStatus(normalized);
   return normalized;
@@ -240,7 +241,7 @@ export const getCustomerDetail = async (req, res, next) => {
 
 export const createCustomer = async (req, res, next) => {
   try {
-    const { name, phoneNumber, vehicleNumber, address, notes } = req.body;
+    const { name, phoneNumber, vehicleNumber, address, notes, creditLimitPaise = 0 } = req.body;
 
     if (!name || !String(name).trim()) {
       return res.status(400).json({
@@ -256,6 +257,7 @@ export const createCustomer = async (req, res, next) => {
       address: address ? String(address).trim() : null,
       notes: notes ? String(notes).trim() : null,
       outstandingBalance: 0,
+      creditLimitPaise,
     });
 
     return res.status(201).json({
@@ -305,6 +307,10 @@ export const updateCustomer = async (req, res, next) => {
 
     if (req.body.notes !== undefined) {
       customer.notes = req.body.notes ? String(req.body.notes).trim() : null;
+    }
+
+    if (req.body.creditLimitPaise !== undefined) {
+      customer.creditLimitPaise = req.body.creditLimitPaise;
     }
 
     await customer.save();
