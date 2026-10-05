@@ -46,7 +46,7 @@ const normalizeAtmEntries = (atmEntries = []) =>
         entry.amountPaise >= 0,
     );
 
-const calculateCollections = (collections = {}) => {
+export const calculateCollections = (collections = {}) => {
   const cashCollections = normalizeCash(collections.cashBreakdown);
 
   const upiCollection =
@@ -56,10 +56,12 @@ const coinsPaise = Number(
   collections.coinsPaise || 0,
 );
 
-  const totalCashPaise = cashCollections.reduce(
+  const cashDenominationPaise = cashCollections.reduce(
     (sum, item) => sum + item.denomination * item.count * 100,
     0,
   );
+
+  const totalCashPaise = cashDenominationPaise + coinsPaise;
 
   const totalUpiPaise = Number(collections.upiPaise || 0);
 
@@ -561,6 +563,7 @@ export const endShift = async (req, res, next) => {
     shift.totalCardPaise = result.totalCardPaise;
     shift.totalUdhariPaise = result.totalUdhariPaise;
     shift.totalCollectedPaise = result.totalCollectedPaise;
+    shift.atmEntries = result.atmEntries;
     shift.differencePaise = result.differencePaise;
     shift.reconciliationStatus = result.reconciliationStatus;
     shift.status = "ENDED";
