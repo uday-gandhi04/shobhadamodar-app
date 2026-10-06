@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Shift from "../models/Shift.js";
 import User from "../models/User.js";
 import { ACCOUNT_STATUSES, effectiveAccountStatus } from "../utils/accountStatus.js";
+import { recordAuditLog } from "../utils/auditLog.js";
 
 const employeeProjection = "name employeeId isActive accountStatus createdAt";
 const completedShiftStatuses = ["ENDED", "FORCE_CLOSED"];
@@ -216,6 +217,14 @@ export const updateManagerEmployee = async (req, res, next) => {
       });
     }
 
+    await recordAuditLog({
+      actor: req.user,
+      action: "EMPLOYEE_PROFILE_UPDATED",
+      entityType: "EMPLOYEE",
+      entityId: employee._id,
+      metadata: { employeeId: employee.employeeId },
+    });
+
     return res.status(200).json({
       success: true,
       data: {
@@ -290,6 +299,18 @@ export const updateManagerEmployeeStatus = async (req, res, next) => {
     employee.isActive = requestedStatus === "ACTIVE";
     await employee.save();
 
+    await recordAuditLog({
+      actor: req.user,
+      action: "EMPLOYEE_STATUS_CHANGED",
+      entityType: "EMPLOYEE",
+      entityId: employee._id,
+      metadata: {
+        employeeId: employee.employeeId,
+        previousStatus: currentStatus,
+        newStatus: requestedStatus,
+      },
+    });
+
     return res.status(200).json({
       success: true,
       data: {
@@ -300,6 +321,40 @@ export const updateManagerEmployeeStatus = async (req, res, next) => {
         isActive: employee.isActive,
         createdAt: employee.createdAt,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetManagerEmployeePassword = async (req, res, next) => {
+  try {
+    const employee = await User.findOne({
+      _id: req.params.id,
+      role: "EMPLOYEE",
+    });
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found.",
+      });
+    }
+
+    employee.password = req.body.password;
+    employee.tokenVersion += 1;
+    await employee.save();
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "EMPLOYEE_PASSWORD_RESET",
+      entityType: "EMPLOYEE",
+      entityId: employee._id,
+      metadata: { employeeId: employee.employeeId },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Employee password reset successfully.",
     });
   } catch (error) {
     next(error);

@@ -3,6 +3,7 @@ import DailyStock from "../models/DailyStock.js";
 import FuelReceipt from "../models/FuelReceipt.js";
 import DailyDensity from "../models/DailyDensity.js";
 import Shift from "../models/Shift.js";
+import { recordAuditLog } from "../utils/auditLog.js";
 
 const products = ["PETROL", "DIESEL"];
 const activeStation = async () => {
@@ -27,8 +28,61 @@ export const getManagerStock = async (req, res, next) => {
     res.json({ success: true, data: { businessDate, stock } });
   } catch (error) { next(error); }
 };
-export const upsertManagerStock = async (req, res, next) => { try { const station = await activeStation(); const { businessDate, product, ...values } = req.body; const stock = await DailyStock.findOneAndUpdate({ stationId: station._id, businessDate, product }, { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } }, { new: true, upsert: true, runValidators: true }); res.json({ success: true, data: stock }); } catch (error) { next(error); } };
+export const upsertManagerStock = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { businessDate, product, ...values } = req.body;
+    const stock = await DailyStock.findOneAndUpdate(
+      { stationId: station._id, businessDate, product },
+      { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } },
+      { new: true, upsert: true, runValidators: true },
+    );
+    await recordAuditLog({
+      actor: req.user,
+      action: "STOCK_UPSERTED",
+      entityType: "STOCK",
+      entityId: stock._id,
+      metadata: { businessDate, product },
+    });
+    res.json({ success: true, data: stock });
+  } catch (error) { next(error); }
+};
 export const getManagerDensity = async (req, res, next) => { try { const station = await activeStation(); const records = await DailyDensity.find({ stationId: station._id, businessDate: req.query.date }).lean(); res.json({ success: true, data: records }); } catch (error) { next(error); } };
-export const upsertManagerDensity = async (req, res, next) => { try { const station = await activeStation(); const { businessDate, product, ...values } = req.body; const record = await DailyDensity.findOneAndUpdate({ stationId: station._id, businessDate, product }, { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } }, { new: true, upsert: true, runValidators: true }); res.json({ success: true, data: record }); } catch (error) { next(error); } };
+export const upsertManagerDensity = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { businessDate, product, ...values } = req.body;
+    const record = await DailyDensity.findOneAndUpdate(
+      { stationId: station._id, businessDate, product },
+      { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } },
+      { new: true, upsert: true, runValidators: true },
+    );
+    await recordAuditLog({
+      actor: req.user,
+      action: "DENSITY_UPSERTED",
+      entityType: "DENSITY",
+      entityId: record._id,
+      metadata: { businessDate, product },
+    });
+    res.json({ success: true, data: record });
+  } catch (error) { next(error); }
+};
 export const getManagerReceipts = async (req, res, next) => { try { const station = await activeStation(); const receipts = await FuelReceipt.find({ stationId: station._id, businessDate: req.query.date }).sort({ createdAt: -1 }).lean(); res.json({ success: true, data: receipts }); } catch (error) { next(error); } };
-export const createManagerReceipt = async (req, res, next) => { try { const station = await activeStation(); const receipt = await FuelReceipt.create({ ...req.body, stationId: station._id }); res.status(201).json({ success: true, data: receipt }); } catch (error) { next(error); } };
+export const createManagerReceipt = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const receipt = await FuelReceipt.create({ ...req.body, stationId: station._id });
+    await recordAuditLog({
+      actor: req.user,
+      action: "FUEL_RECEIPT_CREATED",
+      entityType: "FUEL_RECEIPT",
+      entityId: receipt._id,
+      metadata: {
+        businessDate: receipt.businessDate,
+        product: receipt.product,
+        invoiceNumber: receipt.invoiceNumber,
+      },
+    });
+    res.status(201).json({ success: true, data: receipt });
+  } catch (error) { next(error); }
+};

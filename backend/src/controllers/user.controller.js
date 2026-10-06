@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import { recordAuditLog } from '../utils/auditLog.js';
 
 /**
  * Create an employee account.
@@ -42,6 +43,14 @@ export const createEmployee = async (req, res, next) => {
       isActive: true,
       accountStatus: 'ACTIVE',
       createdBy: req.user._id,
+    });
+
+    await recordAuditLog({
+      actor: req.user,
+      action: 'EMPLOYEE_CREATED',
+      entityType: 'EMPLOYEE',
+      entityId: employee._id,
+      metadata: { employeeId: employee.employeeId },
     });
 
     return res.status(201).json({

@@ -3,9 +3,12 @@ import test from "node:test";
 
 import Customer from "../models/Customer.js";
 import UdhariTransaction from "../models/UdhariTransaction.js";
+import AuditLog from "../models/AuditLog.js";
 import {
   createCustomer,
   getCustomerDetail,
+  toggleCustomerBlockedStatus,
+  settleCustomerBalance,
   updateCustomer,
 } from "./customer.controller.js";
 import {
@@ -45,6 +48,12 @@ const withModelMocks = async (mocks, callback) => {
         : Customer[key],
     ]),
   );
+  const originalAuditCreate = AuditLog.create;
+  let capturedAudit;
+  AuditLog.create = async (entry) => {
+    capturedAudit = entry;
+    return entry;
+  };
 
   for (const [key, value] of Object.entries(mocks)) {
     if (key.startsWith("transaction:")) {
@@ -55,7 +64,7 @@ const withModelMocks = async (mocks, callback) => {
   }
 
   try {
-    await callback();
+    await callback(() => capturedAudit);
   } finally {
     for (const [key, value] of Object.entries(originals)) {
       if (key.startsWith("transaction:")) {
@@ -64,6 +73,7 @@ const withModelMocks = async (mocks, callback) => {
         Customer[key] = value;
       }
     }
+    AuditLog.create = originalAuditCreate;
   }
 };
 
@@ -118,10 +128,13 @@ test("create customer persists the supplied credit limit", async () => {
       created = data;
       return document;
     },
-  }, async () => {
+  }, async (getAudit) => {
     const response = makeResponse();
     await createCustomer(
-      { body: { name: "Customer", creditLimitPaise: 12500 } },
+      {
+        body: { name: "Customer", creditLimitPaise: 12500 },
+        user: { _id: "bbbbbbbbbbbbbbbbbbbbbbbb", role: "MANAGER" },
+      },
       response,
       assert.fail,
     );
@@ -129,6 +142,8 @@ test("create customer persists the supplied credit limit", async () => {
     assert.equal(response.statusCode, 201);
     assert.equal(created.creditLimitPaise, 12500);
     assert.equal(response.body.data.creditLimitPaise, 12500);
+    assert.equal(getAudit().actorId, "bbbbbbbbbbbbbbbbbbbbbbbb");
+    assert.equal(getAudit().action, "UDHARI_CUSTOMER_CREATED");
   });
 });
 
@@ -174,10 +189,14 @@ test("update customer changes credit limit without creating a duplicate or touch
       transactionFindCalls += 1;
       return existingTransactions;
     },
-  }, async () => {
+  }, async (getAudit) => {
     const response = makeResponse();
     await updateCustomer(
-      { params: { customerId }, body: { name: "New name", creditLimitPaise: 9000 } },
+      {
+        params: { customerId },
+        body: { name: "New name", creditLimitPaise: 9000 },
+        user: { _id: "bbbbbbbbbbbbbbbbbbbbbbbb", role: "MANAGER" },
+      },
       response,
       assert.fail,
     );
@@ -189,6 +208,8 @@ test("update customer changes credit limit without creating a duplicate or touch
     assert.equal(customer.outstandingBalance, 7500);
     assert.equal(createCalls, 0);
     assert.equal(transactionFindCalls, 0);
+    assert.equal(getAudit().action, "UDHARI_CUSTOMER_UPDATED");
+    assert.equal(getAudit().actorId, "bbbbbbbbbbbbbbbbbbbbbbbb");
     assert.deepEqual(existingTransactions, [
       { _id: "credit-1", amountPaise: 10000, transactionType: "CREDIT" },
       { _id: "settlement-1", amountPaise: 2500, transactionType: "SETTLEMENT" },
@@ -240,5 +261,67 @@ test("customer detail keeps the existing outstanding and ledger calculations", a
       response.body.data.ledger.map((entry) => entry.runningBalance),
       [10000, 7500],
     );
+  });
+});
+
+test("customer settlements preserve the existing outstanding calculation and audit amount", async () => {
+    const customer = makeCustomerDocument({
+      _id: customerId,
+      name: "Customer",
+      outstandingBalance: 10000,
+      isBlocked: false,
+    });
+    let transaction;
+
+    await withModelMocks({
+      findById: async () => customer,
+      "transaction:create": async (values) => {
+        transaction = values;
+        return { _id: "cccccccccccccccccccccccc", ...values };
+      },
+    }, async (getAudit) => {
+      const response = makeResponse();
+      await settleCustomerBalance(
+        {
+          params: { customerId },
+          body: { amountPaise: 2500, paymentMethod: "CASH" },
+          user: { _id: "bbbbbbbbbbbbbbbbbbbbbbbb", role: "MANAGER" },
+        },
+        response,
+        assert.fail,
+      );
+
+      assert.equal(response.statusCode, 200);
+      assert.equal(transaction.amountPaise, 2500);
+      assert.equal(customer.outstandingBalance, 7500);
+      assert.equal(getAudit().action, "UDHARI_SETTLEMENT_RECORDED");
+      assert.equal(getAudit().actorId, "bbbbbbbbbbbbbbbbbbbbbbbb");
+      assert.equal(getAudit().metadata.amountPaise, 2500);
+      assert.equal(getAudit().metadata.paymentMethod, "CASH");
+    });
+  });
+
+test("customer block status change is audited after saving", async () => {
+    const customer = makeCustomerDocument({
+      _id: customerId,
+      name: "Customer",
+      outstandingBalance: 0,
+      isBlocked: false,
+    });
+
+    await withModelMocks({ findById: async () => customer }, async (getAudit) => {
+      const response = makeResponse();
+      await toggleCustomerBlockedStatus(
+        {
+          params: { customerId },
+          body: { blocked: true },
+          user: { _id: "bbbbbbbbbbbbbbbbbbbbbbbb", role: "MANAGER" },
+        },
+        response,
+        assert.fail,
+      );
+      assert.equal(response.body.data.isBlocked, true);
+      assert.equal(getAudit().action, "UDHARI_CUSTOMER_BLOCK_STATUS_CHANGED");
+      assert.equal(getAudit().metadata.blocked, true);
   });
 });

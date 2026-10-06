@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 import Customer from '../models/Customer.js';
 import UdhariTransaction from '../models/UdhariTransaction.js';
+import { recordAuditLog } from '../utils/auditLog.js';
 
 const escapeRegex = (value) => {
   return value.replace(
@@ -260,6 +261,14 @@ export const createCustomer = async (req, res, next) => {
       creditLimitPaise,
     });
 
+    await recordAuditLog({
+      actor: req.user,
+      action: 'UDHARI_CUSTOMER_CREATED',
+      entityType: 'CUSTOMER',
+      entityId: customer._id,
+      metadata: { customerId: String(customer._id) },
+    });
+
     return res.status(201).json({
       success: true,
       data: formatCustomer(customer.toObject ? customer.toObject() : customer),
@@ -315,6 +324,14 @@ export const updateCustomer = async (req, res, next) => {
 
     await customer.save();
 
+    await recordAuditLog({
+      actor: req.user,
+      action: 'UDHARI_CUSTOMER_UPDATED',
+      entityType: 'CUSTOMER',
+      entityId: customer._id,
+      metadata: { customerId: String(customer._id) },
+    });
+
     return res.status(200).json({
       success: true,
       data: formatCustomer(customer.toObject ? customer.toObject() : customer),
@@ -347,6 +364,14 @@ export const toggleCustomerBlockedStatus = async (req, res, next) => {
 
     customer.isBlocked = Boolean(blocked);
     await customer.save();
+
+    await recordAuditLog({
+      actor: req.user,
+      action: 'UDHARI_CUSTOMER_BLOCK_STATUS_CHANGED',
+      entityType: 'CUSTOMER',
+      entityId: customer._id,
+      metadata: { customerId: String(customer._id), blocked: customer.isBlocked },
+    });
 
     return res.status(200).json({
       success: true,
@@ -418,6 +443,18 @@ export const settleCustomerBalance = async (req, res, next) => {
 
     customer.outstandingBalance = Math.max(0, Number(customer.outstandingBalance || 0) - rawAmount);
     await customer.save();
+
+    await recordAuditLog({
+      actor: req.user,
+      action: 'UDHARI_SETTLEMENT_RECORDED',
+      entityType: 'CUSTOMER',
+      entityId: customer._id,
+      metadata: {
+        customerId: String(customer._id),
+        amountPaise: rawAmount,
+        paymentMethod,
+      },
+    });
 
     return res.status(200).json({
       success: true,

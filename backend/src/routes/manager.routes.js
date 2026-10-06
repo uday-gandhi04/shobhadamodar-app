@@ -10,6 +10,7 @@ import { getManagerAccountingSchema } from "../validations/manager.validation.js
 import {
   getManagerEmployeeDetail,
   getManagerEmployees,
+  resetManagerEmployeePassword,
   updateManagerEmployee,
   updateManagerEmployeeStatus,
 } from "../controllers/managerEmployees.controller.js";
@@ -17,6 +18,7 @@ import {
   getManagerEmployeeDetailSchema,
   updateManagerEmployeeSchema,
   updateManagerEmployeeStatusSchema,
+  resetManagerEmployeePasswordSchema,
 } from "../validations/managerEmployees.validation.js";
 
 import {
@@ -56,6 +58,14 @@ router.patch(
   authorize("MANAGER"),
   validate(updateManagerEmployeeStatusSchema),
   updateManagerEmployeeStatus,
+);
+
+router.patch(
+  "/employees/:id/password",
+  protect,
+  authorize("MANAGER"),
+  validate(resetManagerEmployeePasswordSchema),
+  resetManagerEmployeePassword,
 );
 
 router.patch(

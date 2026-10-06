@@ -18,3 +18,16 @@ export const refreshTokenSchema = z.object({
     refreshToken: z.string().min(1),
   }),
 });
+
+export const seedManagerSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(2).max(100),
+    employeeId: z
+      .string()
+      .trim()
+      .min(3)
+      .max(30)
+      .regex(/^[A-Za-z0-9_-]+$/),
+    password: z.string().min(6).max(128),
+  }),
+});

@@ -7,6 +7,7 @@ import {
   createEmployee,
   getManagerEmployeeDetail,
   getManagerEmployees,
+  resetManagerEmployeePassword,
   updateManagerEmployee,
   updateManagerEmployeeStatus,
 } from "../../services/managerEmployeesApi";
@@ -106,6 +107,8 @@ const Employees = () => {
   const [statusSaving, setStatusSaving] = useState(false);
   const [statusError, setStatusError] = useState("");
   const [notice, setNotice] = useState("");
+  const [confirmPasswordReset, setConfirmPasswordReset] = useState(false);
+  const [showPasswordResetForm, setShowPasswordResetForm] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -323,6 +326,18 @@ const Employees = () => {
     setEditor({ mode: "edit" });
   };
 
+  const confirmPasswordResetRequest = () => {
+    setConfirmPasswordReset(false);
+    setShowPasswordResetForm(true);
+  };
+
+  const handlePasswordReset = async (password) => {
+    await resetManagerEmployeePassword(selectedEmployeeId, password);
+    setShowPasswordResetForm(false);
+    setNotice(t("manager.employeesPage.passwordResetSuccess"));
+    refreshData();
+  };
+
   const detail = employeeDetail;
   const profile = detail?.profile;
   const employeePageTitle = selectedEmployeeId
@@ -342,6 +357,10 @@ const Employees = () => {
           }}
           onEdit={editEmployee}
           onStatusChange={requestStatusChange}
+          onResetPassword={() => {
+            setNotice("");
+            setConfirmPasswordReset(true);
+          }}
           onOpenShift={openShiftInOperations}
           statusError={statusError}
           notice={notice}
@@ -477,6 +496,27 @@ const Employees = () => {
           t={t}
         />
       )}
+      {confirmPasswordReset && (
+        <ConfirmationDialog
+          title={t("manager.employeesPage.confirmPasswordResetTitle")}
+          confirmLabel={t("manager.employeesPage.resetPassword")}
+          message={t("manager.employeesPage.confirmPasswordResetBody", {
+            name: profile?.name || "",
+          })}
+          saving={false}
+          error=""
+          onCancel={() => setConfirmPasswordReset(false)}
+          onConfirm={confirmPasswordResetRequest}
+          t={t}
+        />
+      )}
+      {showPasswordResetForm && (
+        <ResetPasswordDialog
+          onClose={() => setShowPasswordResetForm(false)}
+          onSubmit={handlePasswordReset}
+          t={t}
+        />
+      )}
     </ManagerLayout>
   );
 };
@@ -547,6 +587,7 @@ const EmployeeDetailView = ({
   onRetry,
   onEdit,
   onStatusChange,
+  onResetPassword,
   onOpenShift,
   statusError,
   notice,
@@ -622,6 +663,9 @@ const EmployeeDetailView = ({
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={onEdit} className="min-h-[34px] rounded-[10px] border border-slate-200 px-3 text-[9px] font-bold text-slate-700 active:bg-slate-50">
             {t("manager.employeesPage.editEmployee")}
+          </button>
+          <button type="button" onClick={onResetPassword} className="min-h-[34px] rounded-[10px] border border-amber-200 bg-amber-50 px-3 text-[9px] font-bold text-amber-800 active:bg-amber-100">
+            {t("manager.employeesPage.resetPassword")}
           </button>
           {profile.accountStatus === "ACTIVE" && (
             <>
@@ -830,6 +874,101 @@ const ConfirmationDialog = ({ title, confirmLabel, message, saving, error, onCan
     </section>
   </div>
 );
+
+const ResetPasswordDialog = ({ onClose, onSubmit, t }) => {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!password || !confirmPassword) {
+      setError(t("manager.employeesPage.passwordRequired"));
+      setPassword("");
+      setConfirmPassword("");
+      return;
+    }
+    if (password.length < 6 || confirmPassword.length < 6) {
+      setError(t("manager.employeesPage.passwordTooShort"));
+      setPassword("");
+      setConfirmPassword("");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError(t("manager.employeesPage.passwordsDoNotMatch"));
+      setPassword("");
+      setConfirmPassword("");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      await onSubmit(password);
+      setPassword("");
+      setConfirmPassword("");
+    } catch (submitError) {
+      setError(
+        submitError?.response?.data?.message ||
+          submitError?.message ||
+          t("manager.employeesPage.passwordResetError"),
+      );
+      setPassword("");
+      setConfirmPassword("");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/40 p-3 sm:items-center" role="presentation">
+      <section role="dialog" aria-modal="true" aria-labelledby="password-reset-title" className="w-full max-w-[420px] rounded-[18px] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.22)]">
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="password-reset-title" className="text-[15px] font-extrabold text-slate-900">
+            {t("manager.employeesPage.resetPassword")}
+          </h2>
+          <button type="button" onClick={onClose} aria-label={t("manager.employeesPage.cancel")} className="grid h-8 w-8 place-items-center rounded-[9px] text-slate-500 active:bg-slate-100">
+            <CloseIcon />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="mt-3 space-y-3">
+          <label className="block text-[10px] font-bold text-slate-700">
+            {t("manager.employeesPage.newPassword")}
+            <input
+              type="password"
+              autoComplete="new-password"
+              aria-required="true"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="mt-1 min-h-[40px] w-full rounded-[11px] border border-slate-200 bg-slate-50 px-3 text-[11px] outline-none focus:border-emerald-400"
+            />
+          </label>
+          <label className="block text-[10px] font-bold text-slate-700">
+            {t("manager.employeesPage.confirmNewPassword")}
+            <input
+              type="password"
+              autoComplete="new-password"
+              aria-required="true"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              className="mt-1 min-h-[40px] w-full rounded-[11px] border border-slate-200 bg-slate-50 px-3 text-[11px] outline-none focus:border-emerald-400"
+            />
+          </label>
+          {error && <p role="alert" className="rounded-[10px] bg-red-50 px-3 py-2 text-[9px] font-semibold text-red-700">{error}</p>}
+          <div className="flex gap-2">
+            <button type="button" disabled={saving} onClick={onClose} className="min-h-[40px] flex-1 rounded-[11px] border border-slate-200 text-[10px] font-bold text-slate-600 disabled:opacity-60">
+              {t("manager.employeesPage.cancel")}
+            </button>
+            <button type="submit" disabled={saving} className="min-h-[40px] flex-1 rounded-[11px] bg-bpcl-emerald text-[10px] font-bold text-white disabled:opacity-60">
+              {saving ? t("manager.employeesPage.loading") : t("manager.employeesPage.resetPassword")}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+};
 
 const PlusIcon = () => (
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4" aria-hidden="true">

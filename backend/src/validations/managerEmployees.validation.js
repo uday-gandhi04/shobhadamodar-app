@@ -19,3 +19,10 @@ export const updateManagerEmployeeStatusSchema = z.object({
     accountStatus: z.enum(["ACTIVE", "INACTIVE", "BANNED"]),
   }),
 });
+
+export const resetManagerEmployeePasswordSchema = z.object({
+  params: z.object({ id: employeeId }),
+  body: z.object({
+    password: z.string().min(6, "Password must be at least 6 characters").max(128),
+  }),
+});

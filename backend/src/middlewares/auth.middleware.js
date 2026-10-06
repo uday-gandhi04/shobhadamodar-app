@@ -1,6 +1,7 @@
 // src/middlewares/auth.middleware.js
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { effectiveAccountStatus } from '../utils/accountStatus.js';
 
 /**
  * Middleware to verify JWT token and attach user to req.user
@@ -21,10 +22,15 @@ export const protect = async (req, res, next) => {
       // Fetch user from DB, excluding password
       req.user = await User.findById(decoded.id).select('-password');
 
-      if (!req.user || !req.user.isActive) {
+      if (
+        !req.user ||
+        effectiveAccountStatus(req.user) !== 'ACTIVE' ||
+        !Number.isSafeInteger(decoded.tokenVersion) ||
+        decoded.tokenVersion !== req.user.tokenVersion
+      ) {
         return res.status(401).json({
           success: false,
-          message: 'User no longer exists or account is inactive.',
+          message: 'Not authorized, token failed verification.',
         });
       }
 

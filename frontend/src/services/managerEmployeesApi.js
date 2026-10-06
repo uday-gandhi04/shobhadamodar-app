@@ -35,3 +35,11 @@ export const updateManagerEmployeeStatus = async (
   );
   return response.data;
 };
+
+export const resetManagerEmployeePassword = async (employeeId, password) => {
+  const response = await api.patch(
+    `/manager/employees/${encodeURIComponent(employeeId)}/password`,
+    { password },
+  );
+  return response.data;
+};

@@ -1,14 +1,16 @@
 // src/controllers/auth.controller.js
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import { timingSafeEqual } from "node:crypto";
+import { effectiveAccountStatus } from "../utils/accountStatus.js";
 
 /**
  * Helper function to generate JWT Access Token
  * @param {string} id - The MongoDB User ID
  * @returns {string} Signed JWT Token
  */
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (id, tokenVersion) => {
+  return jwt.sign({ id, tokenVersion }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "15m",
   });
 };
@@ -33,12 +35,12 @@ export const loginUser = async (req, res, next) => {
     // Find user (converting employeeId to uppercase for safety)
     const user = await User.findOne({ employeeId: employeeId.toUpperCase() });
 
-    if (!user || !user.isActive) {
+    if (!user || effectiveAccountStatus(user) !== "ACTIVE") {
       return res
         .status(401)
         .json({
           success: false,
-          message: "Invalid credentials or inactive account",
+          message: "Invalid credentials",
         });
     }
 
@@ -51,7 +53,7 @@ export const loginUser = async (req, res, next) => {
     }
 
     // Generate Token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.tokenVersion);
     const refreshToken = generateRefreshToken(user._id, user.tokenVersion);
 
     res.status(200).json({
@@ -82,13 +84,17 @@ export const refreshAccessToken = async (req, res) => {
     }
 
     const user = await User.findById(decoded.id).select("-password");
-    if (!user || !user.isActive || user.tokenVersion !== decoded.tokenVersion) {
+    if (
+      !user ||
+      effectiveAccountStatus(user) !== "ACTIVE" ||
+      user.tokenVersion !== decoded.tokenVersion
+    ) {
       return res.status(401).json({ success: false, message: "Refresh session expired." });
     }
 
     return res.status(200).json({
       success: true,
-      token: generateToken(user._id),
+      token: generateToken(user._id, user.tokenVersion),
       user: {
         _id: user._id,
         name: user.name,
@@ -111,16 +117,36 @@ export const logoutUser = async (req, res, next) => {
 };
 
 /**
- * One-time seeder to create the first Manager account.
- * (In production, you would disable or protect this route after the first run)
+ * Creates the first Manager account when the configured provisioning secret matches.
  * @route POST /api/auth/seed
  */
 export const seedManager = async (req, res, next) => {
   try {
+    const configuredSecret = process.env.AUTH_SEED_SECRET;
+    if (!configuredSecret) {
+      return res.status(500).json({
+        success: false,
+        message: "Manager provisioning is not configured.",
+      });
+    }
+
+    const providedSecret = req.get("x-auth-seed-secret") || "";
+    const expectedBytes = Buffer.from(configuredSecret);
+    const providedBytes = Buffer.from(providedSecret);
+    if (
+      expectedBytes.length !== providedBytes.length ||
+      !timingSafeEqual(expectedBytes, providedBytes)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden.",
+      });
+    }
+
     const existingManager = await User.findOne({ role: "MANAGER" });
     if (existingManager) {
       return res
-        .status(400)
+        .status(409)
         .json({
           success: false,
           message: "A manager already exists in the system.",
@@ -128,9 +154,9 @@ export const seedManager = async (req, res, next) => {
     }
 
     const manager = await User.create({
-      name: "Station Admin",
-      employeeId: "ADMIN01",
-      password: "admin_password_123", // Will be automatically hashed by Mongoose pre-save
+      name: req.body.name.trim(),
+      employeeId: req.body.employeeId.trim().toUpperCase(),
+      password: req.body.password,
       role: "MANAGER",
     });
 
