@@ -1,6 +1,9 @@
 import api from "./api";
 export const getManagerStock = async (date) => (await api.get("/manager/stock", { params: { date } })).data;
 export const upsertManagerStock = async (payload) => (await api.put("/manager/stock", payload)).data;
+export const getManagerTanks = async () => (await api.get("/manager/tanks")).data;
+export const createManagerTank = async (payload) => (await api.post("/manager/tanks", payload)).data;
+export const updateManagerTank = async (id, payload) => (await api.patch(`/manager/tanks/${id}`, payload)).data;
 export const getManagerDensity = async (date) => (await api.get("/manager/stock/density", { params: { date } })).data;
 export const upsertManagerDensity = async (payload) => (await api.post("/manager/stock/density", payload)).data;
 export const getManagerReceipts = async (date) => (await api.get("/manager/stock/receipts", { params: { date } })).data;

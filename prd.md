@@ -701,6 +701,7 @@ V1 configuration includes only what is required to operate the station:
 - tank identity
 - product
 - capacity
+- minimal tank configuration is managed inside Stock & Rates
 
 ### Security
 
@@ -728,7 +729,7 @@ Fuel sale
 ```text
 Fuel Receipt
    ↓
-Tank Stock
+Daily Product Stock (tank context only)
    ↓
 Nozzle Sales
    ↓
@@ -738,6 +739,8 @@ Physical Dip
    ↓
 Variation
 ```
+
+Daily stock remains one record per station, business date, and product. Tank configuration is returned as product context; a tank is not attached to daily stock because a product total may span multiple physical tanks.
 
 ```text
 Customer

@@ -1,6 +1,27 @@
 {
   "manager": {
     "stockLabels": {
+      "tankContextOnly":"निवड केवळ संदर्भासाठी आहे; साठ्याची बेरीज उत्पादनानुसारच राहते.",
+      "tankContext":"टाकी / उत्पादन संदर्भ",
+      "selectTank":"टाकी",
+      "noActiveTanks":"या उत्पादनासाठी सक्रिय टाकी कॉन्फिगर केलेली नाही.",
+      "manageTanks":"टाक्या व्यवस्थापित करा",
+      "noStockRecord":"या तारखेसाठी आणि उत्पादनासाठी स्टॉक नोंद नाही. जतन करेपर्यंत सुरुवातीचा साठा आणि गणना उपलब्ध नाही.",
+      "physicalVerification":"भौतिक पडताळणी",
+      "waterSection":"पाणी",
+      "openingStockRequired":"जतन करण्यापूर्वी सुरुवातीचा साठा भरा.",
+      "tankNumber":"टाकी क्रमांक",
+      "capacityLitres":"क्षमता (L)",
+      "product":"उत्पादन",
+      "active":"सक्रिय",
+      "inactive":"निष्क्रिय",
+      "edit":"संपादित करा",
+      "activate":"सक्रिय करा",
+      "deactivate":"निष्क्रिय करा",
+      "editTank":"टाकी संपादित करा",
+      "addTank":"टाकी जोडा",
+      "saveTank":"टाकी जतन करा",
+      "cancel":"रद्द करा",
       "stockTab":"साठा", "recordsTab":"पावत्या आणि घनता", "ratesTab":"दर", "businessDate":"व्यावसायिक तारीख", "stockDetails":"साठा तपशील", "openingStockLitres":"सुरुवातीचा साठा", "productDip":"उत्पादन डिप", "actualDipStockLitres":"प्रत्यक्ष डिप साठा", "waterDip":"पाणी डिप", "waterDipVolumeLitres":"पाणी डिप प्रमाण", "receiptStock":"पावती साठा", "totalAvailable":"एकूण उपलब्ध", "actualSales":"प्रत्यक्ष विक्री", "calculatedClosing":"गणना केलेला क्लोजिंग", "variation":"फरक", "dailyDensity":"दैनिक घनता", "hydrometerReading":"हायड्रोमीटर", "temperatureC":"तापमान (°C)", "density15":"घनता @15°C", "saveDensity":"घनता जतन करा", "fuelReceipts":"इंधन पावत्या", "invoiceNumber":"इनव्हॉइस क्रमांक", "quantityLitres":"प्रमाण (L)", "supplierName":"पुरवठादार", "tankerNumber":"टँकर क्रमांक", "saveReceipt":"पावती जतन करा", "addRate":"नवीन दर जोडा", "effectiveDate":"प्रभावी व्यावसायिक तारीख", "petrolRatePaise":"पेट्रोल दर (पैसे)", "dieselRatePaise":"डिझेल दर (पैसे)", "saveRate":"दर जतन करा", "save":"साठा जतन करा", "saved":"यशस्वीरित्या जतन केले.", "loadError":"साठा डेटा लोड करता आला नाही.", "saveError":"बदल जतन करता आले नाहीत."
     },
     "dashboard": "डॅशबोर्ड",

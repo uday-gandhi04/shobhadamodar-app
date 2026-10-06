@@ -27,6 +27,8 @@ import {
 } from "../middlewares/auth.middleware.js";
 import { getManagerStock, upsertManagerStock, getManagerDensity, upsertManagerDensity, getManagerReceipts, createManagerReceipt } from "../controllers/managerStock.controller.js";
 import { stockDateSchema, stockSchema, densitySchema, receiptSchema } from "../validations/managerStock.validation.js";
+import { getManagerTanks, createManagerTank, updateManagerTank } from "../controllers/managerTanks.controller.js";
+import { createTankSchema, updateTankSchema } from "../validations/managerTanks.validation.js";
 
 const router = express.Router();
 
@@ -36,6 +38,9 @@ router.get("/stock/density", protect, authorize("MANAGER"), validate(stockDateSc
 router.post("/stock/density", protect, authorize("MANAGER"), validate(densitySchema), upsertManagerDensity);
 router.get("/stock/receipts", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerReceipts);
 router.post("/stock/receipts", protect, authorize("MANAGER"), validate(receiptSchema), createManagerReceipt);
+router.get("/tanks", protect, authorize("MANAGER"), getManagerTanks);
+router.post("/tanks", protect, authorize("MANAGER"), validate(createTankSchema), createManagerTank);
+router.patch("/tanks/:id", protect, authorize("MANAGER"), validate(updateTankSchema), updateManagerTank);
 
 router.get(
   "/employees",

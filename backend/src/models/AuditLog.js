@@ -24,6 +24,9 @@ const auditLogSchema = new mongoose.Schema(
         "UDHARI_CUSTOMER_BLOCK_STATUS_CHANGED",
         "UDHARI_SETTLEMENT_RECORDED",
         "STOCK_UPSERTED",
+        "TANK_CREATED",
+        "TANK_UPDATED",
+        "TANK_STATUS_CHANGED",
         "DENSITY_UPSERTED",
         "FUEL_RECEIPT_CREATED",
         "FUEL_RATE_CREATED",
@@ -32,7 +35,7 @@ const auditLogSchema = new mongoose.Schema(
     },
     entityType: {
       type: String,
-      enum: ["EMPLOYEE", "CUSTOMER", "STOCK", "DENSITY", "FUEL_RECEIPT", "FUEL_RATE"],
+      enum: ["EMPLOYEE", "CUSTOMER", "STOCK", "TANK", "DENSITY", "FUEL_RECEIPT", "FUEL_RATE"],
       required: true,
     },
     entityId: {
