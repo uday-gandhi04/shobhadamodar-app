@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import ManagerLayout from "./ManagerLayout";
 import api from "../../services/api";
 
 const Settings = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -22,7 +20,7 @@ const Settings = () => {
         if (mounted) {
            setStationConfig(response.data);
         }
-      } catch (err) {
+      } catch {
         if (mounted) {
            setError("Unable to load settings data.");
         }
@@ -99,18 +97,6 @@ const Settings = () => {
               </p>
             </section>
 
-            <section className="rounded-[16px] bg-white p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[12px] font-bold text-slate-900">Security</h2>
-              <p className="mt-2 text-[10px] text-slate-500 mb-3">
-                Manage your account credentials and sessions.
-              </p>
-              <button
-                type="button"
-                className="w-full rounded-[10px] border border-slate-200 bg-white py-2.5 text-[11px] font-bold text-slate-700 active:bg-slate-50"
-              >
-                Change Password
-              </button>
-            </section>
           </>
         )}
       </div>

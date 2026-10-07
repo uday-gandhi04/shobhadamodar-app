@@ -1075,13 +1075,6 @@ const ShiftDetailView = ({
               shift.totalUdhariPaise,
             )}
           />
-          
-          {expenseTotal > 0 && (
-            <CollectionRow
-              label={t("manager.expenses", "Expenses")}
-              value={formatMoney(expenseTotal)}
-            />
-          )}
 
           <CollectionRow
             label={t(
@@ -1137,10 +1130,10 @@ const ShiftDetailView = ({
 
           <Metric
             label={t(
-              "manager.accounted",
+              "manager.totalCollected",
             )}
             value={formatMoney(
-              collectionTotal + expenseTotal,
+              collectionTotal,
             )}
           />
         </div>
