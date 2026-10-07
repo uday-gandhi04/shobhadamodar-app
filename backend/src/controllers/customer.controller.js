@@ -298,27 +298,47 @@ export const updateCustomer = async (req, res, next) => {
       });
     }
 
-    if (req.body.name && String(req.body.name).trim()) {
-      customer.name = String(req.body.name).trim();
+    const changedFields = {};
+    
+    if (req.body.name && String(req.body.name).trim() && customer.name !== String(req.body.name).trim()) {
+      changedFields.name = String(req.body.name).trim();
+      customer.name = changedFields.name;
     }
 
     if (req.body.phoneNumber !== undefined) {
-      customer.phoneNumber = req.body.phoneNumber ? String(req.body.phoneNumber).trim() : null;
+      const val = req.body.phoneNumber ? String(req.body.phoneNumber).trim() : null;
+      if (customer.phoneNumber !== val) {
+        changedFields.phoneNumber = val;
+        customer.phoneNumber = val;
+      }
     }
 
     if (req.body.vehicleNumber !== undefined) {
-      customer.vehicleNumber = req.body.vehicleNumber ? String(req.body.vehicleNumber).trim().toUpperCase() : null;
+      const val = req.body.vehicleNumber ? String(req.body.vehicleNumber).trim().toUpperCase() : null;
+      if (customer.vehicleNumber !== val) {
+        changedFields.vehicleNumber = val;
+        customer.vehicleNumber = val;
+      }
     }
 
     if (req.body.address !== undefined) {
-      customer.address = req.body.address ? String(req.body.address).trim() : null;
+      const val = req.body.address ? String(req.body.address).trim() : null;
+      if (customer.address !== val) {
+        changedFields.address = val;
+        customer.address = val;
+      }
     }
 
     if (req.body.notes !== undefined) {
-      customer.notes = req.body.notes ? String(req.body.notes).trim() : null;
+      const val = req.body.notes ? String(req.body.notes).trim() : null;
+      if (customer.notes !== val) {
+        changedFields.notes = val;
+        customer.notes = val;
+      }
     }
 
-    if (req.body.creditLimitPaise !== undefined) {
+    if (req.body.creditLimitPaise !== undefined && customer.creditLimitPaise !== req.body.creditLimitPaise) {
+      changedFields.creditLimitPaise = req.body.creditLimitPaise;
       customer.creditLimitPaise = req.body.creditLimitPaise;
     }
 
@@ -329,7 +349,7 @@ export const updateCustomer = async (req, res, next) => {
       action: 'UDHARI_CUSTOMER_UPDATED',
       entityType: 'CUSTOMER',
       entityId: customer._id,
-      metadata: { customerId: String(customer._id) },
+      metadata: { customerId: String(customer._id), changedFields },
     });
 
     return res.status(200).json({

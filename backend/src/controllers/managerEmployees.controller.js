@@ -202,14 +202,8 @@ export const updateManagerEmployee = async (req, res, next) => {
       });
     }
 
-    const employee = await User.findOneAndUpdate(
-      { _id: req.params.id, role: "EMPLOYEE" },
-      { $set: { name } },
-      { new: true, runValidators: true },
-    )
-      .select(employeeProjection)
-      .lean();
-
+    const employee = await User.findOne({ _id: req.params.id, role: "EMPLOYEE" });
+    
     if (!employee) {
       return res.status(404).json({
         success: false,
@@ -217,12 +211,16 @@ export const updateManagerEmployee = async (req, res, next) => {
       });
     }
 
+    const oldName = employee.name;
+    employee.name = name;
+    await employee.save();
+
     await recordAuditLog({
       actor: req.user,
       action: "EMPLOYEE_PROFILE_UPDATED",
       entityType: "EMPLOYEE",
       entityId: employee._id,
-      metadata: { employeeId: employee.employeeId },
+      metadata: { employeeId: employee.employeeId, oldName, newName: name },
     });
 
     return res.status(200).json({

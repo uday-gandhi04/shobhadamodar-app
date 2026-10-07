@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -175,7 +175,7 @@ const Accounting = () => {
             aria-label={t("manager.accountingLabels.previousPeriod")}
             className="grid h-10 w-10 place-items-center rounded-[10px] text-[20px] font-semibold text-slate-500 active:bg-slate-100"
           >
-            ‹
+            â€¹
           </button>
           <div className="text-center">
             <p className="text-[11px] font-bold text-slate-800">
@@ -189,7 +189,7 @@ const Accounting = () => {
                 : `${formatBusinessDate(dateRange.start, {
                     day: "2-digit",
                     month: "short",
-                  })} – ${formatBusinessDate(dateRange.end, {
+                  })} â€“ ${formatBusinessDate(dateRange.end, {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -203,7 +203,7 @@ const Accounting = () => {
             aria-label={t("manager.accountingLabels.nextPeriod")}
             className="grid h-10 w-10 place-items-center rounded-[10px] text-[20px] font-semibold text-slate-500 active:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
           >
-            ›
+            â€º
           </button>
         </div>
 
@@ -257,33 +257,39 @@ const Accounting = () => {
               <h2 className="text-[15px] font-bold text-slate-900">
                 {t("manager.accountingLabels.mpdWise")}
               </h2>
-              <div className="mt-2.5 overflow-x-auto">
-                <div className="min-w-[390px]">
-                  <div className="grid grid-cols-[0.72fr_1fr_1fr_1fr_1.18fr] divide-x divide-slate-200 rounded-t-[10px] bg-slate-100 py-2 text-[8px] font-bold text-slate-500">
-                    <span className="px-1.5">{t("manager.accountingLabels.mpdColumn")}</span>
-                    <span className="px-1 text-right">{t("manager.accountingLabels.petrolLitres")}</span>
-                    <span className="px-1 text-right">{t("manager.accountingLabels.dieselLitres")}</span>
-                    <span className="px-1 text-right">{t("manager.accountingLabels.totalLitresColumn")}</span>
-                    <span className="px-1.5 text-right">{t("manager.accountingLabels.saleRupees")}</span>
-                  </div>
-                  <div className="divide-y divide-slate-100">
-                    {(report?.mpds || []).map((mpd) => (
-                      <MpdAccountingRow key={mpd._id} mpd={mpd} />
-                    ))}
-                    {(report?.mpds || []).length === 0 && (
-                      <p className="py-3 text-center text-[10px] text-slate-400">
-                        {t("manager.accountingLabels.noMpdData")}
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-[0.72fr_1fr_1fr_1fr_1.18fr] divide-x divide-slate-200 rounded-b-[10px] bg-slate-50 py-2.5 text-[9px] font-extrabold text-slate-700">
-                    <span className="px-1.5">{t("manager.accountingLabels.total")}</span>
-                    <span className="px-1 text-right">{formatLitresNumber(summary.totalLitresPetrol)}</span>
-                    <span className="px-1 text-right">{formatLitresNumber(summary.totalLitresDiesel)}</span>
-                    <span className="px-1 text-right">{formatLitresNumber(summary.totalLitres)}</span>
-                    <span className="px-1.5 text-right">{formatMoney(summary.expectedTotalSalePaise)}</span>
-                  </div>
-                </div>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(report?.mpds || []).map((mpd) => (
+                  <MpdAccountingCard key={mpd._id} mpd={mpd} t={t} />
+                ))}
+                {(report?.mpds || []).length === 0 && (
+                  <p className="py-3 text-center text-[10px] text-slate-400">
+                    {t("manager.accountingLabels.noMpdData")}
+                  </p>
+                )}
+              </div>
+              <div className="mt-3 rounded-[12px] border border-slate-100 bg-slate-50 p-3 shadow-sm">
+                 <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                    <span className="text-[11px] font-extrabold text-slate-900">{t("manager.accountingLabels.stationTotal")}</span>
+                    <span className="text-[11px] font-extrabold text-slate-900">{formatMoney(summary.expectedTotalSalePaise)}</span>
+                 </div>
+                 <div className="mt-2 space-y-1.5 text-[9px] font-medium text-slate-600">
+                    <div className="flex justify-between">
+                       <span className="font-bold text-rose-700">{t("manager.petrol")}</span>
+                       <span className="font-semibold text-slate-800">
+                         {formatLitresNumber(summary.totalLitresPetrol)} L · {formatMoney(summary.petrolSalePaise)}
+                       </span>
+                    </div>
+                    <div className="flex justify-between">
+                       <span className="font-bold text-blue-700">{t("manager.diesel")}</span>
+                       <span className="font-semibold text-slate-800">
+                         {formatLitresNumber(summary.totalLitresDiesel)} L · {formatMoney(summary.dieselSalePaise)}
+                       </span>
+                    </div>
+                    <div className="mt-1 flex justify-between border-t border-slate-200/60 pt-1.5 font-bold text-slate-700">
+                       <span>{t("manager.accountingLabels.totalLitresColumn")}</span>
+                       <span>{formatLitresNumber(summary.totalLitres)} L</span>
+                    </div>
+                 </div>
               </div>
             </section>
 
@@ -434,7 +440,7 @@ const Accounting = () => {
               title={t("manager.accountingLabels.exportUnavailable")}
               className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-100 text-[11px] font-bold text-emerald-800 disabled:cursor-not-allowed disabled:opacity-80"
             >
-              <span aria-hidden="true">↓</span>
+              <span aria-hidden="true">â†“</span>
               {t("manager.accountingLabels.exportReport")}
               <span className="text-[9px] font-medium">
                 {t("manager.accountingLabels.exportUnavailable")}
@@ -508,13 +514,26 @@ const AccountingIcon = ({ type }) => (
   </svg>
 );
 
-const MpdAccountingRow = ({ mpd }) => (
-  <div className="grid min-h-[42px] grid-cols-[0.72fr_1fr_1fr_1fr_1.18fr] items-center divide-x divide-slate-100 text-[9px] text-slate-700">
-    <span className="px-1.5 font-extrabold text-slate-900">{mpd.mpdNumber}</span>
-    <span className="px-1 text-right font-medium">{formatLitresNumber(mpd.totalLitresPetrol)}</span>
-    <span className="px-1 text-right font-medium">{formatLitresNumber(mpd.totalLitresDiesel)}</span>
-    <span className="px-1 text-right font-medium">{formatLitresNumber(mpd.totalLitres)}</span>
-    <span className="px-1.5 text-right font-bold">{formatMoney(mpd.expectedTotalSalePaise)}</span>
+const MpdAccountingCard = ({ mpd, t }) => (
+  <div className="rounded-[14px] border border-slate-100 bg-white p-3 shadow-[0_3px_10px_rgba(15,23,42,0.04)]">
+    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+      <span className="text-[11px] font-extrabold text-slate-900">{mpd.mpdNumber}</span>
+      <span className="text-[11px] font-extrabold text-slate-900">{formatMoney(mpd.expectedTotalSalePaise)}</span>
+    </div>
+    <div className="mt-2 space-y-1.5 text-[9px] font-medium text-slate-600">
+      <div className="flex justify-between">
+         <span className="font-bold text-rose-700">{t("manager.petrol")}</span>
+         <span className="font-semibold text-slate-800">{formatLitresNumber(mpd.totalLitresPetrol)} L · {formatMoney(mpd.petrolSalePaise)}</span>
+      </div>
+      <div className="flex justify-between">
+         <span className="font-bold text-blue-700">{t("manager.diesel")}</span>
+         <span className="font-semibold text-slate-800">{formatLitresNumber(mpd.totalLitresDiesel)} L · {formatMoney(mpd.dieselSalePaise)}</span>
+      </div>
+      <div className="mt-1 flex justify-between border-t border-slate-100 pt-1.5 font-bold text-slate-700">
+         <span>{t("manager.accountingLabels.totalLitresColumn")}</span>
+         <span>{formatLitresNumber(mpd.totalLitres)} L</span>
+      </div>
+    </div>
   </div>
 );
 
@@ -547,7 +566,7 @@ const DifferenceRow = ({ difference, t }) => {
   return (
     <div className="flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2">
       <span className="text-[9px] font-semibold text-slate-500">
-        {t("manager.difference")} · {label}
+        {t("manager.difference")} Â· {label}
       </span>
       <span className={`text-[11px] font-extrabold ${color}`}>
         {amount > 0 ? "+" : ""}{formatMoney(amount)}
@@ -586,13 +605,13 @@ const ShiftSummaryRow = ({ shift, t, onClick }) => {
         <div className="min-w-0">
           <p className="text-[10px] font-extrabold text-slate-800">
             {shift.mpd?.mpdNumber || t("manager.accountingLabels.unknownMpd")}
-            <span className="font-medium text-slate-400"> · {shift.employee?.name || t("manager.employeeUnknown")}</span>
+            <span className="font-medium text-slate-400"> Â· {shift.employee?.name || t("manager.employeeUnknown")}</span>
           </p>
           <p className="mt-1 text-[9px] text-slate-500">
             {formatTime(shift.startedAt)}
             {shift.endedAt
-              ? ` – ${formatTime(shift.endedAt)}`
-              : ` – ${t("manager.accountingLabels.activePending")}`}
+              ? ` â€“ ${formatTime(shift.endedAt)}`
+              : ` â€“ ${t("manager.accountingLabels.activePending")}`}
           </p>
         </div>
         <span className="shrink-0 text-[10px] font-bold text-slate-800">
@@ -622,10 +641,10 @@ const ActiveShiftSummaryRow = ({ shift, t, selectedBusinessDate, onClick }) => {
         <div className="min-w-0">
           <p className="text-[10px] font-extrabold text-slate-800">
             {shift.mpd?.mpdNumber || t("manager.accountingLabels.unknownMpd")}
-            <span className="font-medium text-slate-500"> · {shift.employee?.name || t("manager.employeeUnknown")}</span>
+            <span className="font-medium text-slate-500"> Â· {shift.employee?.name || t("manager.employeeUnknown")}</span>
           </p>
           <p className="mt-1 text-[9px] text-slate-500">
-            {isOvernight ? t("manager.accountingLabels.startedEarlier") : t("manager.started")} · {formatTime(shift.startedAt)}
+            {isOvernight ? t("manager.accountingLabels.startedEarlier") : t("manager.started")} Â· {formatTime(shift.startedAt)}
           </p>
         </div>
         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[8px] font-extrabold text-emerald-700">
@@ -647,3 +666,6 @@ const ActiveShiftSummaryRow = ({ shift, t, selectedBusinessDate, onClick }) => {
 };
 
 export default Accounting;
+
+
+

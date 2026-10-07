@@ -1,8 +1,89 @@
 {
   "manager": {
     "stockLabels": {
-      "tankContextOnly":"चयन केवल संदर्भ के लिए है; स्टॉक कुल उत्पाद के आधार पर रहेगा।",
-      "stockTab":"स्टॉक", "recordsTab":"रसीद और घनत्व", "ratesTab":"दरें", "businessDate":"व्यावसायिक तारीख", "stockDetails":"स्टॉक विवरण", "openingStockLitres":"ओपनिंग स्टॉक", "productDip":"प्रोडक्ट डिप", "actualDipStockLitres":"वास्तविक डिप स्टॉक", "waterDip":"वॉटर डिप", "waterDipVolumeLitres":"वॉटर डिप मात्रा", "receiptStock":"रसीद स्टॉक", "totalAvailable":"कुल उपलब्ध", "actualSales":"वास्तविक बिक्री", "calculatedClosing":"गणना की गई क्लोजिंग", "variation":"अंतर", "dailyDensity":"दैनिक घनत्व", "hydrometerReading":"हाइड्रोमीटर", "temperatureC":"तापमान (°C)", "density15":"घनत्व @15°C", "saveDensity":"घनत्व सहेजें", "fuelReceipts":"ईंधन रसीद", "invoiceNumber":"इनवॉइस नंबर", "quantityLitres":"मात्रा (L)", "supplierName":"आपूर्तिकर्ता", "tankerNumber":"टैंकर नंबर", "saveReceipt":"रसीद सहेजें", "addRate":"नई दर जोड़ें", "effectiveDate":"प्रभावी व्यावसायिक तारीख", "petrolRatePaise":"पेट्रोल दर (पैसे)", "dieselRatePaise":"डीज़ल दर (पैसे)", "saveRate":"दर सहेजें", "save":"स्टॉक सहेजें", "saved":"सफलतापूर्वक सहेजा गया।", "loadError":"स्टॉक डेटा लोड नहीं हो सका।", "saveError":"परिवर्तन सहेजे नहीं जा सके।", "tankContext":"टैंक / उत्पाद संदर्भ", "selectTank":"टैंक", "noActiveTanks":"इस उत्पाद के लिए कोई सक्रिय टैंक कॉन्फ़िगर नहीं है।", "manageTanks":"टैंक प्रबंधित करें", "noStockRecord":"इस तारीख और उत्पाद के लिए स्टॉक रिकॉर्ड दर्ज नहीं है। सहेजने तक ओपनिंग स्टॉक और गणना अनुपलब्ध रहेंगे।", "physicalVerification":"भौतिक सत्यापन", "waterSection":"पानी", "openingStockRequired":"सहेजने से पहले ओपनिंग स्टॉक दर्ज करें।", "tankNumber":"टैंक नंबर", "capacityLitres":"क्षमता (L)", "product":"उत्पाद", "active":"सक्रिय", "inactive":"निष्क्रिय", "edit":"संपादित करें", "activate":"सक्रिय करें", "deactivate":"निष्क्रिय करें", "editTank":"टैंक संपादित करें", "addTank":"टैंक जोड़ें", "saveTank":"टैंक सहेजें", "cancel":"रद्द करें", "beforeDecantation":"Before Decantation", "challan":"Challan", "beforeDifference":"Before Difference", "afterDecantation":"After Decantation", "afterChallan":"After Challan", "afterDifference":"After Difference", "beforeHydrometer":"Before Hydrometer", "beforeTemperatureC":"Before Temp (°C)", "beforeDensity15":"Before Density @15°C", "challanDensity15":"Challan Density @15°C", "beforeDensityDifference":"Before Density Diff", "afterHydrometer":"After Hydrometer", "afterTemperatureC":"After Temp (°C)", "afterDensity15":"After Density @15°C", "afterChallanDensity15":"After Challan Density @15°C", "afterDensityDifference":"After Density Diff", "receiptDetail":"Receipt Detail", "close":"Close", "basicDetails":"Basic Details", "noReceipts":"No receipts found for this date.", "currentApplicableRate":"वर्तमान लागू दर", "effectiveFrom":"से प्रभावी", "rupeesPerLitre":"₹ / L", "petrolRateRupees":"पेट्रोल दर (₹/L)", "dieselRateRupees":"डीज़ल दर (₹/L)", "setBy":"द्वारा निर्धारित", "rateHistory":"दर इतिहास"
+      "tankContextOnly": "चयन केवल संदर्भ के लिए है; स्टॉक कुल उत्पाद के आधार पर रहेगा।",
+      "stockTab": "स्टॉक",
+      "recordsTab": "रसीद और घनत्व",
+      "ratesTab": "दरें",
+      "businessDate": "व्यावसायिक तारीख",
+      "stockDetails": "स्टॉक विवरण",
+      "openingStockLitres": "ओपनिंग स्टॉक",
+      "productDip": "प्रोडक्ट डिप",
+      "actualDipStockLitres": "वास्तविक डिप स्टॉक",
+      "waterDip": "वॉटर डिप",
+      "waterDipVolumeLitres": "वॉटर डिप मात्रा",
+      "receiptStock": "रसीद स्टॉक",
+      "totalAvailable": "कुल उपलब्ध",
+      "actualSales": "वास्तविक बिक्री",
+      "calculatedClosing": "गणना की गई क्लोजिंग",
+      "variation": "अंतर",
+      "dailyDensity": "दैनिक घनत्व",
+      "hydrometerReading": "हाइड्रोमीटर",
+      "temperatureC": "तापमान (°C)",
+      "density15": "घनत्व @15°C",
+      "saveDensity": "घनत्व सहेजें",
+      "fuelReceipts": "ईंधन रसीद",
+      "invoiceNumber": "इनवॉइस नंबर",
+      "quantityLitres": "मात्रा (L)",
+      "supplierName": "आपूर्तिकर्ता",
+      "tankerNumber": "टैंकर नंबर",
+      "saveReceipt": "रसीद सहेजें",
+      "addRate": "नई दर जोड़ें",
+      "effectiveDate": "प्रभावी व्यावसायिक तारीख",
+      "petrolRatePaise": "पेट्रोल दर (पैसे)",
+      "dieselRatePaise": "डीज़ल दर (पैसे)",
+      "saveRate": "दर सहेजें",
+      "save": "स्टॉक सहेजें",
+      "saved": "सफलतापूर्वक सहेजा गया।",
+      "loadError": "स्टॉक डेटा लोड नहीं हो सका।",
+      "saveError": "परिवर्तन सहेजे नहीं जा सके।",
+      "tankContext": "टैंक / उत्पाद संदर्भ",
+      "selectTank": "टैंक",
+      "noActiveTanks": "इस उत्पाद के लिए कोई सक्रिय टैंक कॉन्फ़िगर नहीं है।",
+      "manageTanks": "टैंक प्रबंधित करें",
+      "noStockRecord": "इस तारीख और उत्पाद के लिए स्टॉक रिकॉर्ड दर्ज नहीं है। सहेजने तक ओपनिंग स्टॉक और गणना अनुपलब्ध रहेंगे।",
+      "physicalVerification": "भौतिक सत्यापन",
+      "waterSection": "पानी",
+      "openingStockRequired": "सहेजने से पहले ओपनिंग स्टॉक दर्ज करें।",
+      "tankNumber": "टैंक नंबर",
+      "capacityLitres": "क्षमता (L)",
+      "product": "उत्पाद",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "edit": "संपादित करें",
+      "activate": "सक्रिय करें",
+      "deactivate": "निष्क्रिय करें",
+      "editTank": "टैंक संपादित करें",
+      "addTank": "टैंक जोड़ें",
+      "saveTank": "टैंक सहेजें",
+      "cancel": "रद्द करें",
+      "beforeDecantation": "डिकेंटेशन से पहले",
+      "challan": "चालान",
+      "beforeDifference": "पहले का अंतर",
+      "afterDecantation": "डिकेंटेशन के बाद",
+      "afterChallan": "चालान के बाद",
+      "afterDifference": "बाद का अंतर",
+      "beforeHydrometer": "हाइड्रोमीटर (पहले)",
+      "beforeTemperatureC": "तापमान (पहले)",
+      "beforeDensity15": "घनत्व @15°C (पहले)",
+      "challanDensity15": "चालान घनत्व @15°C",
+      "beforeDensityDifference": "घनत्व अंतर (पहले)",
+      "afterHydrometer": "हाइड्रोमीटर (बाद में)",
+      "afterTemperatureC": "तापमान (बाद में)",
+      "afterDensity15": "घनत्व @15°C (बाद में)",
+      "afterChallanDensity15": "चालान घनत्व @15°C (बाद में)",
+      "afterDensityDifference": "घनत्व अंतर (बाद में)",
+      "receiptDetail": "रसीद विवरण",
+      "close": "बंद करें",
+      "basicDetails": "मूल विवरण",
+      "noReceipts": "इस तारीख के लिए कोई रसीद नहीं मिली।",
+      "currentApplicableRate": "वर्तमान लागू दर",
+      "effectiveFrom": "से प्रभावी",
+      "rupeesPerLitre": "₹ / L",
+      "petrolRateRupees": "पेट्रोल दर (₹/L)",
+      "dieselRateRupees": "डीज़ल दर (₹/L)",
+      "setBy": "द्वारा निर्धारित",
+      "rateHistory": "दर इतिहास"
     },
     "dashboard": "डैशबोर्ड",
     "dashboardTitle": "Shobhadamodar Petroleum",
@@ -201,91 +282,90 @@
       "excess": "अधिक",
       "pending": "लंबित"
     },
-  "shiftDetail": "Shift Details",
-  "backToShifts": "Back to Shifts",
-  "shiftDetailLoadError": "Unable to load shift details.",
-  "shiftNotAvailable": "Shift details are not available.",
-  "fuelSales": "Fuel Sales",
-  "petrol": "Petrol",
-  "diesel": "Diesel",
-  "expectedSale": "Expected Sale",
-  "collections": "Collections",
-  "cash": "Cash",
-  "upi": "UPI",
-  "card": "Card",
-  "totalCollected": "Total Collected",
-  "reconciliation": "Reconciliation",
-  "accounted": "Accounted",
-  "expenses": "Expenses",
-  "noExpenses": "No expenses recorded.",
-  "udhariTransactions": "Udhari Transactions",
-  "noUdhariTransactions": "No Udhari transactions.",
-  "udhariPage": {
-    "subtitle": "ग्राहक उधारी और सेटलमेंट",
-    "totalOutstanding": "कुल बकाया",
-    "totalCustomers": "कुल ग्राहक",
-    "customersWithOutstanding": "बकाया वाले ग्राहक",
-    "searchPlaceholder": "ग्राहक का नाम, फोन या वाहन खोजें",
-    "filterAll": "सभी",
-    "filterOutstanding": "बकाया",
-    "filterSettled": "निपटाया",
-    "filterBlocked": "अवरुद्ध",
-    "customers": "ग्राहक",
-    "loading": "ग्राहक लोड हो रहे हैं...",
-    "noCustomers": "कोई ग्राहक नहीं मिला।",
-    "noMobile": "कोई मोबाइल नंबर नहीं",
-    "outstandingShort": "बकाया",
-    "statusActive": "सक्रिय",
-    "statusSettled": "निपटाया",
-    "statusBlocked": "अवरुद्ध",
-    "currentOutstanding": "वर्तमान बकाया",
-    "overview": "अवलोकन",
-    "ledger": "लेजर",
-    "settlement": "सेटलमेंट",
-    "totalCreditGiven": "कुल क्रेडिट",
-    "totalSettlements": "कुल सेटलमेंट",
-    "transactionCount": "लेन-देन की संख्या",
-    "noLedger": "अभी कोई लेजर प्रविष्टि नहीं है।",
-    "credit": "क्रेडिट",
-    "paymentBasis": "भुगतान",
-    "vehicle": "वाहन",
-    "recordedBy": "द्वारा दर्ज",
-    "balance": "बैलेंस",
-    "settlePayment": "भुगतान निपटान",
-    "amount": "राशि",
-    "paymentMethod": "भुगतान का तरीका",
-    "referenceNumber": "रेफरेंस नंबर",
-    "confirmSettlement": "सेटलमेंट की पुष्टि करें",
-    "confirming": "सत्यापन...",
-    "cash": "नकद",
+    "shiftDetail": "Shift Details",
+    "backToShifts": "Back to Shifts",
+    "shiftDetailLoadError": "Unable to load shift details.",
+    "shiftNotAvailable": "Shift details are not available.",
+    "fuelSales": "Fuel Sales",
+    "petrol": "Petrol",
+    "diesel": "Diesel",
+    "expectedSale": "Expected Sale",
+    "collections": "Collections",
+    "cash": "Cash",
     "upi": "UPI",
-    "card": "कार्ड",
-    "blockCustomer": "ग्राहक को अवरुद्ध करें",
-    "unblockCustomer": "ग्राहक को अनवरोधित करें",
-    "addCustomer": "+ ग्राहक जोड़ें",
-    "editCustomer": "ग्राहक संपादित करें",
-    "customerId": "ग्राहक आईडी",
-    "creditLimit": "क्रेडिट सीमा",
-    "withinCreditLimit": "सीमा के भीतर",
-    "aboveCreditLimit": "सीमा से अधिक",
-    "invalidCreditLimit": "मान्य गैर-नकारात्मक क्रेडिट सीमा दर्ज करें।",
-    "customerName": "ग्राहक का नाम",
-    "mobileNumber": "मोबाइल नंबर",
-    "vehicleNumber": "वाहन नंबर",
-    "address": "पता",
-    "notes": "नोट्स",
-    "saveCustomer": "ग्राहक सेव करें",
-    "saving": "सेव हो रहा है...",
-    "customerSaved": "ग्राहक सफलतापूर्वक सेव हुआ।",
-    "saveFailed": "ग्राहक सेव नहीं हो सका।",
-    "blockFailed": "अवरुद्ध स्थिति अपडेट नहीं हो सकी।",
-    "settlementRecorded": "सेटलमेंट सफलतापूर्वक दर्ज हुआ।",
-    "invalidSettlement": "अमान्य सेटलमेंट राशि।",
-    "detailLoadError": "ग्राहक विवरण लोड नहीं हो सका।",
-    "loadError": "ग्राहक सूची लोड नहीं हो सकी।"
-  }
+    "card": "Card",
+    "totalCollected": "Total Collected",
+    "reconciliation": "Reconciliation",
+    "accounted": "Accounted",
+    "expenses": "Expenses",
+    "noExpenses": "No expenses recorded.",
+    "udhariTransactions": "Udhari Transactions",
+    "noUdhariTransactions": "No Udhari transactions.",
+    "udhariPage": {
+      "subtitle": "ग्राहक उधारी और सेटलमेंट",
+      "totalOutstanding": "कुल बकाया",
+      "totalCustomers": "कुल ग्राहक",
+      "customersWithOutstanding": "बकाया वाले ग्राहक",
+      "searchPlaceholder": "ग्राहक का नाम, फोन या वाहन खोजें",
+      "filterAll": "सभी",
+      "filterOutstanding": "बकाया",
+      "filterSettled": "निपटाया",
+      "filterBlocked": "अवरुद्ध",
+      "customers": "ग्राहक",
+      "loading": "ग्राहक लोड हो रहे हैं...",
+      "noCustomers": "कोई ग्राहक नहीं मिला।",
+      "noMobile": "कोई मोबाइल नंबर नहीं",
+      "outstandingShort": "बकाया",
+      "statusActive": "सक्रिय",
+      "statusSettled": "निपटाया",
+      "statusBlocked": "अवरुद्ध",
+      "currentOutstanding": "वर्तमान बकाया",
+      "overview": "अवलोकन",
+      "ledger": "लेजर",
+      "settlement": "सेटलमेंट",
+      "totalCreditGiven": "कुल क्रेडिट",
+      "totalSettlements": "कुल सेटलमेंट",
+      "transactionCount": "लेन-देन की संख्या",
+      "noLedger": "अभी कोई लेजर प्रविष्टि नहीं है।",
+      "credit": "क्रेडिट",
+      "paymentBasis": "भुगतान",
+      "vehicle": "वाहन",
+      "recordedBy": "द्वारा दर्ज",
+      "balance": "बैलेंस",
+      "settlePayment": "भुगतान निपटान",
+      "amount": "राशि",
+      "paymentMethod": "भुगतान का तरीका",
+      "referenceNumber": "रेफरेंस नंबर",
+      "confirmSettlement": "सेटलमेंट की पुष्टि करें",
+      "confirming": "सत्यापन...",
+      "cash": "नकद",
+      "upi": "UPI",
+      "card": "कार्ड",
+      "blockCustomer": "ग्राहक को अवरुद्ध करें",
+      "unblockCustomer": "ग्राहक को अनवरोधित करें",
+      "addCustomer": "+ ग्राहक जोड़ें",
+      "editCustomer": "ग्राहक संपादित करें",
+      "customerId": "ग्राहक आईडी",
+      "creditLimit": "क्रेडिट सीमा",
+      "withinCreditLimit": "सीमा के भीतर",
+      "aboveCreditLimit": "सीमा से अधिक",
+      "invalidCreditLimit": "मान्य गैर-नकारात्मक क्रेडिट सीमा दर्ज करें।",
+      "customerName": "ग्राहक का नाम",
+      "mobileNumber": "मोबाइल नंबर",
+      "vehicleNumber": "वाहन नंबर",
+      "address": "पता",
+      "notes": "नोट्स",
+      "saveCustomer": "ग्राहक सेव करें",
+      "saving": "सेव हो रहा है...",
+      "customerSaved": "ग्राहक सफलतापूर्वक सेव हुआ।",
+      "saveFailed": "ग्राहक सेव नहीं हो सका।",
+      "blockFailed": "अवरुद्ध स्थिति अपडेट नहीं हो सकी।",
+      "settlementRecorded": "सेटलमेंट सफलतापूर्वक दर्ज हुआ।",
+      "invalidSettlement": "अमान्य सेटलमेंट राशि।",
+      "detailLoadError": "ग्राहक विवरण लोड नहीं हो सका।",
+      "loadError": "ग्राहक सूची लोड नहीं हो सकी।"
+    }
   },
-
   "login": {
     "welcome": "नमस्ते!",
     "employeeId": "कर्मचारी आईडी",
@@ -293,7 +373,6 @@
     "submit": "लॉग इन करें →",
     "secure": "सुरक्षित • विश्वसनीय • हमेशा सिंक"
   },
-
   "dashboard": {
     "assignedPump": "आपका पंप",
     "todaySale": "आज की बिक्री",
@@ -316,7 +395,6 @@
     "upiUpdated": "UPI संग्रह अपडेट किया गया",
     "viewPumpDetails": "पंप विवरण देखें"
   },
-
   "employee": {
     "selectMpd": {
       "kicker": "शिफ्ट शुरू करें",
@@ -331,13 +409,11 @@
       "loadError": "उपलब्ध MPD लोड नहीं हो सके।",
       "startError": "शिफ्ट शुरू नहीं हो सकी।"
     },
-
     "shifts": {
       "morning": "सुबह",
       "evening": "शाम",
       "night": "रात"
     },
-
     "dashboard": {
       "currentShift": "वर्तमान शिफ्ट",
       "active": "सक्रिय",
@@ -356,7 +432,6 @@
       "done": "पूरा",
       "pending": "बाकी"
     },
-
     "nozzles": {
       "title": "नोज़ल रीडिंग",
       "subtitle": "चारों नोज़ल की वर्तमान दर्ज रीडिंग।",
@@ -364,7 +439,6 @@
       "overviewAlt": "चार ईंधन नोज़ल",
       "loadError": "नोज़ल रीडिंग लोड नहीं हो सकी।"
     },
-
     "collections": {
       "title": "नकद संग्रह",
       "currentTotal": "वर्तमान संग्रह",
@@ -378,7 +452,6 @@
       "loadError": "संग्रह लोड नहीं हो सका।",
       "saveError": "संग्रह सेव नहीं हो सका।"
     },
-
     "endShift": {
       "title": "शिफ्ट समाप्त करें",
       "subtitle": "अंतिम नोज़ल रीडिंग और अंतिम रकम दर्ज करें।",
@@ -403,7 +476,6 @@
       "endError": "शिफ्ट समाप्त नहीं हो सकी।"
     }
   },
-
   "workflow": {
     "stages": {
       "nozzle": "नोज़ल",
@@ -421,7 +493,6 @@
     "logout": "लॉग आउट",
     "profileMenu": "प्रोफ़ाइल मेनू"
   },
-
   "nozzle": {
     "title": "अंतिम नोज़ल रीडिंग",
     "finalReadings": "अंतिम नोज़ल रीडिंग",
@@ -442,7 +513,6 @@
     "diesel": "डीज़ल",
     "totalFuel": "कुल ईंधन"
   },
-
   "cash": {
     "title": "नकद संग्रह",
     "subtitle": "इस शिफ्ट में एकत्र नकद दर्ज करें।",
@@ -455,7 +525,6 @@
     "next": "अगला: UPI",
     "nextUpi": "अगला: UPI"
   },
-
   "phonepe": {
     "title": "PhonePe",
     "subtitle": "UPI भुगतान होने पर पहली और आखिरी ट्रांज़ैक्शन दर्ज करें।",
@@ -472,7 +541,6 @@
     "next": "अगला: कार्ड / ATM",
     "emptyHint": "कोई PhonePe भुगतान नहीं? इसे खाली छोड़ें।"
   },
-
   "card": {
     "title": "कार्ड / ATM संग्रह",
     "description": "इस शिफ्ट में एकत्र कुल कार्ड / ATM राशि दर्ज करें।",
@@ -482,7 +550,6 @@
     "next": "अगला: उधारी",
     "nextUdhari": "अगला: उधारी"
   },
-
   "atm": {
     "title": "कार्ड / ATM संग्रह",
     "description": "अब तक एकत्र कुल कार्ड / ATM राशि दर्ज करें।",
@@ -494,7 +561,6 @@
     "totalCardAtm": "कुल कार्ड / ATM",
     "nextUdhari": "अगला: उधारी"
   },
-
   "udhari": {
     "title": "उधारी संग्रह",
     "subtitle": "उधार दिए गए ईंधन की जानकारी दर्ज करें।",
@@ -528,7 +594,6 @@
     "nextExpenses": "अगला: खर्च",
     "customerNameHint": "ग्राहक खोजें या चुनें"
   },
-
   "expense": {
     "title": "खर्च",
     "subtitle": "इस शिफ्ट के व्यावसायिक खर्च दर्ज करें।",
@@ -550,7 +615,6 @@
     "empty": "अभी कोई खर्च दर्ज नहीं है।",
     "expenses": "खर्च"
   },
-
   "review": {
     "title": "समीक्षा",
     "subtitle": "शिफ्ट समाप्त करने से पहले सब कुछ जांचें।",

@@ -1056,17 +1056,7 @@ const ShiftDetailView = ({
         />
 
         <div className="mt-3 space-y-2">
-          <CollectionRow
-            label={t("manager.cash")}
-            value={formatMoney(
-              shift.totalCashPaise,
-            )}
-          />
-
-          <CollectionRow
-            label={t("manager.coins")}
-            value={formatMoney(shift.coinsPaise)}
-          />
+          <ExpandableCashRow shift={shift} t={t} />
 
           <CollectionRow
             label={t("manager.upi")}
@@ -1075,20 +1065,7 @@ const ShiftDetailView = ({
             )}
           />
 
-          <CollectionRow
-            label={t("manager.card")}
-            value={formatMoney(
-              shift.totalCardPaise,
-            )}
-          />
-
-          {(shift.atmEntries || []).map((entry, index) => (
-            <CollectionRow
-              key={`${entry.time}-${index}`}
-              label={`${t("manager.atmEntry")} · ${entry.time}`}
-              value={formatMoney(entry.amountPaise)}
-            />
-          ))}
+          <ExpandableCardRow shift={shift} t={t} />
 
           <CollectionRow
             label={t(
@@ -1098,6 +1075,13 @@ const ShiftDetailView = ({
               shift.totalUdhariPaise,
             )}
           />
+          
+          {expenseTotal > 0 && (
+            <CollectionRow
+              label={t("manager.expenses", "Expenses")}
+              value={formatMoney(expenseTotal)}
+            />
+          )}
 
           <CollectionRow
             label={t(
@@ -1156,7 +1140,7 @@ const ShiftDetailView = ({
               "manager.accounted",
             )}
             value={formatMoney(
-              collectionTotal,
+              collectionTotal + expenseTotal,
             )}
           />
         </div>
@@ -1334,5 +1318,101 @@ const CollectionRow = ({
     </span>
   </div>
 );
+
+const ExpandableCashRow = ({ shift, t }) => {
+  const [expanded, setExpanded] = useState(false);
+  const collections = shift.cashCollections || [];
+  
+  return (
+    <div className="overflow-hidden rounded-[11px] bg-slate-50 transition-colors">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center justify-between px-3 py-2.5 active:bg-slate-100"
+      >
+        <span className="text-[9px] font-medium text-slate-500">{t("manager.cash")}</span>
+        <div className="flex items-center gap-1.5">
+           <span className="text-[10px] font-semibold text-slate-700">{formatMoney(shift.totalCashPaise)}</span>
+           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className={`h-2.5 w-2.5 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}>
+             <path d="m5 7.5 5 5 5-5" />
+           </svg>
+        </div>
+      </button>
+      {expanded && (
+        <div className="px-3 pb-2.5 pt-0">
+           <div className="mt-1 space-y-1.5 border-t border-slate-200/60 pt-2">
+             {collections.map((item, idx) => (
+                <div key={idx} className="flex justify-between text-[8px] font-medium text-slate-500">
+                   <span>₹{item.denomination} × {item.count}</span>
+                   <span>{formatMoney((item.denomination * item.count) * 100)}</span>
+                </div>
+             ))}
+             {(shift.coinsPaise || 0) > 0 && (
+                <div className="flex justify-between text-[8px] font-medium text-slate-500">
+                   <span>{t("manager.coins")}</span>
+                   <span>{formatMoney(shift.coinsPaise)}</span>
+                </div>
+             )}
+             <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[8.5px] font-bold text-slate-700">
+                <span>{t("manager.totalCash") || "Total Cash"}</span>
+                <span>{formatMoney(shift.totalCashPaise)}</span>
+             </div>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ExpandableCardRow = ({ shift, t }) => {
+  const [expanded, setExpanded] = useState(false);
+  const entries = shift.atmEntries || [];
+  
+  if (entries.length === 0 && (!shift.totalCardPaise || shift.totalCardPaise === 0)) {
+     return (
+        <CollectionRow
+            label={t("manager.card")}
+            value={formatMoney(shift.totalCardPaise)}
+        />
+     );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-[11px] bg-slate-50 transition-colors">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center justify-between px-3 py-2.5 active:bg-slate-100"
+      >
+        <span className="text-[9px] font-medium text-slate-500">{t("manager.card")}</span>
+        <div className="flex items-center gap-1.5">
+           <span className="text-[10px] font-semibold text-slate-700">{formatMoney(shift.totalCardPaise)}</span>
+           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className={`h-2.5 w-2.5 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}>
+             <path d="m5 7.5 5 5 5-5" />
+           </svg>
+        </div>
+      </button>
+      {expanded && (
+        <div className="px-3 pb-2.5 pt-0">
+           <div className="mt-1 space-y-1.5 border-t border-slate-200/60 pt-2">
+             {entries.map((entry, idx) => (
+                <div key={`${entry.time}-${idx}`} className="flex justify-between text-[8px] font-medium text-slate-500">
+                   <span>{entry.time}</span>
+                   <span>{formatMoney(entry.amountPaise)}</span>
+                </div>
+             ))}
+             {entries.length === 0 && (
+                <div className="text-[8px] italic text-slate-400">No individual entries</div>
+             )}
+             <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[8.5px] font-bold text-slate-700">
+                <span>{t("manager.total") || "Total"}</span>
+                <span>{formatMoney(shift.totalCardPaise)}</span>
+             </div>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default Operations;

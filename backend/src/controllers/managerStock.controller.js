@@ -34,17 +34,34 @@ export const upsertManagerStock = async (req, res, next) => {
   try {
     const station = await activeStation();
     const { businessDate, product, ...values } = req.body;
+    
+    const existing = await DailyStock.findOne({ stationId: station._id, businessDate, product }).lean();
+
     const stock = await DailyStock.findOneAndUpdate(
       { stationId: station._id, businessDate, product },
       { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } },
       { new: true, upsert: true, runValidators: true },
     );
+
+    const changedFields = {};
+    if (existing) {
+      if (existing.productDip !== stock.productDip) changedFields.previousProductDip = existing.productDip;
+      if (existing.waterDip !== stock.waterDip) changedFields.previousWaterDip = existing.waterDip;
+      if (existing.actualDipStockLitres !== stock.actualDipStockLitres) changedFields.previousDipStockLitres = existing.actualDipStockLitres;
+      if (existing.waterDipVolumeLitres !== stock.waterDipVolumeLitres) changedFields.previousWaterDipVolumeLitres = existing.waterDipVolumeLitres;
+    }
+
     await recordAuditLog({
       actor: req.user,
       action: "STOCK_UPSERTED",
       entityType: "STOCK",
       entityId: stock._id,
-      metadata: { businessDate, product },
+      metadata: { 
+        businessDate, 
+        product, 
+        isUpdate: !!existing,
+        ...changedFields 
+      },
     });
     res.json({ success: true, data: stock });
   } catch (error) { next(error); }
@@ -54,17 +71,32 @@ export const upsertManagerDensity = async (req, res, next) => {
   try {
     const station = await activeStation();
     const { businessDate, product, ...values } = req.body;
+    
+    const existing = await DailyDensity.findOne({ stationId: station._id, businessDate, product }).lean();
+
     const record = await DailyDensity.findOneAndUpdate(
       { stationId: station._id, businessDate, product },
       { $set: values, $setOnInsert: { stationId: station._id, businessDate, product } },
       { new: true, upsert: true, runValidators: true },
     );
+
+    const changedFields = {};
+    if (existing) {
+      if (existing.density !== record.density) changedFields.previousDensity = existing.density;
+      if (existing.temperature !== record.temperature) changedFields.previousTemperature = existing.temperature;
+    }
+
     await recordAuditLog({
       actor: req.user,
       action: "DENSITY_UPSERTED",
       entityType: "DENSITY",
       entityId: record._id,
-      metadata: { businessDate, product },
+      metadata: { 
+        businessDate, 
+        product,
+        isUpdate: !!existing,
+        ...changedFields
+      },
     });
     res.json({ success: true, data: record });
   } catch (error) { next(error); }
@@ -94,9 +126,12 @@ export const createManagerReceipt = async (req, res, next) => {
       entityType: "FUEL_RECEIPT",
       entityId: receipt._id,
       metadata: {
+        receiptId: receipt._id,
         businessDate: receipt.businessDate,
         product: receipt.product,
         invoiceNumber: receipt.invoiceNumber,
+        quantityLitres: receipt.quantityLitres,
+        vendor: receipt.supplierName
       },
     });
     res.status(201).json({ success: true, data: receipt });

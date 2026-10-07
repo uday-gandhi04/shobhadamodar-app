@@ -1,5 +1,6 @@
-import { useContext, useEffect, useRef, useState } from "react";
+﻿import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 import { AuthContext } from "../../context/AuthContext";
@@ -7,6 +8,7 @@ import { AuthContext } from "../../context/AuthContext";
 const ManagerHeader = ({ title, showBack = false, onBack, variant = "default" }) => {
   const { t, i18n } = useTranslation();
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -177,6 +179,18 @@ const ManagerHeader = ({ title, showBack = false, onBack, variant = "default" })
             </div>
 
             <div className="my-1 border-t border-slate-100" />
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => { setMenuOpen(false); navigate("/manager/settings"); }}
+              className="flex min-h-[40px] w-full items-center gap-2 rounded-[10px] px-2 text-left text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.99]"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 shrink-0">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>{t("manager.settings", "Settings")}</span>
+            </button>
 
             <button
               type="button"

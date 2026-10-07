@@ -1,48 +1,51 @@
 {
   "manager": {
     "stockLabels": {
-      "tankContextOnly":"निवड केवळ संदर्भासाठी आहे; साठ्याची बेरीज उत्पादनानुसारच राहते.",
-      "tankContext":"टाकी / उत्पादन संदर्भ",
-      "selectTank":"टाकी",
-      "noActiveTanks":"या उत्पादनासाठी सक्रिय टाकी कॉन्फिगर केलेली नाही.",
-      "manageTanks":"टाक्या व्यवस्थापित करा",
-      "noStockRecord":"या तारखेसाठी आणि उत्पादनासाठी स्टॉक नोंद नाही. जतन करेपर्यंत सुरुवातीचा साठा आणि गणना उपलब्ध नाही.",
-      "physicalVerification":"भौतिक पडताळणी",
-      "waterSection":"पाणी",
-      "openingStockRequired":"जतन करण्यापूर्वी सुरुवातीचा साठा भरा.",
-      "tankNumber":"टाकी क्रमांक",
-      "capacityLitres":"क्षमता (L)",
-      "product":"उत्पादन",
-      "active":"सक्रिय",
-      "inactive":"निष्क्रिय",
-      "edit":"संपादित करा",
-      "activate":"सक्रिय करा",
-      "deactivate":"निष्क्रिय करा",
-      "editTank":"टाकी संपादित करा",
-      "addTank":"टाकी जोडा",
-      "saveTank":"टाकी जतन करा",
-      "cancel":"रद्द करा",
-      "save":"साठा जतन करा", "saved":"यशस्वीरित्या जतन केले.", "loadError":"साठा डेटा लोड करता आला नाही.", "saveError":"बदल जतन करता आले नाहीत.",
-      "beforeDecantation": "Before Decantation",
-      "challan": "Challan",
-      "beforeDifference": "Before Difference",
-      "afterDecantation": "After Decantation",
-      "afterChallan": "After Challan",
-      "afterDifference": "After Difference",
-      "beforeHydrometer": "Before Hydrometer",
-      "beforeTemperatureC": "Before Temp (°C)",
-      "beforeDensity15": "Before Density @15°C",
-      "challanDensity15": "Challan Density @15°C",
-      "beforeDensityDifference": "Before Density Diff",
-      "afterHydrometer": "After Hydrometer",
-      "afterTemperatureC": "After Temp (°C)",
-      "afterDensity15": "After Density @15°C",
-      "afterChallanDensity15": "After Challan Density @15°C",
-      "afterDensityDifference": "After Density Diff",
-      "receiptDetail": "Receipt Detail",
-      "close": "Close",
-      "basicDetails": "Basic Details",
-      "noReceipts": "No receipts found for this date.",
+      "tankContextOnly": "निवड केवळ संदर्भासाठी आहे; साठ्याची बेरीज उत्पादनानुसारच राहते.",
+      "tankContext": "टाकी / उत्पादन संदर्भ",
+      "selectTank": "टाकी",
+      "noActiveTanks": "या उत्पादनासाठी सक्रिय टाकी कॉन्फिगर केलेली नाही.",
+      "manageTanks": "टाक्या व्यवस्थापित करा",
+      "noStockRecord": "या तारखेसाठी आणि उत्पादनासाठी स्टॉक नोंद नाही. जतन करेपर्यंत सुरुवातीचा साठा आणि गणना उपलब्ध नाही.",
+      "physicalVerification": "भौतिक पडताळणी",
+      "waterSection": "पाणी",
+      "openingStockRequired": "जतन करण्यापूर्वी सुरुवातीचा साठा भरा.",
+      "tankNumber": "टाकी क्रमांक",
+      "capacityLitres": "क्षमता (L)",
+      "product": "उत्पादन",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "edit": "संपादित करा",
+      "activate": "सक्रिय करा",
+      "deactivate": "निष्क्रिय करा",
+      "editTank": "टाकी संपादित करा",
+      "addTank": "टाकी जोडा",
+      "saveTank": "टाकी जतन करा",
+      "cancel": "रद्द करा",
+      "save": "साठा जतन करा",
+      "saved": "यशस्वीरित्या जतन केले.",
+      "loadError": "साठा डेटा लोड करता आला नाही.",
+      "saveError": "बदल जतन करता आले नाहीत.",
+      "beforeDecantation": "डिकेंटेशनपूर्वी",
+      "challan": "चलान",
+      "beforeDifference": "पूर्वीचा फरक",
+      "afterDecantation": "डिकेंटेशननंतर",
+      "afterChallan": "चलाननंतर",
+      "afterDifference": "नंतरचा फरक",
+      "beforeHydrometer": "हायड्रोमीटर (पूर्वी)",
+      "beforeTemperatureC": "तापमान (पूर्वी)",
+      "beforeDensity15": "घनता @15°C (पूर्वी)",
+      "challanDensity15": "चलान घनता @15°C",
+      "beforeDensityDifference": "घनता फरक (पूर्वी)",
+      "afterHydrometer": "हायड्रोमीटर (नंतर)",
+      "afterTemperatureC": "तापमान (नंतर)",
+      "afterDensity15": "घनता @15°C (नंतर)",
+      "afterChallanDensity15": "चलान घनता @15°C (नंतर)",
+      "afterDensityDifference": "घनता फरक (नंतर)",
+      "receiptDetail": "पावती तपशील",
+      "close": "बंद करा",
+      "basicDetails": "मूलभूत तपशील",
+      "noReceipts": "या तारखेसाठी कोणतीही पावती आढळली नाही.",
       "currentApplicableRate": "सध्याचा लागू दर",
       "effectiveFrom": "पासून प्रभावी",
       "rupeesPerLitre": "₹ / L",
@@ -309,14 +312,14 @@
       "card": "कार्ड",
       "blockCustomer": "ग्राहक अवरोधित करा",
       "unblockCustomer": "ग्राहक अनवरोधित करा",
-    "addCustomer": "+ ग्राहक जोडा",
-    "editCustomer": "ग्राहक संपादित करा",
-    "customerId": "ग्राहक आयडी",
-    "creditLimit": "पत मर्यादा",
-    "withinCreditLimit": "मर्यादेत",
-    "aboveCreditLimit": "मर्यादेपेक्षा जास्त",
-    "invalidCreditLimit": "वैध ऋणेतर पत मर्यादा भरा.",
-    "customerName": "ग्राहकाचे नाव",
+      "addCustomer": "+ ग्राहक जोडा",
+      "editCustomer": "ग्राहक संपादित करा",
+      "customerId": "ग्राहक आयडी",
+      "creditLimit": "पत मर्यादा",
+      "withinCreditLimit": "मर्यादेत",
+      "aboveCreditLimit": "मर्यादेपेक्षा जास्त",
+      "invalidCreditLimit": "वैध ऋणेतर पत मर्यादा भरा.",
+      "customerName": "ग्राहकाचे नाव",
       "mobileNumber": "मोबाईल नंबर",
       "vehicleNumber": "वाहन क्रमांक",
       "address": "पत्ता",
@@ -332,7 +335,6 @@
       "loadError": "ग्राहक सूची लोड करता आली नाही."
     }
   },
-
   "login": {
     "welcome": "नमस्कार!",
     "employeeId": "कर्मचारी आयडी",
@@ -340,7 +342,6 @@
     "submit": "लॉगिन करा →",
     "secure": "सुरक्षित • विश्वसनीय • नेहमी सिंक"
   },
-
   "dashboard": {
     "assignedPump": "तुमचा पंप",
     "todaySale": "आजची विक्री",
@@ -363,7 +364,6 @@
     "upiUpdated": "UPI संग्रह अपडेट केला",
     "viewPumpDetails": "पंप तपशील पहा"
   },
-
   "employee": {
     "selectMpd": {
       "kicker": "शिफ्ट सुरू करा",
@@ -378,13 +378,11 @@
       "loadError": "उपलब्ध MPD लोड करता आले नाहीत.",
       "startError": "शिफ्ट सुरू करता आली नाही."
     },
-
     "shifts": {
       "morning": "सकाळ",
       "evening": "संध्याकाळ",
       "night": "रात्र"
     },
-
     "dashboard": {
       "currentShift": "सध्याची शिफ्ट",
       "active": "सक्रिय",
@@ -403,7 +401,6 @@
       "done": "पूर्ण",
       "pending": "बाकी"
     },
-
     "nozzles": {
       "title": "नोजल रीडिंग",
       "subtitle": "चारही नोजलची सध्याची नोंदवलेली रीडिंग.",
@@ -411,7 +408,6 @@
       "overviewAlt": "चार इंधन नोजल",
       "loadError": "नोजल रीडिंग लोड करता आली नाही."
     },
-
     "collections": {
       "title": "रोकड संकलन",
       "currentTotal": "सध्याचे संकलन",
@@ -425,7 +421,6 @@
       "loadError": "संकलन लोड करता आले नाही.",
       "saveError": "संकलन सेव्ह करता आले नाही."
     },
-
     "endShift": {
       "title": "शिफ्ट समाप्त करा",
       "subtitle": "अंतिम नोजल रीडिंग आणि अंतिम रक्कम भरा.",
@@ -450,7 +445,6 @@
       "endError": "शिफ्ट समाप्त करता आली नाही."
     }
   },
-
   "workflow": {
     "stages": {
       "nozzle": "नोजल",
@@ -468,7 +462,6 @@
     "logout": "लॉग आउट",
     "profileMenu": "प्रोफाइल मेनू"
   },
-
   "nozzle": {
     "title": "अंतिम नोजल रीडिंग",
     "finalReadings": "अंतिम नोजल रीडिंग",
@@ -485,12 +478,10 @@
     "closingBelowOpening": "क्लोजिंग रीडिंग ओपनिंगपेक्षा कमी असू शकत नाही.",
     "finalReadingsHint": "प्रत्येक नोजलची अंतिम टोटलायझर रीडिंग भरा.",
     "enter": "दर्ज करा",
-
     "petrol": "पेट्रोल",
     "diesel": "डिझेल",
     "totalFuel": "एकूण इंधन"
   },
-
   "cash": {
     "title": "रोकड संकलन",
     "subtitle": "या शिफ्टमध्ये जमा झालेली रोकड भरा.",
@@ -503,7 +494,6 @@
     "next": "पुढे: UPI",
     "nextUpi": "पुढे: UPI"
   },
-
   "phonepe": {
     "title": "PhonePe",
     "subtitle": "UPI पेमेंट झाले असल्यास पहिली आणि शेवटची ट्रान्झॅक्शन भरा.",
@@ -520,7 +510,6 @@
     "next": "पुढे: कार्ड / ATM",
     "emptyHint": "PhonePe पेमेंट झाले नाही? हे रिकामे ठेवा."
   },
-
   "card": {
     "title": "कार्ड / ATM संकलन",
     "description": "या शिफ्टमध्ये जमा झालेली एकूण कार्ड / ATM रक्कम भरा.",
@@ -530,7 +519,6 @@
     "next": "पुढे: उधारी",
     "nextUdhari": "पुढे: उधारी"
   },
-
   "atm": {
     "title": "कार्ड / ATM संकलन",
     "description": "आतापर्यंत जमा झालेली एकूण कार्ड / ATM रक्कम भरा.",
@@ -542,7 +530,6 @@
     "totalCardAtm": "एकूण कार्ड / ATM",
     "nextUdhari": "पुढे: उधारी"
   },
-
   "udhari": {
     "title": "उधारी संकलन",
     "subtitle": "उधारीवर दिलेल्या इंधनाची माहिती भरा.",
@@ -576,7 +563,6 @@
     "nextExpenses": "पुढे: खर्च",
     "customerNameHint": "ग्राहक शोधा किंवा निवडा"
   },
-
   "expense": {
     "title": "खर्च",
     "subtitle": "या शिफ्टमधील व्यावसायिक खर्च नोंदवा.",
@@ -598,7 +584,6 @@
     "empty": "अजून कोणताही खर्च नोंदलेला नाही.",
     "expenses": "खर्च"
   },
-
   "review": {
     "title": "आढावा",
     "subtitle": "शिफ्ट समाप्त करण्यापूर्वी सर्व काही तपासा.",

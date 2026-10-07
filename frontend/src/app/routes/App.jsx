@@ -31,6 +31,7 @@ import Operations from "../../features/manager/Operations";
 import Stock from "../../features/manager/Stock";
 import Udhari from "../../features/manager/Udhari";
 import Employees from "../../features/manager/Employees";
+import Settings from "../../features/manager/Settings";
 setupIonicReact();
 
 // Wrapper to prevent unauthenticated users from seeing the dashboard
@@ -136,6 +137,15 @@ function App() {
                 element={
                   <ManagerRoute>
                     <Employees />
+                  </ManagerRoute>
+                }
+              />
+
+              <Route
+                path="/manager/settings"
+                element={
+                  <ManagerRoute>
+                    <Settings />
                   </ManagerRoute>
                 }
               />
