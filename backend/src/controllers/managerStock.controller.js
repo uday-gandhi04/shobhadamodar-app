@@ -73,7 +73,21 @@ export const getManagerReceipts = async (req, res, next) => { try { const statio
 export const createManagerReceipt = async (req, res, next) => {
   try {
     const station = await activeStation();
-    const receipt = await FuelReceipt.create({ ...req.body, stationId: station._id });
+    const payload = { ...req.body, stationId: station._id };
+
+    if (payload.beforeDensity15 != null && payload.challanDensity15 != null) {
+      payload.beforeDensityDifference = Number((payload.beforeDensity15 - payload.challanDensity15).toFixed(4));
+    } else {
+      payload.beforeDensityDifference = null;
+    }
+
+    if (payload.afterDensity15 != null && payload.afterChallanDensity15 != null) {
+      payload.afterDensityDifference = Number((payload.afterDensity15 - payload.afterChallanDensity15).toFixed(4));
+    } else {
+      payload.afterDensityDifference = null;
+    }
+
+    const receipt = await FuelReceipt.create(payload);
     await recordAuditLog({
       actor: req.user,
       action: "FUEL_RECEIPT_CREATED",

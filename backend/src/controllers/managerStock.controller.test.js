@@ -146,3 +146,63 @@ test("stock update succeeds when audit persistence fails", async () => {
     console.error = originalConsoleError;
   }
 });
+
+test("receipt creation calculates correct density difference", async () => {
+  await setup(async (getAudit, restore) => {
+    FuelReceipt.create = async (receipt) => ({ _id: entityId, ...receipt });
+    try {
+      const res = response();
+      await createManagerReceipt({
+        body: { beforeDensity15: 730.55, challanDensity15: 730.00, afterDensity15: 830.12, afterChallanDensity15: 830.00 },
+        user: { _id: managerId, role: "MANAGER" },
+      }, res, assert.fail);
+      assert.equal(res.body.data.beforeDensityDifference, 0.55);
+      assert.equal(res.body.data.afterDensityDifference, 0.12);
+    } finally { restore(); }
+  });
+});
+
+test("receipt creation handles negative density difference", async () => {
+  await setup(async (getAudit, restore) => {
+    FuelReceipt.create = async (receipt) => ({ _id: entityId, ...receipt });
+    try {
+      const res = response();
+      await createManagerReceipt({
+        body: { beforeDensity15: 729.00, challanDensity15: 730.50 },
+        user: { _id: managerId, role: "MANAGER" },
+      }, res, assert.fail);
+      assert.equal(res.body.data.beforeDensityDifference, -1.50);
+      assert.equal(res.body.data.afterDensityDifference, null);
+    } finally { restore(); }
+  });
+});
+
+test("receipt creation sets density difference to null if fields are missing", async () => {
+  await setup(async (getAudit, restore) => {
+    FuelReceipt.create = async (receipt) => ({ _id: entityId, ...receipt });
+    try {
+      const res = response();
+      await createManagerReceipt({
+        body: { beforeDensity15: 730.55 },
+        user: { _id: managerId, role: "MANAGER" },
+      }, res, assert.fail);
+      assert.equal(res.body.data.beforeDensityDifference, null);
+      assert.equal(res.body.data.afterDensityDifference, null);
+    } finally { restore(); }
+  });
+});
+
+test("receipt creation ignores tampered client density difference", async () => {
+  await setup(async (getAudit, restore) => {
+    FuelReceipt.create = async (receipt) => ({ _id: entityId, ...receipt });
+    try {
+      const res = response();
+      await createManagerReceipt({
+        body: { beforeDensity15: 730.50, challanDensity15: 730.00, beforeDensityDifference: 999.99 },
+        user: { _id: managerId, role: "MANAGER" },
+      }, res, assert.fail);
+      assert.equal(res.body.data.beforeDensityDifference, 0.50);
+    } finally { restore(); }
+  });
+});
+

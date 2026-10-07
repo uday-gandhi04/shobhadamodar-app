@@ -39,10 +39,10 @@ const Button = ({ children, onClick, disabled = false, secondary = false }) => (
     {children}
   </button>
 );
-const Read = ({ label, value }) => (
+const Read = ({ label, value, unit = " L", isText = false }) => (
   <div className="flex justify-between rounded-xl bg-slate-50 p-3 text-sm">
     <span className="text-slate-500">{label}</span>
-    <b>{value == null ? "—" : `${Number(value).toFixed(2)} L`}</b>
+    <b className="text-right max-w-[60%] truncate">{value == null || value === "" ? "—" : (isText ? value : `${Number(value).toFixed(2)}${unit}`)}</b>
   </div>
 );
 const fetchStockPage = (date) => Promise.all([
@@ -86,8 +86,32 @@ const Stock = () => {
   const [tankForm, setTankForm] = useState({ tankNumber: "", product: "PETROL", capacityLitres: "" });
   const [form, setForm] = useState({ openingStockLitres: "", productDip: "", actualDipStockLitres: "", waterDip: "", waterDipVolumeLitres: "" });
   const [densityForm, setDensityForm] = useState({ hydrometerReading: "", temperatureC: "", density15: "" });
-  const [receipt, setReceipt] = useState({ invoiceNumber: "", quantityLitres: "", supplierName: "", tankerNumber: "" });
-  const [rate, setRate] = useState({ businessDate: getBusinessDate(), petrolRatePaise: "", dieselRatePaise: "" });
+  const [receipt, setReceipt] = useState({
+    invoiceNumber: "", quantityLitres: "", supplierName: "", tankerNumber: "",
+    beforeHydrometer: "", beforeTemperatureC: "", beforeDensity15: "",
+    challanDensity15: "", beforeDensityDifference: "",
+    afterHydrometer: "", afterTemperatureC: "", afterDensity15: "",
+    afterChallanDensity15: "", afterDensityDifference: ""
+  });
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [rate, setRate] = useState({ businessDate: getBusinessDate(), petrolRateRupees: "", dieselRateRupees: "" });
+
+  const changeReceipt = (key) => (e) => {
+    setReceipt((old) => {
+      const next = { ...old, [key]: e.target.value };
+      if (["beforeDensity15", "challanDensity15"].includes(key)) {
+        next.beforeDensityDifference = next.beforeDensity15 && next.challanDensity15
+          ? (Number(next.beforeDensity15) - Number(next.challanDensity15)).toFixed(2)
+          : "";
+      }
+      if (["afterDensity15", "afterChallanDensity15"].includes(key)) {
+        next.afterDensityDifference = next.afterDensity15 && next.afterChallanDensity15
+          ? (Number(next.afterDensity15) - Number(next.afterChallanDensity15)).toFixed(2)
+          : "";
+      }
+      return next;
+    });
+  };
 
   const load = async () => {
     try {
@@ -184,6 +208,15 @@ const Stock = () => {
 
   const setTankActive = (tank) => save(() => updateManagerTank(tank._id, { isActive: !tank.isActive }));
 
+  const saveRate = () => {
+    const payload = {
+      businessDate: rate.businessDate,
+      petrolRatePaise: Math.round(Number(rate.petrolRateRupees) * 100),
+      dieselRatePaise: Math.round(Number(rate.dieselRateRupees) * 100),
+    };
+    return save(() => createFuelRate(payload));
+  };
+
   return (
     <ManagerLayout title={t("manager.stock")} showBack>
       <div className="space-y-4">
@@ -261,7 +294,7 @@ const Stock = () => {
             <h3 className="border-t pt-3 text-sm font-bold">{t("manager.stockLabels.physicalVerification")}</h3>
             <Input label={t("manager.stockLabels.productDip")} value={form.productDip} onChange={change(setForm, "productDip")} />
             <Input label={t("manager.stockLabels.actualDipStockLitres")} value={form.actualDipStockLitres} onChange={change(setForm, "actualDipStockLitres")} />
-            <Read label={t("manager.stockLabels.variation")} value={row.variationLitres} />
+            <Read label={t("manager.stockLabels.variation")} value={row.variationLitres} unit=" L" />
 
             <h3 className="border-t pt-3 text-sm font-bold">{t("manager.stockLabels.waterSection")}</h3>
             <Input label={t("manager.stockLabels.waterDip")} value={form.waterDip} onChange={change(setForm, "waterDip")} />
@@ -279,40 +312,105 @@ const Stock = () => {
             <Button onClick={() => save(() => upsertManagerDensity({
               businessDate: date,
               product,
-              ...Object.fromEntries(Object.entries(densityForm).map(([key, value]) => [key, n(value)])),
+              ...Object.fromEntries(Object.entries(densityForm).map(([key, value]) => [key, value === "" ? null : n(value)])),
             }))}>{t("manager.stockLabels.saveDensity")}</Button>
+            
             <h2 className="border-t pt-4 font-bold">{t("manager.stockLabels.fuelReceipts")}</h2>
-            {Object.keys(receipt).map((key) => (
-              <Input key={key} type={key === "quantityLitres" ? "number" : "text"} label={t(`manager.stockLabels.${key}`)} value={receipt[key]} onChange={change(setReceipt, key)} />
-            ))}
-            <Button onClick={() => save(() => createManagerReceipt({
-              businessDate: date,
-              product,
-              ...receipt,
-              quantityLitres: n(receipt.quantityLitres),
-            }))}>{t("manager.stockLabels.saveReceipt")}</Button>
+            
+            <h3 className="text-sm font-bold mt-2">{t("manager.stockLabels.basicDetails")}</h3>
+            <Input type="text" label={t("manager.stockLabels.invoiceNumber")} value={receipt.invoiceNumber} onChange={changeReceipt("invoiceNumber")} />
+            <Input type="number" label={t("manager.stockLabels.quantityLitres")} value={receipt.quantityLitres} onChange={changeReceipt("quantityLitres")} />
+            <Input type="text" label={t("manager.stockLabels.supplierName")} value={receipt.supplierName} onChange={changeReceipt("supplierName")} />
+            <Input type="text" label={t("manager.stockLabels.tankerNumber")} value={receipt.tankerNumber} onChange={changeReceipt("tankerNumber")} />
+
+            <h3 className="text-sm font-bold mt-2">{t("manager.stockLabels.beforeDecantation")}</h3>
+            <Input type="number" label={t("manager.stockLabels.beforeHydrometer")} value={receipt.beforeHydrometer} onChange={changeReceipt("beforeHydrometer")} />
+            <Input type="number" label={t("manager.stockLabels.beforeTemperatureC")} value={receipt.beforeTemperatureC} onChange={changeReceipt("beforeTemperatureC")} />
+            <Input type="number" label={t("manager.stockLabels.beforeDensity15")} value={receipt.beforeDensity15} onChange={changeReceipt("beforeDensity15")} />
+
+            <h3 className="text-sm font-bold mt-2">{t("manager.stockLabels.challan")}</h3>
+            <Input type="number" label={t("manager.stockLabels.challanDensity15")} value={receipt.challanDensity15} onChange={changeReceipt("challanDensity15")} />
+            <Input type="number" label={t("manager.stockLabels.beforeDensityDifference")} value={receipt.beforeDensityDifference} onChange={changeReceipt("beforeDensityDifference")} />
+
+            <h3 className="text-sm font-bold mt-2">{t("manager.stockLabels.afterDecantation")}</h3>
+            <Input type="number" label={t("manager.stockLabels.afterHydrometer")} value={receipt.afterHydrometer} onChange={changeReceipt("afterHydrometer")} />
+            <Input type="number" label={t("manager.stockLabels.afterTemperatureC")} value={receipt.afterTemperatureC} onChange={changeReceipt("afterTemperatureC")} />
+            <Input type="number" label={t("manager.stockLabels.afterDensity15")} value={receipt.afterDensity15} onChange={changeReceipt("afterDensity15")} />
+            <Input type="number" label={t("manager.stockLabels.afterChallanDensity15")} value={receipt.afterChallanDensity15} onChange={changeReceipt("afterChallanDensity15")} />
+            <Input type="number" label={t("manager.stockLabels.afterDensityDifference")} value={receipt.afterDensityDifference} onChange={changeReceipt("afterDensityDifference")} />
+
+            <Button onClick={() => save(() => {
+              const payload = { businessDate: date, product };
+              Object.keys(receipt).forEach(k => {
+                if (["invoiceNumber", "supplierName", "tankerNumber"].includes(k)) {
+                  payload[k] = receipt[k];
+                } else {
+                  payload[k] = receipt[k] === "" ? null : Number(receipt[k]);
+                }
+              });
+              return createManagerReceipt(payload);
+            })}>{t("manager.stockLabels.saveReceipt")}</Button>
+            
+            {receipts.length === 0 && <p className="text-xs text-slate-500 py-2 border-t">{t("manager.stockLabels.noReceipts")}</p>}
             {receipts.map((item) => (
-              <p key={item._id} className="border-t py-2 text-xs">{item.invoiceNumber} · {item.product} · {item.quantityLitres} L</p>
+              <button key={item._id} type="button" onClick={() => setSelectedReceipt(item)} className="block w-full text-left border-t py-2 text-xs hover:bg-slate-50">
+                {item.invoiceNumber} · {item.product} · {item.quantityLitres} L
+              </button>
             ))}
           </section>
         )}
 
-        {tab === "rates" && (
-          <section className="space-y-3 rounded-2xl bg-white p-4 shadow-sm">
-            <h2 className="font-bold">{t("manager.stockLabels.addRate")}</h2>
-            <Input type="date" label={t("manager.stockLabels.effectiveDate")} value={rate.businessDate} onChange={change(setRate, "businessDate")} />
-            <Input label={t("manager.stockLabels.petrolRatePaise")} value={rate.petrolRatePaise} onChange={change(setRate, "petrolRatePaise")} />
-            <Input label={t("manager.stockLabels.dieselRatePaise")} value={rate.dieselRatePaise} onChange={change(setRate, "dieselRatePaise")} />
-            <Button onClick={() => save(() => createFuelRate({
-              ...rate,
-              petrolRatePaise: n(rate.petrolRatePaise),
-              dieselRatePaise: n(rate.dieselRatePaise),
-            }))}>{t("manager.stockLabels.saveRate")}</Button>
-            {rates.map((item) => (
-              <p key={item._id} className="border-t py-2 text-xs">{item.businessDate} · {item.petrolRatePaise} / {item.dieselRatePaise}</p>
-            ))}
-          </section>
-        )}
+        {tab === "rates" && (() => {
+          const applicableRate = rates.find(r => r.businessDate <= date);
+          return (
+            <section className="space-y-4 rounded-2xl bg-white p-4 shadow-sm">
+              <div>
+                <h2 className="font-bold text-lg mb-2">{t("manager.stockLabels.currentApplicableRate")}</h2>
+                {applicableRate ? (
+                  <div className="grid grid-cols-2 gap-2 text-sm bg-slate-50 p-4 rounded-xl shadow-inner border border-slate-100">
+                    <div>
+                      <p className="text-slate-500 font-bold">{t("manager.petrol")}</p>
+                      <p className="font-extrabold text-slate-800">₹{(applicableRate.petrolRatePaise / 100).toFixed(2)} <span className="text-xs font-normal text-slate-500">/ L</span></p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 font-bold">{t("manager.diesel")}</p>
+                      <p className="font-extrabold text-slate-800">₹{(applicableRate.dieselRatePaise / 100).toFixed(2)} <span className="text-xs font-normal text-slate-500">/ L</span></p>
+                    </div>
+                    <div className="col-span-2 mt-2 pt-2 border-t">
+                      <p className="text-slate-500 text-xs font-bold uppercase">{t("manager.stockLabels.effectiveFrom")}</p>
+                      <p className="font-bold text-slate-700">{applicableRate.businessDate}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 bg-slate-50 p-4 rounded-xl border border-slate-100">No applicable rate for this date.</p>
+                )}
+              </div>
+              
+              <div className="border-t pt-4 space-y-3">
+                <h2 className="font-bold">{t("manager.stockLabels.addRate")}</h2>
+                <Input type="date" label={t("manager.stockLabels.effectiveDate")} value={rate.businessDate} onChange={change(setRate, "businessDate")} />
+                <Input type="number" label={t("manager.stockLabels.petrolRateRupees")} value={rate.petrolRateRupees} onChange={change(setRate, "petrolRateRupees")} />
+                <Input type="number" label={t("manager.stockLabels.dieselRateRupees")} value={rate.dieselRateRupees} onChange={change(setRate, "dieselRateRupees")} />
+                <Button onClick={saveRate}>{t("manager.stockLabels.saveRate")}</Button>
+              </div>
+
+              <div className="border-t pt-4 space-y-2">
+                <h2 className="font-bold">{t("manager.stockLabels.rateHistory")}</h2>
+                {rates.length === 0 && <p className="text-xs text-slate-500 py-2">No rates found.</p>}
+                {rates.map((item) => (
+                  <div key={item._id} className="border border-slate-100 text-sm bg-slate-50 rounded-xl p-3 space-y-1">
+                    <p className="font-bold text-slate-800">{item.businessDate}</p>
+                    <div className="flex justify-between font-medium">
+                      <span>{t("manager.petrol")}: <span className="text-slate-600">₹{(item.petrolRatePaise / 100).toFixed(2)}</span></span>
+                      <span>{t("manager.diesel")}: <span className="text-slate-600">₹{(item.dieselRatePaise / 100).toFixed(2)}</span></span>
+                    </div>
+                    {item.setBy?.name && <p className="text-xs text-slate-500 mt-2 border-t pt-2 border-slate-200">{t("manager.stockLabels.setBy")} {item.setBy.name}</p>}
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
       </div>
 
       {tankDialog && (
@@ -351,6 +449,41 @@ const Stock = () => {
                 <Button secondary onClick={() => openTankDialog()}>{t("manager.stockLabels.addTank")}</Button>
                 <Button onClick={saveTank}>{t("manager.stockLabels.saveTank")}</Button>
               </div>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {selectedReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+          <section role="dialog" aria-modal="true" aria-labelledby="receipt-dialog-title" className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl bg-white p-5">
+            <div className="flex items-center justify-between">
+              <h2 id="receipt-dialog-title" className="font-bold">{t("manager.stockLabels.receiptDetail")}</h2>
+              <button type="button" onClick={() => setSelectedReceipt(null)} className="p-2 text-sm font-bold text-slate-500">{t("manager.stockLabels.close")}</button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <Read label={t("manager.stockLabels.invoiceNumber")} value={selectedReceipt.invoiceNumber} isText />
+              <Read label={t("manager.stockLabels.product")} value={selectedReceipt.product} isText />
+              <Read label={t("manager.stockLabels.businessDate")} value={selectedReceipt.businessDate} isText />
+              <Read label={t("manager.stockLabels.quantityLitres")} value={selectedReceipt.quantityLitres} unit=" L" />
+              <Read label={t("manager.stockLabels.supplierName")} value={selectedReceipt.supplierName} isText />
+              <Read label={t("manager.stockLabels.tankerNumber")} value={selectedReceipt.tankerNumber} isText />
+              
+              <h3 className="font-bold pt-2">{t("manager.stockLabels.beforeDecantation")}</h3>
+              <Read label={t("manager.stockLabels.beforeHydrometer")} value={selectedReceipt.beforeHydrometer} unit="" />
+              <Read label={t("manager.stockLabels.beforeTemperatureC")} value={selectedReceipt.beforeTemperatureC} unit=" °C" />
+              <Read label={t("manager.stockLabels.beforeDensity15")} value={selectedReceipt.beforeDensity15} unit="" />
+              
+              <h3 className="font-bold pt-2">{t("manager.stockLabels.challan")}</h3>
+              <Read label={t("manager.stockLabels.challanDensity15")} value={selectedReceipt.challanDensity15} unit="" />
+              <Read label={t("manager.stockLabels.beforeDensityDifference")} value={selectedReceipt.beforeDensityDifference} unit="" />
+              
+              <h3 className="font-bold pt-2">{t("manager.stockLabels.afterDecantation")}</h3>
+              <Read label={t("manager.stockLabels.afterHydrometer")} value={selectedReceipt.afterHydrometer} unit="" />
+              <Read label={t("manager.stockLabels.afterTemperatureC")} value={selectedReceipt.afterTemperatureC} unit=" °C" />
+              <Read label={t("manager.stockLabels.afterDensity15")} value={selectedReceipt.afterDensity15} unit="" />
+              <Read label={t("manager.stockLabels.afterChallanDensity15")} value={selectedReceipt.afterChallanDensity15} unit="" />
+              <Read label={t("manager.stockLabels.afterDensityDifference")} value={selectedReceipt.afterDensityDifference} unit="" />
             </div>
           </section>
         </div>

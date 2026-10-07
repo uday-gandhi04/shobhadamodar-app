@@ -49,7 +49,7 @@ export const getCurrentFuelRate = async (
 
 export const getFuelRateHistory = async (req, res, next) => {
   try {
-    const rates = await FuelRate.find({}).sort({ businessDate: -1 }).lean();
+    const rates = await FuelRate.find({}).sort({ businessDate: -1 }).populate('setBy', 'name').lean();
     res.json({ success: true, data: rates });
   } catch (error) { next(error); }
 };
@@ -64,7 +64,11 @@ export const createFuelRate = async (req, res, next) => {
       action: "FUEL_RATE_CREATED",
       entityType: "FUEL_RATE",
       entityId: rate._id,
-      metadata: { businessDate: rate.businessDate },
+      metadata: {
+        businessDate: rate.businessDate,
+        petrolRatePaise: rate.petrolRatePaise,
+        dieselRatePaise: rate.dieselRatePaise,
+      },
     });
     return res.status(201).json({ success: true, data: rate });
   } catch (error) {
