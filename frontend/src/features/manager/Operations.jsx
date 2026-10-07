@@ -256,26 +256,26 @@ const Operations = () => {
           </div>
 
           {!historyMpdId && (
-            <div className="grid grid-cols-2 rounded-[14px] border border-slate-100 bg-white p-1 shadow-[0_4px_14px_rgba(15,23,42,0.04)]">
+            <div className="grid grid-cols-2 !rounded-[14px] !bg-slate-50 !p-1 !mb-4">
               {[
-                ["LIVE", t("manager.liveMpds")],
-                ["TODAY", t("manager.todaysShifts")],
+                ["LIVE", "MPDs"],
+                ["TODAY", "Shifts"],
               ].map(([value, label]) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setActiveTab(value)}
                   className={`
-                min-h-[38px]
-                rounded-[10px]
-                px-2
-                text-[10px]
-                font-semibold
-                transition
+                !min-h-[38px]
+                !rounded-[10px]
+                !px-2
+                !text-[12px]
+                !font-bold
+                !transition-all
                 ${
                   activeTab === value
-                    ? "bg-bpcl-emerald text-white shadow-sm"
-                    : "text-slate-500"
+                    ? "!bg-emerald-800 !text-white !shadow-sm"
+                    : "!text-slate-500 hover:!text-slate-700"
                 }
               `}
                 >
@@ -425,200 +425,193 @@ const TodayShiftGroups = ({ mpds, shifts, businessDate, t, onOpenShift }) => (
 );
 
 const MpdCard = ({ mpd, lastShift, t, onViewTodayHistory }) => (
-  <section className="rounded-[22px] border border-white bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-[13px] bg-emerald-50 text-bpcl-emerald">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            className="h-5 w-5"
-          >
-            <path d="M7 4h8v16H7z" />
-            <path d="M15 7h2l2 2v7h-4" />
-            <circle cx="10" cy="8" r="1" />
-          </svg>
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-[16px] font-bold text-slate-900">
-            {mpd.mpdNumber}
-          </p>
-
-          <p className="mt-0.5 text-[9px] text-slate-400">
-            {mpd.serialNumber || t("manager.serialUnavailable")}
-          </p>
-        </div>
+  <section className="!rounded-[24px] !border !border-slate-100/60 !bg-white !p-4 !shadow-[0_4px_20px_rgba(15,23,42,0.04)] !mb-4">
+    {/* TOP ROW: MPD NAME + ACTIVE BADGE */}
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="!h-6 !w-1.5 !rounded-full !bg-emerald-700" />
+        <p className="!text-[16px] !font-bold !text-slate-900">
+          {mpd.mpdNumber}
+        </p>
       </div>
 
-      <span
-        className={`
-          rounded-full
-          px-2.5
-          py-1
-          text-[9px]
-          font-bold
-          ${
-            mpd.status === "ACTIVE"
-              ? "bg-emerald-50 text-bpcl-emerald"
-              : "bg-slate-100 text-slate-500"
-          }
-        `}
+      <div
+        className={`flex items-center gap-1 !rounded-full !px-3 !py-1.5 !text-[10px] !font-bold ${
+          mpd.status === "ACTIVE"
+            ? "!bg-emerald-50 !text-emerald-600"
+            : "!bg-slate-50 !text-slate-500"
+        }`}
       >
-        {mpd.status === "ACTIVE" ? t("manager.active") : t("manager.free")}
-      </span>
+        {mpd.status === "ACTIVE" ? (
+          <>
+            <svg viewBox="0 0 24 24" fill="currentColor" className="!h-3 !w-3">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
+            </svg>
+            Active
+          </>
+        ) : (
+          "Free"
+        )}
+      </div>
     </div>
 
-    {mpd.activeShift && (
-      <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase text-bpcl-emerald">
-        <span className="h-2 w-2 rounded-full bg-bpcl-emerald" />
-        {t("manager.live")}
-      </div>
-    )}
-
+    {/* SECOND ROW: EMPLOYEE INFO */}
     {mpd.activeShift ? (
-      <div className="mt-4 flex items-center justify-between rounded-[13px] bg-slate-50 px-3 py-2.5">
+      <div className="mt-4 flex items-center justify-between pr-2">
         <div>
-          <p className="text-[8px] uppercase tracking-[0.06em] text-slate-400">
-            {t("manager.employee")}
+          <p className="!text-[10px] !font-medium !text-slate-400">Employee</p>
+          <p className="!mt-0.5 !text-[13px] !font-bold !text-slate-900">
+            {mpd.activeShift.employee?.name || "Unknown"}
           </p>
-
-          <p className="mt-1 text-[11px] font-semibold text-slate-900">
-            {mpd.activeShift.employee?.name}
-          </p>
-          {mpd.activeShift.employee?.employeeId && (
-            <p className="mt-0.5 text-[9px] text-slate-500">
-              {mpd.activeShift.employee.employeeId}
-            </p>
-          )}
         </div>
-
-        <div className="text-right">
-          <p className="text-[8px] uppercase tracking-[0.06em] text-slate-400">
-            {t("manager.started")}
-          </p>
-
-          <p className="mt-1 text-[11px] font-semibold text-slate-900">
+        <div>
+          <p className="!text-[10px] !font-medium !text-slate-400">Started</p>
+          <p className="!mt-0.5 !text-[13px] !font-bold !text-slate-900">
             {formatTime(mpd.activeShift.startedAt)}
           </p>
         </div>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="!h-4 !w-4 !text-slate-400"
+        >
+          <path d="M9 18l6-6-6-6" />
+        </svg>
       </div>
     ) : (
-      <div className="mt-4 rounded-[13px] bg-slate-50 px-3 py-3">
-        <p className="text-[11px] font-semibold text-slate-700">
-          {t("manager.noActiveShift")}
-        </p>
-        {lastShift && (
-          <p className="mt-1 text-[9px] text-slate-500">
-            {t("manager.lastShift")}: {lastShift.employee?.name || t("manager.employeeUnknown")}
-            {lastShift.endedAt ? ` · ${formatTime(lastShift.endedAt)}` : ""}
-          </p>
-        )}
+      <div className="mt-4 flex items-center justify-between pr-2">
+        <div>
+          <p className="!text-[13px] !font-bold !text-slate-500">No active shift</p>
+        </div>
       </div>
     )}
 
-    <div className="mt-4 grid grid-cols-4 gap-1.5">
-      {mpd.nozzles.map((nozzle) => (
-        <div
-          key={nozzle.nozzleId}
-          className="min-w-0 rounded-[12px] border border-slate-100 bg-slate-50 p-2"
-        >
-          <div className="flex flex-col items-start gap-1">
-            <p className="text-[10px] font-bold text-slate-800">
+    {/* NOZZLES GRID */}
+    <div className="mt-5 grid grid-cols-4 gap-2">
+      {mpd.nozzles.map((nozzle) => {
+        const isPetrol = nozzle.fuelType === "PETROL";
+        return (
+          <div
+            key={nozzle.nozzleId}
+            className="flex flex-col items-center !rounded-[14px] !border !border-slate-100 !bg-white !p-2 !shadow-[0_2px_8px_rgba(15,23,42,0.02)]"
+          >
+            <p className="!text-[11px] !font-bold !text-slate-700">
               {nozzle.nozzleId.toUpperCase()}
             </p>
-            <span className={`rounded-full px-1 py-0.5 text-[7px] font-bold ${nozzle.fuelType === "PETROL" ? "bg-green-50 text-fuel-petrol" : "bg-blue-50 text-fuel-diesel"}`}>
-              {nozzle.fuelType}
-            </span>
+            <div
+              className={`!mt-2 flex !h-[26px] !w-[26px] items-center justify-center !rounded-full !text-[10px] !font-bold ${
+                isPetrol
+                  ? "!bg-emerald-50 !text-emerald-600"
+                  : "!bg-blue-50 !text-blue-600"
+              }`}
+            >
+              {isPetrol ? "P" : "D"}
+            </div>
+            {mpd.activeShift ? (
+              <p className="!mt-3 !text-[10px] !font-bold !text-slate-700">
+                {Number(nozzle.litres || 0).toFixed(1)} L
+              </p>
+            ) : (
+              <p className="!mt-3 !text-[10px] !font-bold !text-slate-700">
+                {Number(nozzle.currentReading || 0).toFixed(1)} L
+              </p>
+            )}
           </div>
-          {mpd.activeShift ? (
-            <>
-              <p className="mt-2 break-all text-[8px] font-semibold leading-tight text-slate-600">
-                {t("manager.opening")}
-              </p>
-              <p className="break-all text-[9px] font-bold leading-tight text-slate-800">
-                {Number(nozzle.openingReading || 0).toFixed(2)}
-              </p>
-              <p className="mt-1 break-all text-[8px] font-semibold leading-tight text-slate-600">
-                {t("manager.currentReading")}
-              </p>
-              <p className="break-all text-[9px] font-bold leading-tight text-slate-800">
-                {Number(nozzle.currentReading || 0).toFixed(2)}
-              </p>
-              <p className="mt-1 text-[8px] font-bold text-slate-700">
-                {t("manager.sold")}: {Number(nozzle.litres || 0).toFixed(2)} L
-              </p>
-              <p className="mt-1 min-h-[20px] text-[7px] leading-tight text-slate-400">
-                {nozzle.readingEntered ? t("manager.readingEntered") : t("manager.readingPending")}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="mt-2 break-all text-[8px] font-semibold leading-tight text-slate-600">
-                {t("manager.currentReading")}
-              </p>
-              <p className="break-all text-[9px] font-bold leading-tight text-slate-800">
-                {Number(nozzle.currentReading || 0).toFixed(2)}
-              </p>
-            </>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
 
-    {mpd.activeShift && <section className="mt-4 border-t border-slate-100 pt-3">
-      <p className="mb-2 text-[9px] font-bold uppercase text-slate-400">
-        {t("manager.currentShift")}
-      </p>
-      <div className="grid grid-cols-2 gap-2">
-        <Metric label={t("manager.petrol")} value={`${Number(mpd.totalPetrolLitres || 0).toFixed(2)} L`} />
-        <Metric label={t("manager.diesel")} value={`${Number(mpd.totalDieselLitres || 0).toFixed(2)} L`} />
+    {/* TOTALS */}
+    {mpd.activeShift && (
+      <div className="mt-5 grid grid-cols-2 gap-4">
+        <div>
+          <p className="!text-[10px] !font-medium !text-slate-400">Today's Sale</p>
+          <p className="!mt-0.5 !text-[14px] !font-bold !text-slate-900">
+            {formatMoney(mpd.estimatedSalePaise)}
+          </p>
+        </div>
+        <div>
+          <p className="!text-[10px] !font-medium !text-slate-400">Total Litres</p>
+          <p className="!mt-0.5 !text-[14px] !font-bold !text-slate-900">
+            {mpd.totalLitres.toFixed(2)} L
+          </p>
+        </div>
       </div>
-      <div className="mt-2 grid grid-cols-2 gap-3">
-      <div>
-        <p className="text-[8px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-          {t("manager.totalLitres")}
-        </p>
+    )}
 
-        <p className="mt-1 text-[14px] font-bold text-slate-900">
-          {mpd.totalLitres.toFixed(2)} L
-        </p>
-      </div>
-
-      <div className="text-right">
-        <p className="text-[8px] font-semibold uppercase tracking-[0.05em] text-slate-400">
-          {t("manager.estimatedSale")}
-        </p>
-
-        <p className="mt-1 text-[14px] font-bold text-slate-900">
-          {formatMoney(mpd.estimatedSalePaise)}
-        </p>
-      </div>
-      </div>
-    </section>}
-
-    <div className="mt-3 space-y-2">
+    <div className="mt-5 flex flex-col gap-2">
       <button
         type="button"
         onClick={onViewTodayHistory}
-        className="flex min-h-[42px] w-full items-center justify-between rounded-[14px] border border-slate-100 bg-white px-3 text-[10px] font-semibold text-slate-700 shadow-[0_4px_12px_rgba(15,23,42,0.04)] active:scale-[0.99]"
+        className="flex w-full items-center justify-between !rounded-[12px] !border !border-slate-100 !bg-slate-50/50 !p-3 !text-left"
       >
-        <span className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <svg
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.8"
-            className="h-4 w-4"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="!h-4 !w-4 !text-slate-500"
           >
-            <path d="M4.5 6.75h15v12h-15z" />
-            <path d="M8 10.5h8M8 14h5" />
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
-          {t("manager.todaysShiftHistory")}
-        </span>
-        <span className="text-slate-300">→</span>
+          <span className="!text-[12px] !font-bold !text-slate-800">
+            View Nozzle Details
+          </span>
+        </div>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="!h-4 !w-4 !text-slate-400"
+        >
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        onClick={onViewTodayHistory}
+        className="flex w-full items-center justify-between !rounded-[12px] !border !border-slate-100 !bg-slate-50/50 !p-3 !text-left"
+      >
+        <div className="flex items-center gap-3">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="!h-4 !w-4 !text-slate-500"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+          <span className="!text-[12px] !font-bold !text-slate-800">
+            View Live Shifts
+          </span>
+        </div>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="!h-4 !w-4 !text-slate-400"
+        >
+          <path d="M9 18l6-6-6-6" />
+        </svg>
       </button>
     </div>
   </section>

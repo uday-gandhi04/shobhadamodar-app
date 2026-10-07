@@ -75,13 +75,64 @@ const getStartedLabel = (timestamp, t, language) => {
   const today = getBusinessDate();
   const yesterday = addBusinessDays(today, -1);
   const dayLabel = startDate === today
-    ? t("manager.employeesPage.today")
+    ? t("manager.employeesPage.today", "Today")
     : startDate === yesterday
-      ? t("manager.employeesPage.yesterday")
+      ? t("manager.employeesPage.yesterday", "Yesterday")
       : formatTimestampDate(timestamp, language);
 
   return `${dayLabel} · ${formatTime(timestamp)}`;
 };
+
+// Reusable Input matching the redesign
+const Input = ({ label, value, onChange, type = "text", required = false, isTextarea = false, inputMode, minLength, maxLength, pattern, autoComplete, readOnly }) => (
+  <label className="block !text-[11px] !font-bold !text-slate-600 !mb-3">
+    {label}
+    {isTextarea ? (
+      <textarea
+        value={value}
+        required={required}
+        onChange={onChange}
+        readOnly={readOnly}
+        className="!mt-1.5 !min-h-[74px] !w-full !rounded-[12px] !border !border-slate-200/60 !bg-slate-50 !px-4 !py-3 !text-[14px] !font-bold !text-slate-900 focus:!border-emerald-500 focus:!bg-white focus:!outline-none focus:!ring-4 focus:!ring-emerald-500/10 !transition-all"
+      />
+    ) : (
+      <input
+        type={type}
+        inputMode={inputMode}
+        value={value}
+        required={required}
+        onChange={onChange}
+        minLength={minLength}
+        maxLength={maxLength}
+        pattern={pattern}
+        autoComplete={autoComplete}
+        readOnly={readOnly}
+        className="!mt-1.5 !min-h-[46px] !w-full !rounded-[12px] !border !border-slate-200/60 !bg-slate-50 !px-4 !text-[14px] !font-bold !text-slate-900 focus:!border-emerald-500 focus:!bg-white focus:!outline-none focus:!ring-4 focus:!ring-emerald-500/10 !transition-all read-only:!bg-slate-100 read-only:!text-slate-500 read-only:!border-slate-200"
+      />
+    )}
+  </label>
+);
+
+const Button = ({ children, onClick, disabled = false, secondary = false, tone = "emerald", type = "button" }) => (
+  <button
+    type={type}
+    onClick={onClick}
+    disabled={disabled}
+    className={`!min-h-[48px] !w-full !rounded-[14px] !px-4 !text-[13px] !font-bold !transition-all disabled:!opacity-50 disabled:!cursor-not-allowed flex items-center justify-center gap-2 ${
+      secondary 
+        ? "!bg-slate-100 !text-slate-700 hover:!bg-slate-200" 
+        : tone === "red" 
+          ? "!bg-rose-100 !text-rose-700 hover:!bg-rose-200"
+          : tone === "blue"
+            ? "!bg-sky-100 !text-sky-700 hover:!bg-sky-200"
+            : tone === "amber"
+              ? "!bg-amber-100 !text-amber-800 hover:!bg-amber-200"
+              : "!bg-emerald-700 !text-white hover:!bg-emerald-800 !shadow-[0_4px_14px_rgba(5,150,105,0.2)]"
+    }`}
+  >
+    {children}
+  </button>
+);
 
 const Employees = () => {
   const { t, i18n } = useTranslation();
@@ -125,7 +176,7 @@ const Employees = () => {
           setRosterError(
             error?.response?.data?.message ||
               error?.message ||
-              t("manager.employeesPage.loadError"),
+              t("manager.employeesPage.loadError", "Failed to load employees.")
           );
         }
       })
@@ -153,7 +204,7 @@ const Employees = () => {
           setDetailError(
             error?.response?.data?.message ||
               error?.message ||
-              t("manager.employeesPage.detailLoadError"),
+              t("manager.employeesPage.detailLoadError", "Failed to load employee details.")
           );
         }
       })
@@ -221,26 +272,26 @@ const Employees = () => {
       if (editor.mode === "create") {
         await createEmployee(values);
         setEditor(null);
-        setNotice(t("manager.employeesPage.employeeCreated"));
+        setNotice(t("manager.employeesPage.employeeCreated", "Employee created."));
         refreshData();
       } else {
         const response = await updateManagerEmployee(
           selectedEmployeeId,
-          { name: values.name },
+          { name: values.name }
         );
         setEmployeeDetail((current) => ({
           ...current,
           profile: response?.data || current?.profile,
         }));
         setEditor(null);
-        setNotice(t("manager.employeesPage.profileUpdated"));
+        setNotice(t("manager.employeesPage.profileUpdated", "Profile updated."));
         refreshData();
       }
     } catch (error) {
       setEditorError(
         error?.response?.data?.message ||
           error?.message ||
-          t("manager.employeesPage.saveError"),
+          t("manager.employeesPage.saveError", "Failed to save.")
       );
     } finally {
       setEditorSaving(false);
@@ -282,25 +333,25 @@ const Employees = () => {
     try {
       const response = await updateManagerEmployeeStatus(
         selectedEmployeeId,
-        pendingStatus.nextStatus,
+        pendingStatus.nextStatus
       );
       setEmployeeDetail((current) => ({
         ...current,
         profile: response?.data || current?.profile,
       }));
       setPendingStatus(null);
-      setNotice(t("manager.employeesPage.statusUpdated"));
+      setNotice(t("manager.employeesPage.statusUpdated", "Status updated."));
       refreshData();
     } catch (error) {
       const currentShift = error?.response?.data?.data?.currentShift;
       setStatusError(
         currentShift
           ? t("manager.employeesPage.workingStatusBlocked", {
-              mpd: currentShift.mpd || t("manager.operations"),
+              mpd: currentShift.mpd || t("manager.operations", "Operations"),
             })
           : error?.response?.data?.message ||
               error?.message ||
-              t("manager.employeesPage.saveError"),
+              t("manager.employeesPage.saveError", "Failed to save status.")
       );
     } finally {
       setStatusSaving(false);
@@ -334,204 +385,190 @@ const Employees = () => {
   const handlePasswordReset = async (password) => {
     await resetManagerEmployeePassword(selectedEmployeeId, password);
     setShowPasswordResetForm(false);
-    setNotice(t("manager.employeesPage.passwordResetSuccess"));
+    setNotice(t("manager.employeesPage.passwordResetSuccess", "Password reset successfully."));
     refreshData();
   };
+
+  // Clear notices automatically
+  useEffect(() => {
+    if (notice || rosterError) {
+      const timer = setTimeout(() => { setNotice(""); setRosterError(""); }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [notice, rosterError]);
 
   const detail = employeeDetail;
   const profile = detail?.profile;
   const employeePageTitle = selectedEmployeeId
-    ? profile?.name || t("manager.employeesPage.profile")
-    : t("manager.employees");
+    ? profile?.name || t("manager.employeesPage.profile", "Profile")
+    : t("manager.employees", "Employees");
 
   return (
     <ManagerLayout title={employeePageTitle} showBack onBack={handleBack}>
-      {selectedEmployeeId ? (
-        <EmployeeDetailView
-          detail={detail}
-          loading={detailLoading}
-          error={detailError}
-          onRetry={() => {
-            setDetailLoading(true);
-            setDetailRequest((current) => current + 1);
-          }}
-          onEdit={editEmployee}
-          onStatusChange={requestStatusChange}
-          onResetPassword={() => {
-            setNotice("");
-            setConfirmPasswordReset(true);
-          }}
-          onOpenShift={openShiftInOperations}
-          statusError={statusError}
-          notice={notice}
-          t={t}
-          language={i18n.language}
-        />
-      ) : (
-        <div className="space-y-3">
-          <div>
-            <h1 className="text-[19px] font-extrabold leading-6 text-slate-900">
-              {t("manager.employees")}
-            </h1>
-            <p className="mt-0.5 text-[10px] font-medium text-slate-500">
-              {t("manager.employeesPage.subtitle")}
-            </p>
-          </div>
+      <div className="!space-y-4 !pb-8">
+        {selectedEmployeeId ? (
+          <EmployeeDetailView
+            detail={detail}
+            loading={detailLoading}
+            error={detailError}
+            onRetry={() => {
+              setDetailLoading(true);
+              setDetailRequest((current) => current + 1);
+            }}
+            onEdit={editEmployee}
+            onStatusChange={requestStatusChange}
+            onResetPassword={() => {
+              setNotice("");
+              setConfirmPasswordReset(true);
+            }}
+            onOpenShift={openShiftInOperations}
+            statusError={statusError}
+            notice={notice}
+            t={t}
+            language={i18n.language}
+          />
+        ) : (
+          <div className="!space-y-4">
+            
+            {notice && (
+              <div className="!rounded-[14px] !bg-emerald-50 !p-3 !border !border-emerald-100 !flex !items-center !gap-2">
+                <p className="!text-[11px] !font-bold !text-emerald-700">{notice}</p>
+              </div>
+            )}
+            
+            {rosterError && (
+              <div className="!rounded-[14px] !bg-rose-50 !p-3 !border !border-rose-100 !flex !items-center !gap-2">
+                <p className="!text-[11px] !font-bold !text-rose-700">{rosterError}</p>
+              </div>
+            )}
 
-          {notice && (
-            <div role="status" className="rounded-[12px] border border-emerald-100 bg-emerald-50 px-3 py-2 text-[10px] font-semibold text-emerald-800">
-              {notice}
+            {/* TOP SUMMARY CARDS */}
+            <div className="!grid !grid-cols-2 !gap-3">
+              <SummaryCard label={t("manager.employeesPage.totalEmployees", "Total")} value={summary?.total ?? "—"} tone="emerald" />
+              <SummaryCard label={t("manager.employeesPage.activeCount", "Active")} value={summary?.active ?? "—"} tone="emerald" />
+              <SummaryCard label={t("manager.employeesPage.workingCount", "Working")} value={summary?.working ?? "—"} tone="blue" />
+              <SummaryCard label={t("manager.employeesPage.inactiveBannedCount", "Inactive/Banned")} value={summary?.inactiveOrBanned ?? "—"} tone="rose" />
             </div>
-          )}
 
-          <section className="grid grid-cols-2 gap-2" aria-label={t("manager.employeesPage.summary")}>
-            <SummaryCard label={t("manager.employeesPage.totalEmployees")} value={summary?.total ?? "—"} tone="green" />
-            <SummaryCard label={t("manager.employeesPage.activeCount")} value={summary?.active ?? "—"} tone="green" />
-            <SummaryCard label={t("manager.employeesPage.workingCount")} value={summary?.working ?? "—"} tone="blue" />
-            <SummaryCard label={t("manager.employeesPage.inactiveBannedCount")} value={summary?.inactiveOrBanned ?? "—"} tone="rose" />
-          </section>
+            <Button onClick={createEditor}>
+              <PlusIcon /> {t("manager.employeesPage.addEmployee", "Add Employee")}
+            </Button>
 
-          <button
-            type="button"
-            onClick={createEditor}
-            className="flex min-h-[42px] w-full items-center justify-center gap-2 rounded-[12px] bg-bpcl-emerald text-[11px] font-bold text-white shadow-[0_5px_14px_rgba(4,120,87,0.16)] active:scale-[0.99]"
-          >
-            <PlusIcon />
-            {t("manager.employeesPage.addEmployee")}
-          </button>
-
-          <label className="flex min-h-[40px] items-center gap-2 rounded-[12px] border border-slate-100 bg-white px-3 shadow-[0_3px_10px_rgba(15,23,42,0.035)]">
-            <SearchIcon />
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder={t("manager.employeesPage.searchPlaceholder")}
-              className="min-w-0 flex-1 bg-transparent text-[11px] text-slate-800 outline-none placeholder:text-slate-400"
-            />
-          </label>
-
-          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="group" aria-label={t("manager.employeesPage.subtitle")}>
-            {[
-              ["ALL", "allFilter"],
-              ["ACTIVE", "activeFilter"],
-              ["WORKING", "workingFilter"],
-              ["INACTIVE", "inactiveBannedFilter"],
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFilter(value)}
-                aria-pressed={filter === value}
-                className={`min-h-[32px] shrink-0 rounded-[10px] px-3 text-[9px] font-bold transition ${filter === value ? "bg-emerald-100 text-emerald-800" : "bg-white text-slate-500"}`}
-              >
-                {t(`manager.employeesPage.${label}`)}
-              </button>
-            ))}
-          </div>
-
-          {rosterError && (
-            <div role="alert" className="rounded-[13px] border border-red-100 bg-red-50 p-3 text-[10px] font-medium text-red-700">
-              <p>{rosterError}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setRosterLoading(true);
-                  setRosterRequest((current) => current + 1);
-                }}
-                className="mt-2 font-bold underline"
-              >
-                {t("manager.employeesPage.tryAgain")}
-              </button>
-            </div>
-          )}
-
-          {rosterLoading ? (
-            <div className="space-y-2" aria-label={t("manager.employeesPage.loading")}>
-              <div className="h-[82px] animate-pulse rounded-[14px] bg-white" />
-              <div className="h-[82px] animate-pulse rounded-[14px] bg-white" />
-              <div className="h-[82px] animate-pulse rounded-[14px] bg-white" />
-            </div>
-          ) : !rosterError && visibleEmployees.length === 0 ? (
-            <div className="rounded-[14px] bg-white px-4 py-8 text-center text-[10px] font-medium text-slate-500 shadow-[0_4px_14px_rgba(15,23,42,0.04)]">
-              {t("manager.employeesPage.noEmployees")}
-            </div>
-          ) : !rosterError ? (
-            <div className="space-y-2">
-              {visibleEmployees.map((employee) => (
-                <EmployeeListCard
-                  key={employee.id}
-                  employee={employee}
-                  onClick={() => openEmployee(employee.id)}
-                  t={t}
-                  language={i18n.language}
+            <div className="!rounded-[20px] !border !border-slate-100 !bg-white !p-4 !shadow-[0_8px_24px_rgba(149,157,165,0.05)]">
+              <div className="!mb-4 !relative">
+                <div className="!absolute !left-3 !top-1/2 !-translate-y-1/2 !text-slate-400">
+                  <SearchIcon />
+                </div>
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  className="!w-full !rounded-[12px] !border !border-slate-200/60 !bg-slate-50 !py-3 !pl-9 !pr-3 !text-[13px] !font-bold !text-slate-800 focus:!border-emerald-400 focus:!bg-white focus:!outline-none !transition-all"
+                  placeholder={t("manager.employeesPage.searchPlaceholder", "Search by name or ID")}
                 />
-              ))}
+              </div>
+
+              <div className="!flex !gap-2 !overflow-x-auto !pb-2 !mb-2 !scrollbar-hide">
+                {[
+                  ["ALL", "allFilter"],
+                  ["ACTIVE", "activeFilter"],
+                  ["WORKING", "workingFilter"],
+                  ["INACTIVE", "inactiveBannedFilter"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setFilter(value)}
+                    className={`!shrink-0 !rounded-[10px] !border !px-4 !py-2 !text-[11px] !font-bold !transition-all ${
+                      filter === value
+                        ? "!border-emerald-500 !bg-emerald-50 !text-emerald-700"
+                        : "!border-slate-200/60 !bg-white !text-slate-500 hover:!bg-slate-50"
+                    }`}
+                  >
+                    {t(`manager.employeesPage.${label}`)}
+                  </button>
+                ))}
+              </div>
+
+              {rosterLoading ? (
+                <p className="!py-6 !text-center !text-[12px] !font-bold !text-slate-400">Loading employees...</p>
+              ) : visibleEmployees.length === 0 ? (
+                <p className="!py-6 !text-center !text-[12px] !font-bold !text-slate-400">{t("manager.employeesPage.noEmployees", "No employees found.")}</p>
+              ) : (
+                <div className="!space-y-3 !mt-2">
+                  {visibleEmployees.map((employee) => (
+                    <EmployeeListCard
+                      key={employee.id}
+                      employee={employee}
+                      onClick={() => openEmployee(employee.id)}
+                      t={t}
+                      language={i18n.language}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : null}
-        </div>
-      )}
+          </div>
+        )}
 
-      {editor && (
-        <EmployeeEditorDialog
-          mode={editor.mode}
-          profile={profile}
-          saving={editorSaving}
-          error={editorError}
-          onClose={() => setEditor(null)}
-          onSubmit={handleEditorSubmit}
-          t={t}
-        />
-      )}
+        {editor && (
+          <EmployeeEditorDialog
+            mode={editor.mode}
+            profile={profile}
+            saving={editorSaving}
+            error={editorError}
+            onClose={() => setEditor(null)}
+            onSubmit={handleEditorSubmit}
+            t={t}
+          />
+        )}
 
-      {pendingStatus && (
-        <ConfirmationDialog
-          title={pendingStatus.title}
-          confirmLabel={pendingStatus.confirmLabel}
-          message={pendingStatus.body}
-          saving={statusSaving}
-          error={statusError}
-          onCancel={() => setPendingStatus(null)}
-          onConfirm={confirmStatusChange}
-          t={t}
-        />
-      )}
-      {confirmPasswordReset && (
-        <ConfirmationDialog
-          title={t("manager.employeesPage.confirmPasswordResetTitle")}
-          confirmLabel={t("manager.employeesPage.resetPassword")}
-          message={t("manager.employeesPage.confirmPasswordResetBody", {
-            name: profile?.name || "",
-          })}
-          saving={false}
-          error=""
-          onCancel={() => setConfirmPasswordReset(false)}
-          onConfirm={confirmPasswordResetRequest}
-          t={t}
-        />
-      )}
-      {showPasswordResetForm && (
-        <ResetPasswordDialog
-          onClose={() => setShowPasswordResetForm(false)}
-          onSubmit={handlePasswordReset}
-          t={t}
-        />
-      )}
+        {pendingStatus && (
+          <ConfirmationDialog
+            title={pendingStatus.title}
+            confirmLabel={pendingStatus.confirmLabel}
+            message={pendingStatus.body}
+            saving={statusSaving}
+            error={statusError}
+            onCancel={() => setPendingStatus(null)}
+            onConfirm={confirmStatusChange}
+          />
+        )}
+        
+        {confirmPasswordReset && (
+          <ConfirmationDialog
+            title={t("manager.employeesPage.confirmPasswordResetTitle", "Reset Password?")}
+            confirmLabel={t("manager.employeesPage.resetPassword", "Reset Password")}
+            message={t("manager.employeesPage.confirmPasswordResetBody", { name: profile?.name || "" }, "Are you sure you want to reset this user's password?")}
+            saving={false}
+            error=""
+            onCancel={() => setConfirmPasswordReset(false)}
+            onConfirm={confirmPasswordResetRequest}
+          />
+        )}
+        
+        {showPasswordResetForm && (
+          <ResetPasswordDialog
+            onClose={() => setShowPasswordResetForm(false)}
+            onSubmit={handlePasswordReset}
+            t={t}
+          />
+        )}
+      </div>
     </ManagerLayout>
   );
 };
 
 const SummaryCard = ({ label, value, tone }) => {
   const colors = tone === "rose"
-    ? "bg-rose-50 text-rose-700"
+    ? "!bg-rose-50 !text-rose-700 !border-rose-100"
     : tone === "blue"
-      ? "bg-sky-50 text-sky-700"
-      : "bg-emerald-50 text-emerald-800";
+      ? "!bg-sky-50 !text-sky-700 !border-sky-100"
+      : "!bg-emerald-50 !text-emerald-800 !border-emerald-100";
 
   return (
-    <div className={`min-h-[61px] rounded-[13px] border border-white px-3 py-2 ${colors}`}>
-      <p className="text-[8px] font-semibold leading-3 opacity-75">{label}</p>
-      <p className="mt-1 text-[16px] font-extrabold leading-5 text-slate-900">{value}</p>
+    <div className={`!min-h-[74px] !rounded-[16px] !border !p-4 !shadow-[0_4px_14px_rgba(15,23,42,0.03)] !flex !flex-col !justify-center ${colors}`}>
+      <p className="!text-[10px] !font-bold !uppercase !mb-1">{label}</p>
+      <p className="!text-[22px] !font-black !leading-none">{value}</p>
     </div>
   );
 };
@@ -544,37 +581,39 @@ const EmployeeListCard = ({ employee, onClick, t, language }) => {
       ? "accountInactive"
       : "accountActive";
   const statusTone = employee.accountStatus === "BANNED"
-    ? "bg-red-50 text-red-700"
+    ? "!bg-red-50 !text-red-700"
     : employee.accountStatus === "INACTIVE"
-      ? "bg-slate-100 text-slate-600"
-      : "bg-emerald-50 text-emerald-800";
+      ? "!bg-slate-100 !text-slate-600"
+      : "!bg-emerald-50 !text-emerald-800";
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[86px] w-full items-center gap-3 rounded-[14px] border border-white bg-white p-3 text-left shadow-[0_4px_14px_rgba(15,23,42,0.045)] active:bg-slate-50"
+      className="!w-full !flex !items-center !justify-between !rounded-[16px] !border !border-slate-100 !bg-white !p-4 !shadow-[0_2px_8px_rgba(15,23,42,0.02)] hover:!border-emerald-200 !transition-all !text-left"
     >
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] bg-emerald-50 text-emerald-800">
-        <PersonIcon />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[12px] font-bold text-slate-900">{employee.name}</span>
-        <span className="mt-0.5 block text-[9px] font-semibold text-slate-400">{employee.employeeId}</span>
-        <span className="mt-1.5 flex flex-wrap items-center gap-1">
-          <span className={`rounded-full px-2 py-0.5 text-[7px] font-extrabold ${statusTone}`}>
-            {t(`manager.employeesPage.${statusKey}`)}
-          </span>
-          <span className={`rounded-full px-2 py-0.5 text-[7px] font-extrabold ${isWorking ? "bg-sky-50 text-sky-700" : "bg-slate-50 text-slate-500"}`}>
-            {t(isWorking ? "manager.employeesPage.workWorking" : "manager.employeesPage.workNotWorking")}
-          </span>
+      <div className="!flex !items-center !gap-3 !flex-1 !min-w-0">
+        <span className="!grid !h-10 !w-10 !shrink-0 !place-items-center !rounded-[12px] !bg-emerald-50 !text-emerald-700">
+          <PersonIcon />
         </span>
-        {isWorking && (
-          <span className="mt-1.5 block truncate text-[9px] font-medium text-slate-500">
-            {employee.currentShift.mpd || t("manager.operations")} · {t("manager.employeesPage.started")} {getStartedLabel(employee.currentShift.startedAt, t, language)}
-          </span>
-        )}
-      </span>
+        <div className="!min-w-0 !flex-1">
+          <p className="!text-[14px] !font-bold !text-slate-900 !truncate">{employee.name}</p>
+          <p className="!text-[10px] !font-bold !text-slate-400 !mt-0.5">{employee.employeeId}</p>
+          <div className="!mt-1.5 !flex !flex-wrap !gap-1.5">
+            <span className={`!rounded-[6px] !px-2 !py-0.5 !text-[8px] !font-extrabold !uppercase ${statusTone}`}>
+              {t(`manager.employeesPage.${statusKey}`)}
+            </span>
+            <span className={`!rounded-[6px] !px-2 !py-0.5 !text-[8px] !font-extrabold !uppercase ${isWorking ? "!bg-sky-50 !text-sky-700" : "!bg-slate-50 !text-slate-500"}`}>
+              {t(isWorking ? "manager.employeesPage.workWorking" : "manager.employeesPage.workNotWorking")}
+            </span>
+          </div>
+          {isWorking && (
+            <p className="!mt-1.5 !text-[10px] !font-medium !text-slate-500 !truncate">
+              {employee.currentShift.mpd || t("manager.operations")} · {getStartedLabel(employee.currentShift.startedAt, t, language)}
+            </p>
+          )}
+        </div>
+      </div>
       <ChevronIcon />
     </button>
   );
@@ -595,181 +634,161 @@ const EmployeeDetailView = ({
   language,
 }) => {
   if (loading) {
-    return (
-      <div className="space-y-3">
-        <div className="h-[110px] animate-pulse rounded-[15px] bg-white" />
-        <div className="h-[130px] animate-pulse rounded-[15px] bg-white" />
-        <div className="h-[180px] animate-pulse rounded-[15px] bg-white" />
-      </div>
-    );
+    return <p className="!py-6 !text-center !text-[12px] !font-bold !text-slate-400">Loading details...</p>;
   }
 
   if (error || !detail?.profile) {
     return (
-      <div role="alert" className="rounded-[14px] border border-red-100 bg-red-50 p-4 text-[10px] font-medium text-red-700">
-        <p>{error || t("manager.employeesPage.detailLoadError")}</p>
-        <button type="button" onClick={onRetry} className="mt-3 font-bold underline">
-          {t("manager.employeesPage.tryAgain")}
-        </button>
+      <div className="!rounded-[14px] !bg-rose-50 !p-4 !border !border-rose-100 !text-center">
+        <p className="!text-[11px] !font-bold !text-rose-700">{error || "Error loading details."}</p>
+        <button onClick={onRetry} className="!mt-2 !text-[12px] !font-bold !text-rose-800 !underline">Try Again</button>
       </div>
     );
   }
 
   const { profile, currentShift, shiftHistory = [], summary = {} } = detail;
   const isWorking = Boolean(currentShift);
-  const statusKey = profile.accountStatus === "BANNED"
-    ? "accountBanned"
-    : profile.accountStatus === "INACTIVE"
-      ? "accountInactive"
-      : "accountActive";
+  const statusKey = profile.accountStatus === "BANNED" ? "accountBanned" : profile.accountStatus === "INACTIVE" ? "accountInactive" : "accountActive";
+  const statusTone = profile.accountStatus === "BANNED" ? "!bg-red-50 !text-red-700" : profile.accountStatus === "INACTIVE" ? "!bg-slate-100 !text-slate-600" : "!bg-emerald-50 !text-emerald-800";
 
   return (
-    <div className="space-y-3">
+    <div className="!space-y-4">
       {notice && (
-        <div role="status" className="rounded-[12px] border border-emerald-100 bg-emerald-50 px-3 py-2 text-[10px] font-semibold text-emerald-800">
-          {notice}
+        <div className="!rounded-[14px] !bg-emerald-50 !p-3 !border !border-emerald-100">
+          <p className="!text-[11px] !font-bold !text-emerald-700">{notice}</p>
         </div>
       )}
 
-      <section className="rounded-[15px] bg-white p-3.5 shadow-[0_4px_15px_rgba(15,23,42,0.045)]">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-emerald-50 text-emerald-800">
+      {/* PROFILE CARD */}
+      <section className="!rounded-[20px] !border !border-slate-100 !bg-white !p-5 !shadow-[0_8px_24px_rgba(149,157,165,0.05)]">
+        <div className="!flex !items-start !justify-between !mb-4">
+          <div className="!flex !items-center !gap-3">
+            <span className="!grid !h-12 !w-12 !place-items-center !rounded-[14px] !bg-emerald-50 !text-emerald-700">
               <PersonIcon />
             </span>
-            <div className="min-w-0">
-              <h1 className="truncate text-[15px] font-extrabold text-slate-900">{profile.name}</h1>
-              <p className="mt-0.5 text-[10px] font-semibold text-slate-500">{profile.employeeId}</p>
+            <div>
+              <h1 className="!text-[18px] !font-black !text-slate-900">{profile.name}</h1>
+              <p className="!text-[11px] !font-bold !text-slate-400 !mt-0.5">{profile.employeeId}</p>
             </div>
           </div>
-          <span className={`shrink-0 rounded-full px-2 py-1 text-[8px] font-extrabold ${profile.accountStatus === "ACTIVE" ? "bg-emerald-50 text-emerald-800" : profile.accountStatus === "BANNED" ? "bg-red-50 text-red-700" : "bg-slate-100 text-slate-600"}`}>
+          <span className={`!rounded-[8px] !px-3 !py-1 !text-[9px] !font-extrabold !uppercase ${statusTone}`}>
             {t(`manager.employeesPage.${statusKey}`)}
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-[9px]">
-          <div>
-            <p className="text-slate-400">{t("manager.employeesPage.employeeId")}</p>
-            <p className="mt-0.5 font-bold text-slate-700">{profile.employeeId}</p>
-          </div>
-          <div>
-            <p className="text-slate-400">{t("manager.employeesPage.created")}</p>
-            <p className="mt-0.5 font-bold text-slate-700">
+        <div className="!grid !grid-cols-2 !gap-3 !mb-4">
+          <div className="!rounded-[12px] !bg-slate-50 !p-3">
+            <p className="!text-[10px] !font-bold !uppercase !text-slate-400">Created</p>
+            <p className="!mt-1 !text-[12px] !font-bold !text-slate-700">
               {profile.createdAt ? formatTimestampDate(profile.createdAt, language) : "—"}
             </p>
           </div>
+          <div className="!rounded-[12px] !bg-slate-50 !p-3">
+            <p className="!text-[10px] !font-bold !uppercase !text-slate-400">Account ID</p>
+            <p className="!mt-1 !text-[12px] !font-bold !text-slate-700 truncate">{profile.employeeId}</p>
+          </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={onEdit} className="min-h-[34px] rounded-[10px] border border-slate-200 px-3 text-[9px] font-bold text-slate-700 active:bg-slate-50">
-            {t("manager.employeesPage.editEmployee")}
-          </button>
-          <button type="button" onClick={onResetPassword} className="min-h-[34px] rounded-[10px] border border-amber-200 bg-amber-50 px-3 text-[9px] font-bold text-amber-800 active:bg-amber-100">
-            {t("manager.employeesPage.resetPassword")}
-          </button>
+        <div className="!grid !grid-cols-2 !gap-2">
+          <Button secondary onClick={onEdit}>Edit Details</Button>
+          <Button tone="amber" onClick={onResetPassword}>Reset Password</Button>
+          
           {profile.accountStatus === "ACTIVE" && (
             <>
-              <button type="button" disabled={isWorking} onClick={() => onStatusChange("INACTIVE")} className="min-h-[34px] rounded-[10px] bg-amber-50 px-3 text-[9px] font-bold text-amber-800 disabled:cursor-not-allowed disabled:opacity-50">
-                {t("manager.employeesPage.deactivate")}
-              </button>
-              <button type="button" disabled={isWorking} onClick={() => onStatusChange("BANNED")} className="min-h-[34px] rounded-[10px] bg-red-50 px-3 text-[9px] font-bold text-red-700 disabled:cursor-not-allowed disabled:opacity-50">
-                {t("manager.employeesPage.ban")}
-              </button>
+              <Button secondary onClick={() => onStatusChange("INACTIVE")} disabled={isWorking}>Deactivate</Button>
+              <Button tone="red" onClick={() => onStatusChange("BANNED")} disabled={isWorking}>Ban Account</Button>
             </>
           )}
           {profile.accountStatus === "INACTIVE" && (
-            <button type="button" onClick={() => onStatusChange("ACTIVE")} className="min-h-[34px] rounded-[10px] bg-emerald-50 px-3 text-[9px] font-bold text-emerald-800 active:bg-emerald-100">
-              {t("manager.employeesPage.activate")}
-            </button>
+            <Button onClick={() => onStatusChange("ACTIVE")}>Activate</Button>
           )}
           {profile.accountStatus === "BANNED" && (
-            <button type="button" onClick={() => onStatusChange("ACTIVE")} className="min-h-[34px] rounded-[10px] bg-emerald-50 px-3 text-[9px] font-bold text-emerald-800 active:bg-emerald-100">
-              {t("manager.employeesPage.unban")}
-            </button>
+            <Button onClick={() => onStatusChange("ACTIVE")}>Unban</Button>
           )}
         </div>
 
         {isWorking && (
-          <div role="status" className="mt-3 rounded-[11px] border border-amber-100 bg-amber-50 px-3 py-2 text-[9px] font-semibold leading-4 text-amber-800">
-            {t("manager.employeesPage.workingStatusBlocked", {
-              mpd: currentShift.mpd || t("manager.operations"),
-            })}
+          <div className="!mt-3 !rounded-[12px] !border !border-amber-100 !bg-amber-50 !p-3">
+            <p className="!text-[10px] !font-bold !text-amber-800">Cannot modify status while working on {currentShift.mpd || "Operations"}.</p>
           </div>
         )}
         {statusError && (
-          <div role="alert" className="mt-3 rounded-[11px] border border-red-100 bg-red-50 px-3 py-2 text-[9px] font-semibold leading-4 text-red-700">
-            {statusError}
+          <div className="!mt-3 !rounded-[12px] !border !border-rose-100 !bg-rose-50 !p-3">
+            <p className="!text-[10px] !font-bold !text-rose-700">{statusError}</p>
           </div>
         )}
       </section>
 
-      <section className="rounded-[15px] bg-white p-3.5 shadow-[0_4px_15px_rgba(15,23,42,0.045)]">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-[12px] font-extrabold text-slate-900">{t("manager.employeesPage.currentShift")}</h2>
-          {isWorking && <span className="rounded-full bg-emerald-50 px-2 py-1 text-[8px] font-extrabold text-emerald-800">{t("manager.employeesPage.workWorking")}</span>}
+      {/* CURRENT SHIFT */}
+      <section className="!rounded-[20px] !border !border-slate-100 !bg-white !p-5 !shadow-[0_8px_24px_rgba(149,157,165,0.05)]">
+        <div className="!flex !items-center !justify-between !mb-3">
+          <h2 className="!text-[14px] !font-black !text-slate-900">{t("manager.employeesPage.currentShift", "Current Shift")}</h2>
+          {isWorking && <span className="!rounded-[6px] !bg-emerald-50 !px-2 !py-1 !text-[9px] !font-extrabold !text-emerald-700 !uppercase">Working</span>}
         </div>
         {currentShift ? (
-          <div className="mt-2 flex items-center justify-between gap-3 rounded-[12px] bg-emerald-50/70 px-3 py-2.5">
+          <div className="!flex !items-center !justify-between !rounded-[14px] !bg-emerald-50/70 !border !border-emerald-100 !p-4">
             <div>
-              <p className="text-[12px] font-extrabold text-slate-900">{currentShift.mpd || t("manager.operations")}</p>
-              <p className="mt-1 text-[9px] font-medium text-slate-600">
-                {t("manager.employeesPage.started")} {getStartedLabel(currentShift.startedAt, t, language)}
+              <p className="!text-[14px] !font-extrabold !text-emerald-900">{currentShift.mpd || "Operations"}</p>
+              <p className="!mt-1 !text-[11px] !font-medium !text-emerald-700">
+                Started {getStartedLabel(currentShift.startedAt, t, language)}
               </p>
             </div>
-            <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+            <span className="!h-3 !w-3 !rounded-full !bg-emerald-500 !shadow-[0_0_8px_rgba(16,185,129,0.6)] !animate-pulse" />
           </div>
         ) : (
-          <p className="mt-2 rounded-[11px] bg-slate-50 px-3 py-3 text-[10px] font-medium text-slate-500">
-            {t("manager.employeesPage.noActiveShift")}
-          </p>
+          <div className="!rounded-[14px] !bg-slate-50 !p-4 !text-center">
+            <p className="!text-[11px] !font-bold !text-slate-500">{t("manager.employeesPage.noActiveShift", "No active shift right now.")}</p>
+          </div>
         )}
       </section>
 
-      <section className="rounded-[15px] bg-white p-3.5 shadow-[0_4px_15px_rgba(15,23,42,0.045)]">
-        <h2 className="text-[12px] font-extrabold text-slate-900">{t("manager.employeesPage.summary")}</h2>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <DetailMetric label={t("manager.employeesPage.totalShifts")} value={summary.shiftCount || 0} />
-          <DetailMetric label={t("manager.employeesPage.totalLitres")} value={formatLitres(summary.totalLitres)} />
-          <DetailMetric label={t("manager.employeesPage.totalSale")} value={formatMoney(summary.totalSalePaise)} />
-          <DetailMetric label={t("manager.employeesPage.forceClosedShifts")} value={summary.forceClosedShiftCount || 0} />
+      {/* PERFORMANCE SUMMARY */}
+      <section className="!rounded-[20px] !border !border-slate-100 !bg-white !p-5 !shadow-[0_8px_24px_rgba(149,157,165,0.05)]">
+        <h2 className="!text-[14px] !font-black !text-slate-900 !mb-3">{t("manager.employeesPage.summary", "Summary")}</h2>
+        <div className="!grid !grid-cols-2 !gap-3">
+          <DetailMetric label={t("manager.employeesPage.totalShifts", "Total Shifts")} value={summary.shiftCount || 0} />
+          <DetailMetric label={t("manager.employeesPage.totalLitres", "Volume Sold")} value={formatLitres(summary.totalLitres)} />
+          <DetailMetric label={t("manager.employeesPage.totalSale", "Total Revenue")} value={formatMoney(summary.totalSalePaise)} />
+          <DetailMetric label={t("manager.employeesPage.forceClosedShifts", "Force Closed")} value={summary.forceClosedShiftCount || 0} />
         </div>
       </section>
 
-      <section className="rounded-[15px] bg-white p-3.5 shadow-[0_4px_15px_rgba(15,23,42,0.045)]">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-[12px] font-extrabold text-slate-900">{t("manager.employeesPage.shiftHistory")}</h2>
-          <span className="text-[8px] font-medium text-slate-400">{shiftHistory.length}</span>
+      {/* SHIFT HISTORY */}
+      <section className="!rounded-[20px] !border !border-slate-100 !bg-white !p-5 !shadow-[0_8px_24px_rgba(149,157,165,0.05)]">
+        <div className="!flex !items-center !justify-between !mb-4">
+          <h2 className="!text-[14px] !font-black !text-slate-900">{t("manager.employeesPage.shiftHistory", "Shift History")}</h2>
+          <span className="!text-[11px] !font-bold !text-slate-400">{shiftHistory.length} Shifts</span>
         </div>
         {shiftHistory.length === 0 ? (
-          <p className="mt-2 rounded-[11px] bg-slate-50 px-3 py-3 text-[10px] font-medium text-slate-500">
-            {t("manager.employeesPage.noShiftHistory")}
-          </p>
+          <div className="!rounded-[14px] !bg-slate-50 !p-6 !text-center">
+            <p className="!text-[11px] !font-bold !text-slate-500">{t("manager.employeesPage.noShiftHistory", "No history available.")}</p>
+          </div>
         ) : (
-          <div className="mt-2 space-y-2">
+          <div className="!space-y-3">
             {shiftHistory.map((shift) => (
               <button
                 key={shift.id}
                 type="button"
                 onClick={() => onOpenShift(shift.id)}
-                className="flex min-h-[74px] w-full items-center gap-2 rounded-[12px] border border-slate-100 p-2.5 text-left active:bg-slate-50"
+                className="!w-full !flex !items-center !justify-between !rounded-[16px] !border !border-slate-100 !bg-white !p-4 !shadow-[0_2px_8px_rgba(15,23,42,0.02)] hover:!border-emerald-200 !transition-all !text-left"
               >
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[10px] font-extrabold text-slate-900">
-                      {formatBusinessDate(shift.businessDate, language)} · {shift.mpd || t("manager.operations")}
+                <div className="!min-w-0 !flex-1">
+                  <div className="!flex !items-center !gap-2 !mb-1">
+                    <span className="!text-[12px] !font-extrabold !text-slate-900">
+                      {formatBusinessDate(shift.businessDate, language)}
                     </span>
-                    <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[7px] font-bold text-slate-600">
-                      {t(`manager.operationsStatus.${String(shift.status).toLowerCase()}`, { defaultValue: shift.status })}
+                    <span className="!rounded-[6px] !bg-slate-100 !px-2 !py-0.5 !text-[8px] !font-bold !text-slate-600 !uppercase">
+                      {shift.status}
                     </span>
-                  </span>
-                  <span className="mt-1 block text-[8px] font-medium text-slate-500">
-                    {formatTime(shift.startedAt)} – {shift.endedAt ? formatTime(shift.endedAt) : t("manager.employeesPage.endTimeMissing")}
-                  </span>
-                  <span className="mt-1.5 flex items-center justify-between gap-2">
-                    <span className="text-[8px] font-semibold text-slate-500">{formatLitres(shift.totalLitres)}</span>
-                    <span className="text-[9px] font-extrabold text-slate-800">{formatMoney(shift.salePaise)}</span>
-                  </span>
-                </span>
+                  </div>
+                  <p className="!text-[10px] !font-bold !text-slate-500">
+                    {shift.mpd || "Operations"} · {formatTime(shift.startedAt)} – {shift.endedAt ? formatTime(shift.endedAt) : "Open"}
+                  </p>
+                  <div className="!mt-2 !flex !items-center !gap-4">
+                    <p className="!text-[11px] !font-black !text-slate-800">{formatMoney(shift.salePaise)}</p>
+                    <p className="!text-[10px] !font-bold !text-slate-500">{formatLitres(shift.totalLitres)}</p>
+                  </div>
+                </div>
                 <ChevronIcon />
               </button>
             ))}
@@ -782,9 +801,9 @@ const EmployeeDetailView = ({
 };
 
 const DetailMetric = ({ label, value }) => (
-  <div className="min-w-0 rounded-[11px] bg-slate-50 px-2.5 py-2">
-    <p className="truncate text-[8px] font-medium text-slate-500">{label}</p>
-    <p className="mt-1 break-words text-[11px] font-extrabold text-slate-900">{value}</p>
+  <div className="!rounded-[14px] !bg-slate-50 !p-3">
+    <p className="!text-[10px] !font-bold !uppercase !text-slate-500">{label}</p>
+    <p className="!mt-1 !text-[16px] !font-black !text-slate-900">{value}</p>
   </div>
 );
 
@@ -800,49 +819,53 @@ const EmployeeEditorDialog = ({ mode, profile, saving, error, onClose, onSubmit,
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/40 p-3 sm:items-center" role="presentation">
-      <section role="dialog" aria-modal="true" aria-labelledby="employee-dialog-title" className="max-h-[90dvh] w-full max-w-[420px] overflow-y-auto rounded-[18px] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.22)]">
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="employee-dialog-title" className="text-[15px] font-extrabold text-slate-900">
-            {t(creating ? "manager.employeesPage.addEmployee" : "manager.employeesPage.editEmployee")}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+      <section role="dialog" aria-modal="true" className="w-full max-w-sm space-y-4 rounded-[20px] bg-white p-5 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between !mb-2">
+          <h2 className="!text-[16px] !font-black !text-slate-900">
+            {t(creating ? "manager.employeesPage.addEmployee" : "manager.employeesPage.editEmployee", creating ? "Add Employee" : "Edit Employee")}
           </h2>
-          <button type="button" onClick={onClose} aria-label={t("manager.employeesPage.cancel")} className="grid h-8 w-8 place-items-center rounded-[9px] text-slate-500 active:bg-slate-100">
+          <button type="button" onClick={onClose} className="!h-8 !w-8 !rounded-full !bg-slate-100 !flex !items-center !justify-center !text-slate-500 hover:!bg-slate-200">
             <CloseIcon />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-          <FormField label={t("manager.employeesPage.employeeName")}>
-            <input required minLength={2} maxLength={100} value={name} onChange={(event) => setName(event.target.value)} className="mt-1.5 min-h-[40px] w-full rounded-[10px] border border-slate-200 bg-white px-3 text-[11px] text-slate-800 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" autoComplete="name" />
-          </FormField>
+        <form onSubmit={handleSubmit} className="!space-y-0">
+          <Input 
+            label={t("manager.employeesPage.employeeName", "Full Name")} 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            required minLength={2} maxLength={100} autoComplete="name" 
+          />
           {creating ? (
             <>
-              <FormField label={t("manager.employeesPage.employeeId")}>
-                <input required minLength={3} maxLength={30} pattern="[A-Za-z0-9_-]+" value={employeeId} onChange={(event) => setEmployeeId(event.target.value)} className="mt-1.5 min-h-[40px] w-full rounded-[10px] border border-slate-200 bg-white px-3 text-[11px] uppercase text-slate-800 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" autoComplete="off" />
-              </FormField>
-              <FormField label={t("manager.employeesPage.password")}>
-                <input required minLength={6} maxLength={128} type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1.5 min-h-[40px] w-full rounded-[10px] border border-slate-200 bg-white px-3 text-[11px] text-slate-800 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" autoComplete="new-password" />
-              </FormField>
+              <Input 
+                label={t("manager.employeesPage.employeeId", "Employee ID (e.g. EMP01)")} 
+                value={employeeId} 
+                onChange={(e) => setEmployeeId(e.target.value.toUpperCase())} 
+                required minLength={3} maxLength={30} pattern="[A-Za-z0-9_-]+" autoComplete="off" 
+              />
+              <Input 
+                label={t("manager.employeesPage.password", "Password")} 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required minLength={6} maxLength={128} autoComplete="new-password" 
+              />
             </>
           ) : (
-            <FormField label={t("manager.employeesPage.employeeId")}>
-              <input readOnly value={profile?.employeeId || ""} className="mt-1.5 min-h-[40px] w-full rounded-[10px] border border-slate-200 bg-slate-50 px-3 text-[11px] text-slate-500 outline-none" />
-            </FormField>
+            <Input 
+              label={t("manager.employeesPage.employeeId", "Employee ID")} 
+              value={profile?.employeeId || ""} 
+              readOnly 
+            />
           )}
 
-          {error && (
-            <p role="alert" className="rounded-[10px] bg-red-50 px-3 py-2 text-[9px] font-semibold text-red-700">{error}</p>
-          )}
+          {error && <p className="!mt-2 !rounded-[10px] !bg-red-50 !px-3 !py-2 !text-[10px] !font-bold !text-red-700">{error}</p>}
 
-          <div className="flex gap-2 pt-1">
-            <button type="button" onClick={onClose} className="min-h-[40px] flex-1 rounded-[11px] border border-slate-200 text-[10px] font-bold text-slate-600">
-              {t("manager.employeesPage.cancel")}
-            </button>
-            <button type="submit" disabled={saving} className="min-h-[40px] flex-1 rounded-[11px] bg-bpcl-emerald text-[10px] font-bold text-white disabled:opacity-60">
-              {saving
-                ? t("manager.employeesPage.loading")
-                : t(creating ? "manager.employeesPage.createEmployee" : "manager.employeesPage.saveChanges")}
-            </button>
+          <div className="!pt-4 !mt-2 !border-t !border-slate-100 !flex !gap-2">
+            <Button secondary onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={saving}>{saving ? "Saving..." : (creating ? "Create" : "Save")}</Button>
           </div>
         </form>
       </section>
@@ -850,26 +873,17 @@ const EmployeeEditorDialog = ({ mode, profile, saving, error, onClose, onSubmit,
   );
 };
 
-const FormField = ({ label, children }) => (
-  <label className="block text-[9px] font-semibold text-slate-600">
-    {label}
-    {children}
-  </label>
-);
-
-const ConfirmationDialog = ({ title, confirmLabel, message, saving, error, onCancel, onConfirm, t }) => (
-  <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/40 p-3 sm:items-center" role="presentation">
-    <section role="dialog" aria-modal="true" aria-labelledby="status-dialog-title" className="w-full max-w-[420px] rounded-[18px] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.22)]">
-      <h2 id="status-dialog-title" className="text-[15px] font-extrabold text-slate-900">{title}</h2>
-      <p className="mt-2 text-[10px] leading-5 text-slate-600">{message}</p>
-      {error && <p role="alert" className="mt-3 rounded-[10px] bg-red-50 px-3 py-2 text-[9px] font-semibold text-red-700">{error}</p>}
-      <div className="mt-4 flex gap-2">
-        <button type="button" disabled={saving} onClick={onCancel} className="min-h-[40px] flex-1 rounded-[11px] border border-slate-200 text-[10px] font-bold text-slate-600 disabled:opacity-60">
-          {t("manager.employeesPage.cancel")}
-        </button>
-        <button type="button" disabled={saving} onClick={onConfirm} className="min-h-[40px] flex-1 rounded-[11px] bg-bpcl-emerald text-[10px] font-bold text-white disabled:opacity-60">
-          {saving ? t("manager.employeesPage.loading") : confirmLabel}
-        </button>
+const ConfirmationDialog = ({ title, confirmLabel, message, saving, error, onCancel, onConfirm }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+    <section role="dialog" aria-modal="true" className="w-full max-w-sm space-y-4 rounded-[20px] bg-white p-5 shadow-xl">
+      <h2 className="!text-[16px] !font-black !text-slate-900">{title}</h2>
+      <p className="!text-[12px] !font-medium !text-slate-600">{message}</p>
+      
+      {error && <p className="!rounded-[10px] !bg-red-50 !px-3 !py-2 !text-[10px] !font-bold !text-red-700">{error}</p>}
+      
+      <div className="!pt-2 !flex !gap-2">
+        <Button secondary onClick={onCancel} disabled={saving}>Cancel</Button>
+        <Button tone="emerald" onClick={onConfirm} disabled={saving}>{saving ? "Wait..." : confirmLabel}</Button>
       </div>
     </section>
   </div>
@@ -884,21 +898,15 @@ const ResetPasswordDialog = ({ onClose, onSubmit, t }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!password || !confirmPassword) {
-      setError(t("manager.employeesPage.passwordRequired"));
-      setPassword("");
-      setConfirmPassword("");
+      setError(t("manager.employeesPage.passwordRequired", "Password is required"));
       return;
     }
-    if (password.length < 6 || confirmPassword.length < 6) {
-      setError(t("manager.employeesPage.passwordTooShort"));
-      setPassword("");
-      setConfirmPassword("");
+    if (password.length < 6) {
+      setError(t("manager.employeesPage.passwordTooShort", "Password must be at least 6 characters"));
       return;
     }
     if (password !== confirmPassword) {
-      setError(t("manager.employeesPage.passwordsDoNotMatch"));
-      setPassword("");
-      setConfirmPassword("");
+      setError(t("manager.employeesPage.passwordsDoNotMatch", "Passwords do not match"));
       return;
     }
 
@@ -906,63 +914,49 @@ const ResetPasswordDialog = ({ onClose, onSubmit, t }) => {
     setError("");
     try {
       await onSubmit(password);
-      setPassword("");
-      setConfirmPassword("");
     } catch (submitError) {
       setError(
         submitError?.response?.data?.message ||
           submitError?.message ||
-          t("manager.employeesPage.passwordResetError"),
+          t("manager.employeesPage.passwordResetError", "Error resetting password")
       );
-      setPassword("");
-      setConfirmPassword("");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/40 p-3 sm:items-center" role="presentation">
-      <section role="dialog" aria-modal="true" aria-labelledby="password-reset-title" className="w-full max-w-[420px] rounded-[18px] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.22)]">
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="password-reset-title" className="text-[15px] font-extrabold text-slate-900">
-            {t("manager.employeesPage.resetPassword")}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+      <section role="dialog" aria-modal="true" className="w-full max-w-sm space-y-4 rounded-[20px] bg-white p-5 shadow-xl">
+        <div className="flex items-center justify-between !mb-2">
+          <h2 className="!text-[16px] !font-black !text-slate-900">
+            {t("manager.employeesPage.resetPassword", "Reset Password")}
           </h2>
-          <button type="button" onClick={onClose} aria-label={t("manager.employeesPage.cancel")} className="grid h-8 w-8 place-items-center rounded-[9px] text-slate-500 active:bg-slate-100">
+          <button type="button" onClick={onClose} className="!h-8 !w-8 !rounded-full !bg-slate-100 !flex !items-center !justify-center !text-slate-500 hover:!bg-slate-200">
             <CloseIcon />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="mt-3 space-y-3">
-          <label className="block text-[10px] font-bold text-slate-700">
-            {t("manager.employeesPage.newPassword")}
-            <input
-              type="password"
-              autoComplete="new-password"
-              aria-required="true"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="mt-1 min-h-[40px] w-full rounded-[11px] border border-slate-200 bg-slate-50 px-3 text-[11px] outline-none focus:border-emerald-400"
-            />
-          </label>
-          <label className="block text-[10px] font-bold text-slate-700">
-            {t("manager.employeesPage.confirmNewPassword")}
-            <input
-              type="password"
-              autoComplete="new-password"
-              aria-required="true"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              className="mt-1 min-h-[40px] w-full rounded-[11px] border border-slate-200 bg-slate-50 px-3 text-[11px] outline-none focus:border-emerald-400"
-            />
-          </label>
-          {error && <p role="alert" className="rounded-[10px] bg-red-50 px-3 py-2 text-[9px] font-semibold text-red-700">{error}</p>}
-          <div className="flex gap-2">
-            <button type="button" disabled={saving} onClick={onClose} className="min-h-[40px] flex-1 rounded-[11px] border border-slate-200 text-[10px] font-bold text-slate-600 disabled:opacity-60">
-              {t("manager.employeesPage.cancel")}
-            </button>
-            <button type="submit" disabled={saving} className="min-h-[40px] flex-1 rounded-[11px] bg-bpcl-emerald text-[10px] font-bold text-white disabled:opacity-60">
-              {saving ? t("manager.employeesPage.loading") : t("manager.employeesPage.resetPassword")}
-            </button>
+        <form onSubmit={handleSubmit} className="!space-y-0">
+          <Input 
+            label={t("manager.employeesPage.newPassword", "New Password")} 
+            type="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            autoComplete="new-password"
+          />
+          <Input 
+            label={t("manager.employeesPage.confirmNewPassword", "Confirm Password")} 
+            type="password" 
+            value={confirmPassword} 
+            onChange={(e) => setConfirmPassword(e.target.value)} 
+            autoComplete="new-password"
+          />
+          
+          {error && <p className="!mt-2 !rounded-[10px] !bg-red-50 !px-3 !py-2 !text-[10px] !font-bold !text-red-700">{error}</p>}
+          
+          <div className="!pt-4 !mt-2 !border-t !border-slate-100 !flex !gap-2">
+            <Button secondary onClick={onClose} disabled={saving}>Cancel</Button>
+            <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Confirm"}</Button>
           </div>
         </form>
       </section>
@@ -971,34 +965,35 @@ const ResetPasswordDialog = ({ onClose, onSubmit, t }) => {
 };
 
 const PlusIcon = () => (
-  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4" aria-hidden="true">
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="!h-5 !w-5" aria-hidden="true">
     <path d="M10 4v12M4 10h12" />
   </svg>
 );
 
 const SearchIcon = () => (
-  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true">
-    <circle cx="8.8" cy="8.8" r="5.8" />
-    <path d="m13.2 13.2 4 4" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
   </svg>
 );
 
 const PersonIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px]" aria-hidden="true">
-    <circle cx="12" cy="8" r="3.2" />
-    <path d="M5.5 20c.6-3.5 2.7-5.3 6.5-5.3s5.9 1.8 6.5 5.3" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-5 !w-5">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
   </svg>
 );
 
 const ChevronIcon = () => (
-  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0 text-slate-300" aria-hidden="true">
-    <path d="m6 3.5 4.5 4.5L6 12.5" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4 !text-slate-300">
+    <polyline points="9 18 15 12 9 6"></polyline>
   </svg>
 );
 
 const CloseIcon = () => (
-  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-4 w-4" aria-hidden="true">
-    <path d="m5 5 10 10M15 5 5 15" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
 );
 

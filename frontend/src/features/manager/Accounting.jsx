@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -148,63 +148,49 @@ const Accounting = () => {
   };
 
   return (
-    <ManagerLayout title={t("manager.accounting")} showBack>
-      <div className="space-y-4">
-        <div className="grid grid-cols-3 rounded-[14px] bg-white p-1 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
+    <ManagerLayout title={t("manager.accounting", "Sales & Accounting")} showBack>
+      <div className="space-y-4 pb-6">
+        
+        {/* SEGMENTED CONTROL */}
+        <div className="grid grid-cols-3 !rounded-[12px] !bg-slate-50 !p-1">
           {["today", "week", "month"].map((value) => (
             <button
               key={value}
               type="button"
               onClick={() => setPeriod(value)}
               aria-pressed={period === value}
-              className={`min-h-[40px] rounded-[10px] px-2 text-[11px] font-bold transition ${
+              className={`!min-h-[38px] !rounded-[10px] !px-2 !text-[12px] !font-bold !transition-all ${
                 period === value
-                  ? "bg-bpcl-emerald text-white shadow-sm"
-                  : "text-slate-500"
+                  ? "!bg-emerald-800 !text-white !shadow-sm"
+                  : "!text-slate-500 hover:!text-slate-700"
               }`}
             >
-              {t(`manager.accountingLabels.${value}`)}
+              {t(`manager.accountingLabels.${value}`, value.charAt(0).toUpperCase() + value.slice(1))}
             </button>
           ))}
         </div>
 
-        <div className="flex min-h-[46px] items-center justify-between rounded-[14px] bg-white px-3 shadow-[0_4px_14px_rgba(15,23,42,0.05)]">
-          <button
-            type="button"
-            onClick={() => setBusinessDate(movePeriodDate(businessDate, period, -1))}
-            aria-label={t("manager.accountingLabels.previousPeriod")}
-            className="grid h-10 w-10 place-items-center rounded-[10px] text-[20px] font-semibold text-slate-500 active:bg-slate-100"
-          >
-            â€¹
-          </button>
-          <div className="text-center">
-            <p className="text-[11px] font-bold text-slate-800">
+        {/* DATE PICKER */}
+        <div className="flex !min-h-[46px] items-center justify-between !rounded-[14px] !bg-white !px-3 !border !border-slate-100/60 !shadow-[0_2px_10px_rgba(15,23,42,0.02)]">
+          <div className="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4 !text-slate-400">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            <p className="!text-[12px] !font-bold !text-slate-800">
               {period === "today"
-                ? formatBusinessDate(businessDate, {
-                    weekday: "short",
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : `${formatBusinessDate(dateRange.start, {
-                    day: "2-digit",
-                    month: "short",
-                  })} â€“ ${formatBusinessDate(dateRange.end, {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}`}
+                ? formatBusinessDate(businessDate, { weekday: "short", day: "numeric", month: "short", year: "numeric" })
+                : `${formatBusinessDate(dateRange.start, { day: "numeric", month: "short" })} - ${formatBusinessDate(dateRange.end, { day: "numeric", month: "short", year: "numeric" })}`}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setBusinessDate(movePeriodDate(businessDate, period, 1))}
-            disabled={nextDisabled}
-            aria-label={t("manager.accountingLabels.nextPeriod")}
-            className="grid h-10 w-10 place-items-center rounded-[10px] text-[20px] font-semibold text-slate-500 active:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            â€º
-          </button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setBusinessDate(movePeriodDate(businessDate, period, -1))} className="!p-2 !text-slate-400 hover:!text-slate-700">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4"><path d="M15 18l-6-6 6-6" /></svg>
+            </button>
+            <button onClick={() => setBusinessDate(movePeriodDate(businessDate, period, 1))} disabled={nextDisabled} className="!p-2 !text-slate-400 hover:!text-slate-700 disabled:!opacity-30">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4"><path d="M9 18l6-6-6-6" /></svg>
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -214,238 +200,199 @@ const Accounting = () => {
         )}
 
         {loading ? (
-          <div className="space-y-3" aria-label={t("manager.accountingLabels.loading")}>
+          <div className="space-y-3">
             <div className="h-[118px] animate-pulse rounded-[18px] bg-white" />
             <div className="h-[150px] animate-pulse rounded-[18px] bg-white" />
             <div className="h-[120px] animate-pulse rounded-[18px] bg-white" />
           </div>
         ) : error ? null : (
           <>
-            <section className="grid grid-cols-2 gap-2.5">
-              <MetricCard
-                label={t("manager.accountingLabels.totalSale")}
-                value={formatMoney(summary.expectedTotalSalePaise)}
-                tone="green"
-                icon="sale"
-              />
-              <MetricCard
-                label={t("manager.accountingLabels.totalLitres")}
-                value={formatLitres(summary.totalLitres)}
-                tone="blue"
-                icon="litres"
-              />
-            </section>
-
-            <section className="grid grid-cols-2 gap-2.5">
-              <FuelCard
-                title={t("manager.petrol")}
-                litres={summary.totalLitresPetrol}
-                sale={summary.petrolSalePaise}
-                tone="petrol"
-                t={t}
-              />
-              <FuelCard
-                title={t("manager.diesel")}
-                litres={summary.totalLitresDiesel}
-                sale={summary.dieselSalePaise}
-                tone="diesel"
-                t={t}
-              />
-            </section>
-
-            <section className="rounded-[16px] bg-white p-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)]">
-              <h2 className="text-[15px] font-bold text-slate-900">
-                {t("manager.accountingLabels.mpdWise")}
-              </h2>
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {(report?.mpds || []).map((mpd) => (
-                  <MpdAccountingCard key={mpd._id} mpd={mpd} t={t} />
-                ))}
-                {(report?.mpds || []).length === 0 && (
-                  <p className="py-3 text-center text-[10px] text-slate-400">
-                    {t("manager.accountingLabels.noMpdData")}
-                  </p>
-                )}
+            {/* SUMMARY CARDS (Top 4 grid) */}
+            <section className="grid grid-cols-2 gap-3">
+              {/* Total Sale */}
+              <div className="flex items-center gap-3 !rounded-[16px] !bg-white !p-4 !border !border-slate-100 !shadow-[0_4px_16px_rgba(15,23,42,0.03)]">
+                <div className="!h-[36px] !w-[36px] shrink-0 flex items-center justify-center !rounded-[10px] !bg-emerald-50 !text-emerald-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-5 !w-5"><path d="M7 4h8v16H7z"/><path d="M15 7h2l2 2v7h-4"/><circle cx="10" cy="8" r="1"/></svg>
+                </div>
+                <div>
+                  <p className="!text-[10px] !font-bold !text-slate-500">Total Sale</p>
+                  <p className="!mt-0.5 !text-[15px] !font-extrabold !text-slate-900">{formatMoney(summary.expectedTotalSalePaise)}</p>
+                </div>
               </div>
-              <div className="mt-3 rounded-[12px] border border-slate-100 bg-slate-50 p-3 shadow-sm">
-                 <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
-                    <span className="text-[11px] font-extrabold text-slate-900">{t("manager.accountingLabels.stationTotal")}</span>
-                    <span className="text-[11px] font-extrabold text-slate-900">{formatMoney(summary.expectedTotalSalePaise)}</span>
-                 </div>
-                 <div className="mt-2 space-y-1.5 text-[9px] font-medium text-slate-600">
-                    <div className="flex justify-between">
-                       <span className="font-bold text-rose-700">{t("manager.petrol")}</span>
-                       <span className="font-semibold text-slate-800">
-                         {formatLitresNumber(summary.totalLitresPetrol)} L · {formatMoney(summary.petrolSalePaise)}
-                       </span>
+
+              {/* Total Litres */}
+              <div className="flex items-center gap-3 !rounded-[16px] !bg-white !p-4 !border !border-slate-100 !shadow-[0_4px_16px_rgba(15,23,42,0.03)]">
+                <div className="!h-[36px] !w-[36px] shrink-0 flex items-center justify-center !rounded-[10px] !bg-emerald-50 !text-emerald-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-5 !w-5"><path d="M3 10h18"/><path d="M3 14h18"/><path d="M5 21h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"/></svg>
+                </div>
+                <div>
+                  <p className="!text-[10px] !font-bold !text-slate-500">Total Litres</p>
+                  <p className="!mt-0.5 !text-[15px] !font-extrabold !text-slate-900">{formatLitres(summary.totalLitres)}</p>
+                </div>
+              </div>
+
+              {/* Petrol */}
+              <div className="flex items-center gap-3 !rounded-[16px] !bg-rose-50/60 !p-4 !border !border-rose-100/50">
+                <div className="!h-[36px] !w-[36px] shrink-0 flex items-center justify-center !rounded-[10px] !bg-rose-100 !text-rose-600">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-5 !w-5"><path d="M7 4h8v16H7z"/><path d="M15 7h2l2 2v7h-4"/><circle cx="10" cy="8" r="1"/></svg>
+                </div>
+                <div>
+                  <p className="!text-[10px] !font-bold !text-rose-600">Petrol</p>
+                  <p className="!mt-0.5 !text-[14px] !font-extrabold !text-slate-900">{formatLitresNumber(summary.totalLitresPetrol)} L</p>
+                  <p className="!mt-0.5 !text-[11px] !font-bold !text-slate-700">{formatMoney(summary.petrolSalePaise)}</p>
+                </div>
+              </div>
+
+              {/* Diesel */}
+              <div className="flex items-center gap-3 !rounded-[16px] !bg-sky-50/60 !p-4 !border !border-sky-100/50">
+                <div className="!h-[36px] !w-[36px] shrink-0 flex items-center justify-center !rounded-[10px] !bg-blue-100 !text-blue-600">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-5 !w-5"><path d="M7 4h8v16H7z"/><path d="M15 7h2l2 2v7h-4"/><circle cx="10" cy="8" r="1"/></svg>
+                </div>
+                <div>
+                  <p className="!text-[10px] !font-bold !text-blue-600">Diesel</p>
+                  <p className="!mt-0.5 !text-[14px] !font-extrabold !text-slate-900">{formatLitresNumber(summary.totalLitresDiesel)} L</p>
+                  <p className="!mt-0.5 !text-[11px] !font-bold !text-slate-700">{formatMoney(summary.dieselSalePaise)}</p>
+                </div>
+              </div>
+            </section>
+
+            {/* MPD WISE TABLE */}
+            <section className="!mt-2">
+              <h2 className="!text-[14px] !font-bold !text-slate-900 !mb-3">MPD Wise</h2>
+              <div className="!rounded-[16px] !bg-white !p-4 !border !border-slate-100 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[280px]">
+                  <thead>
+                    <tr className="!bg-slate-50">
+                      <th className="!p-2.5 !text-[9px] !font-bold !text-slate-500 !rounded-tl-[8px] !rounded-bl-[8px]">MPD</th>
+                      <th className="!p-2.5 !text-[9px] !font-bold !text-slate-500 text-center">Petrol (L)</th>
+                      <th className="!p-2.5 !text-[9px] !font-bold !text-slate-500 text-center">Diesel (L)</th>
+                      <th className="!p-2.5 !text-[9px] !font-bold !text-slate-500 text-center">Total (L)</th>
+                      <th className="!p-2.5 !text-[9px] !font-bold !text-slate-500 text-right !rounded-tr-[8px] !rounded-br-[8px]">Sale (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(report?.mpds || []).map((mpd) => (
+                      <tr key={mpd._id} className="border-b border-slate-50">
+                        <td className="!py-3 !px-2.5 !text-[11px] !font-bold !text-slate-900">{mpd.mpdNumber}</td>
+                        <td className="!py-3 !px-2.5 !text-[11px] !font-medium !text-slate-600 text-center">{formatLitresNumber(mpd.totalLitresPetrol)}</td>
+                        <td className="!py-3 !px-2.5 !text-[11px] !font-medium !text-slate-600 text-center">{formatLitresNumber(mpd.totalLitresDiesel)}</td>
+                        <td className="!py-3 !px-2.5 !text-[11px] !font-bold !text-slate-800 text-center">{formatLitresNumber(mpd.totalLitres)}</td>
+                        <td className="!py-3 !px-2.5 !text-[11px] !font-medium !text-slate-600 text-right">{formatMoney(mpd.expectedTotalSalePaise).replace("₹", "")}</td>
+                      </tr>
+                    ))}
+                    <tr className="!bg-slate-50/50">
+                      <td className="!py-3 !px-2.5 !text-[11px] !font-bold !text-slate-900 !rounded-tl-[8px] !rounded-bl-[8px]">Total</td>
+                      <td className="!py-3 !px-2.5 !text-[11px] !font-bold !text-slate-900 text-center">{formatLitresNumber(summary.totalLitresPetrol)}</td>
+                      <td className="!py-3 !px-2.5 !text-[11px] !font-bold !text-slate-900 text-center">{formatLitresNumber(summary.totalLitresDiesel)}</td>
+                      <td className="!py-3 !px-2.5 !text-[11px] !font-bold !text-slate-900 text-center">{formatLitresNumber(summary.totalLitres)}</td>
+                      <td className="!py-3 !px-2.5 !text-[11px] !font-bold !text-slate-900 text-right !rounded-tr-[8px] !rounded-br-[8px]">{formatMoney(summary.expectedTotalSalePaise)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            {/* COLLECTIONS & EXPENSES */}
+            <section className="grid grid-cols-2 gap-3 !mt-2">
+              {/* Collections */}
+              <div className="!rounded-[16px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100 flex flex-col justify-between">
+                <div>
+                  <h2 className="!text-[14px] !font-bold !text-slate-900 !mb-4">Collections</h2>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-emerald-50 !text-emerald-600">
+                          <svg viewBox="0 0 24 24" fill="currentColor" className="!h-3.5 !w-3.5"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+                        </div>
+                        <span className="!text-[11px] !font-medium !text-slate-600">Cash</span>
+                      </div>
+                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalCashPaise)}</span>
                     </div>
-                    <div className="flex justify-between">
-                       <span className="font-bold text-blue-700">{t("manager.diesel")}</span>
-                       <span className="font-semibold text-slate-800">
-                         {formatLitresNumber(summary.totalLitresDiesel)} L · {formatMoney(summary.dieselSalePaise)}
-                       </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-blue-50 !text-blue-600">
+                          <svg viewBox="0 0 24 24" fill="currentColor" className="!h-3.5 !w-3.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        </div>
+                        <span className="!text-[11px] !font-medium !text-slate-600">UPI</span>
+                      </div>
+                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalUpiPaise)}</span>
                     </div>
-                    <div className="mt-1 flex justify-between border-t border-slate-200/60 pt-1.5 font-bold text-slate-700">
-                       <span>{t("manager.accountingLabels.totalLitresColumn")}</span>
-                       <span>{formatLitresNumber(summary.totalLitres)} L</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-purple-50 !text-purple-600">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-3.5 !w-3.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                        </div>
+                        <span className="!text-[11px] !font-medium !text-slate-600">Card</span>
+                      </div>
+                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalCardPaise)}</span>
                     </div>
-                 </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-rose-50 !text-rose-500">
+                          <svg viewBox="0 0 24 24" fill="currentColor" className="!h-3.5 !w-3.5"><path d="M5 12h14"/></svg>
+                        </div>
+                        <span className="!text-[11px] !font-medium !text-slate-600">Udhari</span>
+                      </div>
+                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalUdhariPaise)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="!mt-5 flex items-center justify-between !border-t !border-slate-100 !pt-4">
+                  <span className="!text-[12px] !font-bold !text-slate-900">Total</span>
+                  <span className="!text-[13px] !font-bold !text-slate-900">{formatMoney(summary.totalCollectedPaise)}</span>
+                </div>
+              </div>
+
+              {/* Expenses */}
+              <div className="!rounded-[16px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100 flex flex-col justify-center items-center text-center">
+                <div className="!h-10 !w-10 flex items-center justify-center !rounded-[10px] !bg-red-50 !text-red-500 !mb-3">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-5 !w-5">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                </div>
+                <h2 className="!text-[13px] !font-bold !text-slate-500 !mb-1">Total Expenses</h2>
+                <p className="!text-[18px] !font-extrabold !text-red-600">{formatMoney(summary.totalExpensePaise)}</p>
               </div>
             </section>
 
-            <section className="grid grid-cols-2 items-start gap-2.5">
-              <div className="rounded-[16px] bg-white p-3 shadow-[0_5px_18px_rgba(15,23,42,0.05)]">
-                <SectionHeading title={t("manager.collections")} />
-                <div className="mt-2 space-y-2">
-                  <MoneyRow label={t("manager.cash")} value={summary.totalCashPaise} />
-                  <MoneyRow label={t("manager.accountingLabels.coins")} value={summary.coinsPaise} muted />
-                  <p className="-mt-1 text-[7px] leading-3 text-slate-400">
-                    {t("manager.accountingLabels.coinsNote")}
+            {/* RECONCILIATION */}
+            <section className="!rounded-[16px] !bg-white !p-5 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100 !mt-2">
+              <div className="flex items-center justify-between !mb-5">
+                <h2 className="!text-[14px] !font-bold !text-slate-900">Reconciliation</h2>
+                <div className={`!rounded-[8px] !px-3 !py-1.5 !text-[10px] !font-bold ${summary.reconciliationStatus === "MATCHED" ? "!bg-emerald-50 !text-emerald-700" : "!bg-amber-50 !text-amber-700"}`}>
+                  {summary.reconciliationStatus === "MATCHED" ? "Balanced" : summary.reconciliationStatus}
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <p className="!text-[10px] !font-medium !text-slate-500">Expected Sale</p>
+                  <p className="!mt-1.5 !text-[14px] !font-bold !text-slate-900">{formatMoney(summary.expectedTotalSalePaise)}</p>
+                </div>
+                <div>
+                  <p className="!text-[10px] !font-medium !text-slate-500">Accounted</p>
+                  <p className="!mt-1.5 !text-[14px] !font-bold !text-slate-900">{formatMoney(summary.totalCollectedPaise)}</p>
+                </div>
+                <div>
+                  <p className="!text-[10px] !font-medium !text-slate-500">Difference</p>
+                  <p className={`!mt-1.5 !text-[14px] !font-bold ${summary.differencePaise === 0 ? "!text-slate-900" : "!text-red-600"}`}>
+                    {formatMoney(summary.differencePaise)}
                   </p>
-                  <MoneyRow label={t("manager.upi")} value={summary.totalUpiPaise} />
-                  <MoneyRow label={t("manager.accountingLabels.cardAtm")} value={summary.totalCardPaise} />
-                  <MoneyRow label={t("manager.udhari")} value={summary.totalUdhariPaise} />
-                  <MoneyRow label={t("manager.totalCollected")} value={summary.totalCollectedPaise} strong />
                 </div>
-              </div>
-
-              <div className="rounded-[16px] bg-white p-3 shadow-[0_5px_18px_rgba(15,23,42,0.05)]">
-                <SectionHeading title={t("manager.expenses")} tone="red" />
-                <p className="mt-3 text-[9px] font-semibold text-slate-500">
-                  {t("manager.accountingLabels.totalExpenses")}
-                </p>
-                <p className="mt-1 break-words text-[13px] font-bold text-red-600">
-                  {formatMoney(summary.totalExpensePaise)}
-                </p>
               </div>
             </section>
 
-            <section className="rounded-[16px] bg-white p-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)]">
-              <div className="flex items-center justify-between gap-2">
-                <SectionHeading title={t("manager.reconciliation")} />
-                <StatusBadge status={summary.reconciliationStatus} t={t} />
-              </div>
-              <div className="mt-3 space-y-2">
-                <MoneyRow label={t("manager.expectedSale")} value={summary.expectedTotalSalePaise} />
-                <MoneyRow label={t("manager.accounted")} value={summary.totalCollectedPaise} />
-                <DifferenceRow difference={summary.differencePaise} t={t} />
-                {((summary.shortShiftCount || 0) > 0 || (summary.excessShiftCount || 0) > 0) && (
-                  <p className="border-t border-slate-100 pt-2 text-[9px] font-semibold text-slate-500">
-                    {t("manager.accountingLabels.mismatchCounts", {
-                      short: summary.shortShiftCount || 0,
-                      excess: summary.excessShiftCount || 0,
-                    })}
-                  </p>
-                )}
-              </div>
-            </section>
-
-            {period !== "today" && (
-              <section className="rounded-[16px] bg-white p-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)]">
-                <SectionHeading title={t("manager.accountingLabels.dailyBreakdown")} />
-                <div className="mt-2 divide-y divide-slate-100">
-                  {(report?.dailyBreakdown || []).map((day) => (
-                    <button
-                      key={day.businessDate}
-                      type="button"
-                      onClick={() => openDailyAccounting(day.businessDate)}
-                      className="flex min-h-[58px] w-full items-center justify-between gap-3 py-2 text-left active:bg-slate-50"
-                    >
-                      <span className="min-w-0">
-                        <span className="block text-[10px] font-bold text-slate-800">
-                          {formatBusinessDate(day.businessDate, {
-                            weekday: "short",
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </span>
-                        <span className="mt-0.5 block text-[9px] text-slate-400">
-                          {t("manager.accountingLabels.dayBreakdownMeta", {
-                            litres: Number(day.totalLitres || 0).toFixed(2),
-                            shifts: day.shiftCount || 0,
-                          })}
-                        </span>
-                      </span>
-                      <span className="shrink-0 text-right">
-                        <span className="block text-[11px] font-bold text-slate-800">
-                          {formatMoney(day.expectedTotalSalePaise)}
-                        </span>
-                        {((day.shortShiftCount || 0) > 0 || (day.excessShiftCount || 0) > 0) && (
-                          <span className="block text-[8px] font-semibold text-red-600">
-                            {t("manager.accountingLabels.mismatchCounts", {
-                              short: day.shortShiftCount || 0,
-                              excess: day.excessShiftCount || 0,
-                            })}
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {period === "today" && (
-              <section className="rounded-[16px] bg-white p-3.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)]">
-                <div className="flex items-center justify-between gap-2">
-                  <SectionHeading title={t("manager.accountingLabels.activeOvernightShifts")} />
-                  <span className="text-[9px] font-semibold text-slate-400">
-                    {(report?.activeShifts || []).length} {t("manager.shifts").toLowerCase()}
-                  </span>
-                </div>
-                <div className="mt-2 space-y-2">
-                  {(report?.activeShifts || []).map((shift) => (
-                    <ActiveShiftSummaryRow
-                      key={shift._id}
-                      shift={shift}
-                      t={t}
-                      selectedBusinessDate={businessDate}
-                      onClick={() => navigateToOperationsShift(shift._id)}
-                    />
-                  ))}
-                  {(report?.activeShifts || []).length === 0 && (
-                    <p className="py-3 text-center text-[10px] text-slate-400">
-                      {t("manager.accountingLabels.noActiveShifts")}
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-4">
-                  <SectionHeading title={t("manager.accountingLabels.todaysCompletedShifts")} />
-                  <span className="text-[9px] font-semibold text-slate-400">
-                    {(report?.shifts || []).length} {t("manager.shifts").toLowerCase()}
-                  </span>
-                </div>
-                <div className="mt-2 space-y-2">
-                  {(report?.shifts || []).map((shift) => (
-                    <ShiftSummaryRow
-                      key={shift._id}
-                      shift={shift}
-                      t={t}
-                      onClick={() => navigateToOperationsShift(shift._id)}
-                    />
-                  ))}
-                  {(report?.shifts || []).length === 0 && (
-                    <p className="py-3 text-center text-[10px] text-slate-400">
-                      {t("manager.accountingLabels.noCompletedShifts")}
-                    </p>
-                  )}
-                </div>
-              </section>
-            )}
-
+            {/* EXPORT BUTTON */}
             <button
               type="button"
-              disabled
-              title={t("manager.accountingLabels.exportUnavailable")}
-              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[13px] bg-emerald-100 text-[11px] font-bold text-emerald-800 disabled:cursor-not-allowed disabled:opacity-80"
+              className="!mt-2 !flex !min-h-[48px] !w-full !items-center !justify-center !gap-2 !rounded-[14px] !bg-emerald-100/80 !text-[13px] !font-bold !text-emerald-800 hover:!bg-emerald-100 active:!bg-emerald-200 !transition"
             >
-              <span aria-hidden="true">â†“</span>
-              {t("manager.accountingLabels.exportReport")}
-              <span className="text-[9px] font-medium">
-                {t("manager.accountingLabels.exportUnavailable")}
-              </span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              Export Report
             </button>
+
           </>
         )}
       </div>
@@ -453,219 +400,4 @@ const Accounting = () => {
   );
 };
 
-const MetricCard = ({ label, value, tone, icon }) => (
-  <div className={`flex min-h-[72px] items-center gap-2.5 rounded-[14px] border border-white p-2.5 shadow-[0_3px_12px_rgba(15,23,42,0.04)] ${tone === "green" ? "bg-emerald-50" : "bg-sky-50"}`}>
-    <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] ${tone === "green" ? "bg-white/80 text-emerald-700" : "bg-white/80 text-sky-700"}`}>
-      <AccountingIcon type={icon} />
-    </span>
-    <div className="min-w-0">
-      <p className="text-[9px] font-medium leading-3 text-slate-500">{label}</p>
-      <p className="mt-1 break-words text-[14px] font-extrabold leading-[18px] text-slate-900">{value}</p>
-    </div>
-  </div>
-);
-
-const FuelCard = ({ title, litres, sale, tone, t }) => {
-  const petrol = tone === "petrol";
-
-  return (
-    <div className={`flex min-h-[82px] items-center gap-2 rounded-[14px] border border-white p-2.5 shadow-[0_3px_12px_rgba(15,23,42,0.04)] ${petrol ? "bg-rose-50" : "bg-blue-50"}`}>
-      <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] ${petrol ? "bg-white/80 text-rose-600" : "bg-white/80 text-blue-700"}`}>
-        <AccountingIcon type={petrol ? "petrol" : "diesel"} />
-      </span>
-      <div className="min-w-0">
-        <p className={`text-[9px] font-bold leading-3 ${petrol ? "text-rose-700" : "text-blue-700"}`}>{title}</p>
-        <p className="mt-1 text-[13px] font-extrabold leading-4 text-slate-900">{formatLitres(litres)}</p>
-        <p className="mt-0.5 break-words text-[9px] font-medium leading-3 text-slate-600">
-          {t("manager.accountingLabels.sale")}: {formatMoney(sale)}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const AccountingIcon = ({ type }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-[17px] w-[17px]"
-    aria-hidden="true"
-  >
-    {type === "litres" ? (
-      <>
-        <path d="M12 3.5s6 6.1 6 10.4a6 6 0 1 1-12 0C6 9.6 12 3.5 12 3.5Z" />
-        <path d="M9.2 15.1a2.9 2.9 0 0 0 2.9 2.8" />
-      </>
-    ) : type === "sale" ? (
-      <>
-        <path d="M7 3.8h8l3 3v13.4H7z" />
-        <path d="M15 3.8v3h3M10 11h5M10 14.5h5M10 18h3" />
-      </>
-    ) : (
-      <>
-        <path d="M6.5 20.2V5.1a1.6 1.6 0 0 1 1.6-1.6h7.2a1.6 1.6 0 0 1 1.6 1.6v15.1" />
-        <path d="M5 20.2h13.5M9 7.2h5.5v4H9zM17 7.5l2.3 2.1v5.2a1.5 1.5 0 0 0 3 0v-4.2l-2.1-2" />
-      </>
-    )}
-  </svg>
-);
-
-const MpdAccountingCard = ({ mpd, t }) => (
-  <div className="rounded-[14px] border border-slate-100 bg-white p-3 shadow-[0_3px_10px_rgba(15,23,42,0.04)]">
-    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-      <span className="text-[11px] font-extrabold text-slate-900">{mpd.mpdNumber}</span>
-      <span className="text-[11px] font-extrabold text-slate-900">{formatMoney(mpd.expectedTotalSalePaise)}</span>
-    </div>
-    <div className="mt-2 space-y-1.5 text-[9px] font-medium text-slate-600">
-      <div className="flex justify-between">
-         <span className="font-bold text-rose-700">{t("manager.petrol")}</span>
-         <span className="font-semibold text-slate-800">{formatLitresNumber(mpd.totalLitresPetrol)} L · {formatMoney(mpd.petrolSalePaise)}</span>
-      </div>
-      <div className="flex justify-between">
-         <span className="font-bold text-blue-700">{t("manager.diesel")}</span>
-         <span className="font-semibold text-slate-800">{formatLitresNumber(mpd.totalLitresDiesel)} L · {formatMoney(mpd.dieselSalePaise)}</span>
-      </div>
-      <div className="mt-1 flex justify-between border-t border-slate-100 pt-1.5 font-bold text-slate-700">
-         <span>{t("manager.accountingLabels.totalLitresColumn")}</span>
-         <span>{formatLitresNumber(mpd.totalLitres)} L</span>
-      </div>
-    </div>
-  </div>
-);
-
-const SectionHeading = ({ title, tone }) => (
-  <h2 className={`text-[11px] font-extrabold ${tone === "red" ? "text-red-600" : "text-slate-900"}`}>
-    {title}
-  </h2>
-);
-
-const MoneyRow = ({ label, value, strong = false, muted = false }) => (
-  <div className={`flex items-start justify-between gap-1 ${strong ? "border-t border-slate-100 pt-2" : ""}`}>
-    <span className={`min-w-0 text-[9px] ${strong ? "font-bold text-slate-700" : muted ? "font-medium text-slate-400" : "font-medium text-slate-500"}`}>
-      {label}
-    </span>
-    <span className={`shrink-0 text-right text-[9px] ${strong ? "font-extrabold text-slate-900" : "font-semibold text-slate-700"}`}>
-      {formatMoney(value)}
-    </span>
-  </div>
-);
-
-const DifferenceRow = ({ difference, t }) => {
-  const amount = Number(difference || 0);
-  const color = amount < 0 ? "text-red-600" : amount > 0 ? "text-amber-600" : "text-emerald-700";
-  const label = amount < 0
-    ? t("manager.accountingLabels.short")
-    : amount > 0
-      ? t("manager.accountingLabels.excess")
-      : t("manager.accountingLabels.matched");
-
-  return (
-    <div className="flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2">
-      <span className="text-[9px] font-semibold text-slate-500">
-        {t("manager.difference")} Â· {label}
-      </span>
-      <span className={`text-[11px] font-extrabold ${color}`}>
-        {amount > 0 ? "+" : ""}{formatMoney(amount)}
-      </span>
-    </div>
-  );
-};
-
-const StatusBadge = ({ status, t }) => {
-  const normalized = String(status || "PENDING").toLowerCase();
-  const color = normalized === "matched"
-    ? "bg-emerald-50 text-emerald-700"
-    : normalized === "short"
-      ? "bg-red-50 text-red-600"
-      : normalized === "excess"
-        ? "bg-amber-50 text-amber-700"
-        : "bg-slate-100 text-slate-500";
-
-  return (
-    <span className={`rounded-full px-2.5 py-1 text-[8px] font-extrabold ${color}`}>
-      {t(`manager.reconciliationStatus.${normalized}`)}
-    </span>
-  );
-};
-
-const ShiftSummaryRow = ({ shift, t, onClick }) => {
-  const difference = Number(shift.differencePaise || 0);
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full rounded-[12px] border border-slate-100 p-3 text-left active:bg-slate-50"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[10px] font-extrabold text-slate-800">
-            {shift.mpd?.mpdNumber || t("manager.accountingLabels.unknownMpd")}
-            <span className="font-medium text-slate-400"> Â· {shift.employee?.name || t("manager.employeeUnknown")}</span>
-          </p>
-          <p className="mt-1 text-[9px] text-slate-500">
-            {formatTime(shift.startedAt)}
-            {shift.endedAt
-              ? ` â€“ ${formatTime(shift.endedAt)}`
-              : ` â€“ ${t("manager.accountingLabels.activePending")}`}
-          </p>
-        </div>
-        <span className="shrink-0 text-[10px] font-bold text-slate-800">
-          {formatMoney(shift.expectedTotalSalePaise)}
-        </span>
-      </div>
-      <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-2">
-        <span className="text-[8px] font-semibold text-slate-400">
-          {t(`manager.reconciliationStatus.${String(shift.reconciliationStatus || "PENDING").toLowerCase()}`)}
-        </span>
-        <span className={`text-[9px] font-bold ${difference < 0 ? "text-red-600" : difference > 0 ? "text-amber-600" : "text-emerald-700"}`}>
-          {difference > 0 ? "+" : ""}{formatMoney(difference)}
-        </span>
-      </div>
-    </button>
-  );
-};
-
-const ActiveShiftSummaryRow = ({ shift, t, selectedBusinessDate, onClick }) => {
-  const isOvernight = shift.businessDate < selectedBusinessDate;
-  const petrolLitres = Number(shift.totalLitresPetrol || 0);
-  const dieselLitres = Number(shift.totalLitresDiesel || 0);
-
-  return (
-    <button type="button" onClick={onClick} className="w-full rounded-[12px] border border-emerald-100 bg-emerald-50/40 p-3 text-left active:bg-emerald-50">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[10px] font-extrabold text-slate-800">
-            {shift.mpd?.mpdNumber || t("manager.accountingLabels.unknownMpd")}
-            <span className="font-medium text-slate-500"> Â· {shift.employee?.name || t("manager.employeeUnknown")}</span>
-          </p>
-          <p className="mt-1 text-[9px] text-slate-500">
-            {isOvernight ? t("manager.accountingLabels.startedEarlier") : t("manager.started")} Â· {formatTime(shift.startedAt)}
-          </p>
-        </div>
-        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[8px] font-extrabold text-emerald-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" /> {t("manager.active")}
-        </span>
-      </div>
-      <div className="mt-2 grid grid-cols-3 gap-1.5 border-y border-emerald-100 py-2 text-[8px]">
-        <span className="text-slate-500">{t("manager.petrol")} <strong className="block text-[10px] text-slate-800">{formatLitres(petrolLitres)}</strong></span>
-        <span className="text-slate-500">{t("manager.diesel")} <strong className="block text-[10px] text-slate-800">{formatLitres(dieselLitres)}</strong></span>
-        <span className="text-right text-slate-500">{t("manager.accountingLabels.total")} <strong className="block text-[10px] text-slate-800">{formatLitres(petrolLitres + dieselLitres)}</strong></span>
-      </div>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <span className="text-[8px] font-semibold text-slate-500">{t("manager.accountingLabels.currentEstimated")}</span>
-        <span className="text-[11px] font-extrabold text-slate-900">{formatMoney(shift.expectedTotalSalePaise)}</span>
-      </div>
-      <p className="mt-1.5 text-[8px] font-semibold text-emerald-700">{t("manager.accountingLabels.notIncludedInFinalized")}</p>
-    </button>
-  );
-};
-
 export default Accounting;
-
-
-
