@@ -333,7 +333,9 @@
       "invalidSettlement": "अवैध सेटलमेंट रक्कम.",
       "detailLoadError": "ग्राहक तपशील लोड करता आले नाही.",
       "loadError": "ग्राहक सूची लोड करता आली नाही."
-    }
+    },
+    "settings": "सेटिंग्ज",
+    "settingsDescription": "स्टेशन, MPD, टाक्या, दर आणि अधिक"
   },
   "login": {
     "welcome": "नमस्कार!",

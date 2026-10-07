@@ -1,8 +1,89 @@
 {
   "manager": {
     "stockLabels": {
-      "tankContextOnly":"Selection is context only; stock totals remain product-based.",
-      "stockTab":"Stock", "recordsTab":"Receipts & Density", "ratesTab":"Rates", "businessDate":"Business Date", "stockDetails":"Stock Details", "openingStockLitres":"Opening Stock", "productDip":"Product Dip", "actualDipStockLitres":"Actual Dip Stock", "waterDip":"Water Dip", "waterDipVolumeLitres":"Water Dip Volume", "receiptStock":"Receipt Stock", "totalAvailable":"Total Available", "actualSales":"Actual Sales", "calculatedClosing":"Calculated Closing", "variation":"Variation", "dailyDensity":"Daily Density", "hydrometerReading":"Hydrometer", "temperatureC":"Temperature (°C)", "density15":"Density @15°C", "saveDensity":"Save Density", "fuelReceipts":"Fuel Receipts", "invoiceNumber":"Invoice Number", "quantityLitres":"Quantity (L)", "supplierName":"Supplier", "tankerNumber":"Tanker Number", "saveReceipt":"Save Receipt", "addRate":"Add New Rate", "effectiveDate":"Effective Business Date", "petrolRatePaise":"Petrol Rate (paise)", "dieselRatePaise":"Diesel Rate (paise)", "saveRate":"Save Rate", "save":"Save Stock", "saved":"Saved successfully.", "loadError":"Unable to load stock data.", "saveError":"Unable to save changes.", "tankContext":"Tank / Product Context", "selectTank":"Tank", "noActiveTanks":"No active tanks configured for this product.", "manageTanks":"Manage Tanks", "noStockRecord":"No stock record has been entered for this date and product. Opening stock and calculated totals are unavailable until saved.", "physicalVerification":"Physical Verification", "waterSection":"Water", "openingStockRequired":"Enter opening stock before saving.", "tankNumber":"Tank Number", "capacityLitres":"Capacity (L)", "product":"Product", "active":"Active", "inactive":"Inactive", "edit":"Edit", "activate":"Activate", "deactivate":"Deactivate", "editTank":"Edit Tank", "addTank":"Add Tank", "saveTank":"Save Tank", "cancel":"Cancel", "beforeDecantation":"Before Decantation", "challan":"Challan", "beforeDifference":"Before Difference", "afterDecantation":"After Decantation", "afterChallan":"After Challan", "afterDifference":"After Difference", "beforeHydrometer":"Before Hydrometer", "beforeTemperatureC":"Before Temp (°C)", "beforeDensity15":"Before Density @15°C", "challanDensity15":"Challan Density @15°C", "beforeDensityDifference":"Before Density Diff", "afterHydrometer":"After Hydrometer", "afterTemperatureC":"After Temp (°C)", "afterDensity15":"After Density @15°C", "afterChallanDensity15":"After Challan Density @15°C", "afterDensityDifference":"After Density Diff", "receiptDetail":"Receipt Detail", "close":"Close", "basicDetails":"Basic Details", "noReceipts":"No receipts found for this date.", "currentApplicableRate":"Current Applicable Rate", "effectiveFrom":"Effective From", "rupeesPerLitre":"₹ / L", "petrolRateRupees":"Petrol Rate (₹/L)", "dieselRateRupees":"Diesel Rate (₹/L)", "setBy":"Set by", "rateHistory":"Rate History"
+      "tankContextOnly": "Selection is context only; stock totals remain product-based.",
+      "stockTab": "Stock",
+      "recordsTab": "Receipts & Density",
+      "ratesTab": "Rates",
+      "businessDate": "Business Date",
+      "stockDetails": "Stock Details",
+      "openingStockLitres": "Opening Stock",
+      "productDip": "Product Dip",
+      "actualDipStockLitres": "Actual Dip Stock",
+      "waterDip": "Water Dip",
+      "waterDipVolumeLitres": "Water Dip Volume",
+      "receiptStock": "Receipt Stock",
+      "totalAvailable": "Total Available",
+      "actualSales": "Actual Sales",
+      "calculatedClosing": "Calculated Closing",
+      "variation": "Variation",
+      "dailyDensity": "Daily Density",
+      "hydrometerReading": "Hydrometer",
+      "temperatureC": "Temperature (°C)",
+      "density15": "Density @15°C",
+      "saveDensity": "Save Density",
+      "fuelReceipts": "Fuel Receipts",
+      "invoiceNumber": "Invoice Number",
+      "quantityLitres": "Quantity (L)",
+      "supplierName": "Supplier",
+      "tankerNumber": "Tanker Number",
+      "saveReceipt": "Save Receipt",
+      "addRate": "Add New Rate",
+      "effectiveDate": "Effective Business Date",
+      "petrolRatePaise": "Petrol Rate (paise)",
+      "dieselRatePaise": "Diesel Rate (paise)",
+      "saveRate": "Save Rate",
+      "save": "Save Stock",
+      "saved": "Saved successfully.",
+      "loadError": "Unable to load stock data.",
+      "saveError": "Unable to save changes.",
+      "tankContext": "Tank / Product Context",
+      "selectTank": "Tank",
+      "noActiveTanks": "No active tanks configured for this product.",
+      "manageTanks": "Manage Tanks",
+      "noStockRecord": "No stock record has been entered for this date and product. Opening stock and calculated totals are unavailable until saved.",
+      "physicalVerification": "Physical Verification",
+      "waterSection": "Water",
+      "openingStockRequired": "Enter opening stock before saving.",
+      "tankNumber": "Tank Number",
+      "capacityLitres": "Capacity (L)",
+      "product": "Product",
+      "active": "Active",
+      "inactive": "Inactive",
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "editTank": "Edit Tank",
+      "addTank": "Add Tank",
+      "saveTank": "Save Tank",
+      "cancel": "Cancel",
+      "beforeDecantation": "Before Decantation",
+      "challan": "Challan",
+      "beforeDifference": "Before Difference",
+      "afterDecantation": "After Decantation",
+      "afterChallan": "After Challan",
+      "afterDifference": "After Difference",
+      "beforeHydrometer": "Before Hydrometer",
+      "beforeTemperatureC": "Before Temp (°C)",
+      "beforeDensity15": "Before Density @15°C",
+      "challanDensity15": "Challan Density @15°C",
+      "beforeDensityDifference": "Before Density Diff",
+      "afterHydrometer": "After Hydrometer",
+      "afterTemperatureC": "After Temp (°C)",
+      "afterDensity15": "After Density @15°C",
+      "afterChallanDensity15": "After Challan Density @15°C",
+      "afterDensityDifference": "After Density Diff",
+      "receiptDetail": "Receipt Detail",
+      "close": "Close",
+      "basicDetails": "Basic Details",
+      "noReceipts": "No receipts found for this date.",
+      "currentApplicableRate": "Current Applicable Rate",
+      "effectiveFrom": "Effective From",
+      "rupeesPerLitre": "₹ / L",
+      "petrolRateRupees": "Petrol Rate (₹/L)",
+      "dieselRateRupees": "Diesel Rate (₹/L)",
+      "setBy": "Set by",
+      "rateHistory": "Rate History"
     },
     "dashboard": "Dashboard",
     "dashboardTitle": "Shobhadamodar Petroleum",
@@ -201,91 +282,92 @@
       "excess": "Excess",
       "pending": "Pending"
     },
-  "shiftDetail": "Shift Details",
-  "backToShifts": "Back to Shifts",
-  "shiftDetailLoadError": "Unable to load shift details.",
-  "shiftNotAvailable": "Shift details are not available.",
-  "fuelSales": "Fuel Sales",
-  "petrol": "Petrol",
-  "diesel": "Diesel",
-  "expectedSale": "Expected Sale",
-  "collections": "Collections",
-  "cash": "Cash",
-  "upi": "UPI",
-  "card": "Card",
-  "totalCollected": "Total Collected",
-  "reconciliation": "Reconciliation",
-  "accounted": "Accounted",
-  "expenses": "Expenses",
-  "noExpenses": "No expenses recorded.",
-  "udhariTransactions": "Udhari Transactions",
-  "noUdhariTransactions": "No Udhari transactions.",
-  "udhariPage": {
-    "subtitle": "Customer credit and settlements",
-    "totalOutstanding": "Total Outstanding",
-    "totalCustomers": "Total Customers",
-    "customersWithOutstanding": "Customers with Outstanding",
-    "searchPlaceholder": "Search by customer name, phone or vehicle",
-    "filterAll": "All",
-    "filterOutstanding": "Outstanding",
-    "filterSettled": "Settled",
-    "filterBlocked": "Blocked",
-    "customers": "Customers",
-    "loading": "Loading customers...",
-    "noCustomers": "No customers found.",
-    "noMobile": "No mobile number",
-    "outstandingShort": "Outstanding",
-    "statusActive": "Active",
-    "statusSettled": "Settled",
-    "statusBlocked": "Blocked",
-    "currentOutstanding": "Current Outstanding",
-    "overview": "Overview",
-    "ledger": "Ledger",
-    "settlement": "Settlement",
-    "totalCreditGiven": "Total Credit Given",
-    "totalSettlements": "Total Settlements",
-    "transactionCount": "Transaction Count",
-    "noLedger": "No ledger entries yet.",
-    "credit": "CREDIT",
-    "paymentBasis": "Payment",
-    "vehicle": "Vehicle",
-    "recordedBy": "Recorded by",
-    "balance": "Balance",
-    "settlePayment": "Settle Payment",
-    "amount": "Amount",
-    "paymentMethod": "Payment Method",
-    "referenceNumber": "Reference Number",
-    "confirmSettlement": "Confirm Settlement",
-    "confirming": "Confirming...",
+    "shiftDetail": "Shift Details",
+    "backToShifts": "Back to Shifts",
+    "shiftDetailLoadError": "Unable to load shift details.",
+    "shiftNotAvailable": "Shift details are not available.",
+    "fuelSales": "Fuel Sales",
+    "petrol": "Petrol",
+    "diesel": "Diesel",
+    "expectedSale": "Expected Sale",
+    "collections": "Collections",
     "cash": "Cash",
     "upi": "UPI",
     "card": "Card",
-    "blockCustomer": "Block Customer",
-    "unblockCustomer": "Unblock Customer",
-    "addCustomer": "+ Add Customer",
-    "editCustomer": "Edit Customer",
-    "customerId": "Customer ID",
-    "creditLimit": "Credit Limit",
-    "withinCreditLimit": "Within limit",
-    "aboveCreditLimit": "Above limit",
-    "invalidCreditLimit": "Enter a valid non-negative credit limit.",
-    "customerName": "Customer Name",
-    "mobileNumber": "Mobile Number",
-    "vehicleNumber": "Vehicle Number",
-    "address": "Address",
-    "notes": "Notes",
-    "saveCustomer": "Save Customer",
-    "saving": "Saving...",
-    "customerSaved": "Customer saved successfully.",
-    "saveFailed": "Could not save customer.",
-    "blockFailed": "Unable to update blocked status.",
-    "settlementRecorded": "Settlement recorded successfully.",
-    "invalidSettlement": "Invalid settlement amount.",
-    "detailLoadError": "Unable to load customer details.",
-    "loadError": "Unable to load customer list."
-  }
+    "totalCollected": "Total Collected",
+    "reconciliation": "Reconciliation",
+    "accounted": "Accounted",
+    "expenses": "Expenses",
+    "noExpenses": "No expenses recorded.",
+    "udhariTransactions": "Udhari Transactions",
+    "noUdhariTransactions": "No Udhari transactions.",
+    "udhariPage": {
+      "subtitle": "Customer credit and settlements",
+      "totalOutstanding": "Total Outstanding",
+      "totalCustomers": "Total Customers",
+      "customersWithOutstanding": "Customers with Outstanding",
+      "searchPlaceholder": "Search by customer name, phone or vehicle",
+      "filterAll": "All",
+      "filterOutstanding": "Outstanding",
+      "filterSettled": "Settled",
+      "filterBlocked": "Blocked",
+      "customers": "Customers",
+      "loading": "Loading customers...",
+      "noCustomers": "No customers found.",
+      "noMobile": "No mobile number",
+      "outstandingShort": "Outstanding",
+      "statusActive": "Active",
+      "statusSettled": "Settled",
+      "statusBlocked": "Blocked",
+      "currentOutstanding": "Current Outstanding",
+      "overview": "Overview",
+      "ledger": "Ledger",
+      "settlement": "Settlement",
+      "totalCreditGiven": "Total Credit Given",
+      "totalSettlements": "Total Settlements",
+      "transactionCount": "Transaction Count",
+      "noLedger": "No ledger entries yet.",
+      "credit": "CREDIT",
+      "paymentBasis": "Payment",
+      "vehicle": "Vehicle",
+      "recordedBy": "Recorded by",
+      "balance": "Balance",
+      "settlePayment": "Settle Payment",
+      "amount": "Amount",
+      "paymentMethod": "Payment Method",
+      "referenceNumber": "Reference Number",
+      "confirmSettlement": "Confirm Settlement",
+      "confirming": "Confirming...",
+      "cash": "Cash",
+      "upi": "UPI",
+      "card": "Card",
+      "blockCustomer": "Block Customer",
+      "unblockCustomer": "Unblock Customer",
+      "addCustomer": "+ Add Customer",
+      "editCustomer": "Edit Customer",
+      "customerId": "Customer ID",
+      "creditLimit": "Credit Limit",
+      "withinCreditLimit": "Within limit",
+      "aboveCreditLimit": "Above limit",
+      "invalidCreditLimit": "Enter a valid non-negative credit limit.",
+      "customerName": "Customer Name",
+      "mobileNumber": "Mobile Number",
+      "vehicleNumber": "Vehicle Number",
+      "address": "Address",
+      "notes": "Notes",
+      "saveCustomer": "Save Customer",
+      "saving": "Saving...",
+      "customerSaved": "Customer saved successfully.",
+      "saveFailed": "Could not save customer.",
+      "blockFailed": "Unable to update blocked status.",
+      "settlementRecorded": "Settlement recorded successfully.",
+      "invalidSettlement": "Invalid settlement amount.",
+      "detailLoadError": "Unable to load customer details.",
+      "loadError": "Unable to load customer list."
+    },
+    "settings": "Settings",
+    "settingsDescription": "Station, MPDs, tanks, rates and more"
   },
-
   "login": {
     "welcome": "Welcome Back",
     "employeeId": "Employee ID",
@@ -293,7 +375,6 @@
     "submit": "Login →",
     "secure": "Secure • Reliable • Always Synced"
   },
-
   "dashboard": {
     "assignedPump": "Assigned Pump",
     "todaySale": "Today's Sale",
@@ -316,7 +397,6 @@
     "upiUpdated": "UPI collection updated",
     "viewPumpDetails": "View pump details"
   },
-
   "employee": {
     "selectMpd": {
       "kicker": "SHIFT START",
@@ -331,13 +411,11 @@
       "loadError": "Unable to load available MPDs.",
       "startError": "Unable to start the shift."
     },
-
     "shifts": {
       "morning": "Morning",
       "evening": "Evening",
       "night": "Night"
     },
-
     "dashboard": {
       "currentShift": "Current Shift",
       "active": "Active",
@@ -358,7 +436,6 @@
       "done": "Done",
       "pending": "Pending"
     },
-
     "nozzles": {
       "title": "Nozzle Reading",
       "subtitle": "Current recorded readings for all four nozzles.",
@@ -366,7 +443,6 @@
       "overviewAlt": "Four fuel nozzles",
       "loadError": "Unable to load nozzle readings."
     },
-
     "collections": {
       "title": "Cash Collection",
       "currentTotal": "Current collection",
@@ -380,7 +456,6 @@
       "loadError": "Unable to load collections.",
       "saveError": "Unable to save collections."
     },
-
     "endShift": {
       "title": "End Shift",
       "subtitle": "Enter the final readings and final money count.",
@@ -405,7 +480,6 @@
       "endError": "Unable to end the shift."
     }
   },
-
   "workflow": {
     "stages": {
       "nozzle": "Nozzle",
@@ -423,7 +497,6 @@
     "logout": "Logout",
     "profileMenu": "Profile menu"
   },
-
   "nozzle": {
     "title": "Final nozzle readings",
     "finalReadings": "Final nozzle readings",
@@ -444,7 +517,6 @@
     "diesel": "Diesel",
     "totalFuel": "Total Fuel"
   },
-
   "cash": {
     "title": "Cash Collection",
     "subtitle": "Enter the cash collected during this shift.",
@@ -457,7 +529,6 @@
     "next": "Next: UPI",
     "nextUpi": "Next: UPI"
   },
-
   "phonepe": {
     "title": "PhonePe",
     "subtitle": "Enter the first and last transaction only when UPI payments were received during this shift.",
@@ -474,7 +545,6 @@
     "next": "Next: Card / ATM",
     "emptyHint": "No PhonePe payment? Leave this section empty."
   },
-
   "card": {
     "title": "Card / ATM Collection",
     "description": "Enter the total card / ATM amount collected so far.",
@@ -484,7 +554,6 @@
     "next": "Next: Udhari",
     "nextUdhari": "Next: Udhari"
   },
-
   "atm": {
     "title": "Card / ATM Collection",
     "description": "Enter the total card / ATM amount collected so far.",
@@ -497,7 +566,6 @@
     "entry": "entry",
     "remove": "Remove"
   },
-
   "udhari": {
     "title": "Udhari Collection",
     "subtitle": "Add fuel given on credit to a customer.",
@@ -531,7 +599,6 @@
     "nextExpenses": "Next: Expenses",
     "customerNameHint": "Search or select a customer"
   },
-
   "expense": {
     "title": "Expenses",
     "subtitle": "Record business expenses during your shift.",
@@ -549,12 +616,10 @@
     "total": "Total Expenses",
     "next": "Next: Review",
     "nextReview": "Next: Review",
-
     "thisShiftHint": "Expenses recorded during this shift",
     "empty": "No expenses recorded yet.",
     "expenses": "expenses"
   },
-
   "review": {
     "title": "Review",
     "subtitle": "Check everything before ending.",

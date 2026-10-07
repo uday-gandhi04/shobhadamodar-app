@@ -22,44 +22,43 @@ const ManagerBottomNav = () => {
       path: "/manager/operations",
       label: t("manager.operations"),
       icon: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4.5 6.75h15M4.5 12h15M4.5 17.25h15"
-        />
+        <>
+          <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+          <path d="M5 5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
+          <path d="M9 14l2 2 4-4" />
+        </>
       ),
     },
     {
       path: "/manager/accounting",
       label: t("manager.accounting"),
       icon: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M6 3.75h12A1.5 1.5 0 0 1 19.5 5.25v13.5A1.5 1.5 0 0 1 18 20.25H6a1.5 1.5 0 0 1-1.5-1.5V5.25A1.5 1.5 0 0 1 6 3.75Z"
-        />
+        <>
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+          <rect x="9" y="3" width="6" height="4" rx="1" />
+          <path d="M9 12h6M9 16h4" />
+        </>
       ),
     },
     {
       path: "/manager/stock",
       label: t("manager.stock"),
       icon: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4.5 6.75h15v12h-15zM8.25 10.5h7.5M8.25 14.25h4.5"
-        />
+        <>
+          <path d="M3 6h18M3 6v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6M3 6l1-2h16l1 2" />
+          <path d="M10 10h4" />
+        </>
       ),
     },
     {
       path: "/manager/udhari",
       label: t("manager.udhari"),
       icon: (
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M4.5 7.5h15v9h-15zM7.5 11.25h3"
-        />
+        <>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </>
       ),
     },
     {
@@ -67,10 +66,8 @@ const ManagerBottomNav = () => {
       label: t("manager.employees"),
       icon: (
         <>
-          <circle cx="9" cy="8" r="3" />
-          <path d="M3.75 19c.55-3.4 2.35-5.25 5.25-5.25S13.7 15.6 14.25 19" />
-          <path d="M16 6.5a2.5 2.5 0 1 1 0 5" />
-          <path d="M15.5 14.25c2.25.25 3.55 1.65 4 4.25" />
+          <circle cx="12" cy="8" r="4" />
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
         </>
       ),
     },
@@ -87,7 +84,7 @@ const ManagerBottomNav = () => {
         border-t
         border-slate-100
         bg-white
-        shadow-[0_-4px_20px_-10px_rgba(15,23,42,0.10)]
+        shadow-[0_-4px_16px_rgba(15,23,42,0.05)]
         pb-[env(safe-area-inset-bottom)]
       "
     >
@@ -105,23 +102,23 @@ const ManagerBottomNav = () => {
               onClick={() => navigate(item.path)}
               className="
                 flex
-                min-h-[54px]
+                min-h-[58px]
                 min-w-0
                 flex-1
                 flex-col
                 items-center
                 justify-center
                 gap-1
-                rounded-[12px]
+                rounded-[14px]
               "
             >
               <div
                 className={`
                   grid
-                  h-8
-                  w-10
+                  h-[32px]
+                  w-[40px]
                   place-items-center
-                  rounded-[10px]
+                  rounded-[12px]
                   transition-colors
                   ${
                     isActive
@@ -134,8 +131,10 @@ const ManagerBottomNav = () => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth={isActive ? 2.4 : 2}
-                  className="h-5 w-5"
+                  strokeWidth={isActive ? 2.2 : 1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-[20px] w-[20px]"
                 >
                   {item.icon}
                 </svg>
@@ -143,14 +142,14 @@ const ManagerBottomNav = () => {
 
               <span
                 className={`
-                  max-w-[64px]
+                  max-w-[56px]
                   truncate
-                  text-[8px]
+                  text-[9px]
                   font-semibold
                   ${
                     isActive
                       ? "text-bpcl-emerald"
-                      : "text-slate-500"
+                      : "text-slate-400"
                   }
                 `}
               >

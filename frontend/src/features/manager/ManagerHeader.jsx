@@ -1,4 +1,4 @@
-﻿import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -54,7 +54,13 @@ const ManagerHeader = ({ title, showBack = false, onBack, variant = "default" })
   };
 
   return (
-    <header className={`relative z-20 flex items-center gap-2.5 ${dashboard ? "rounded-[15px] bg-gradient-to-r from-[#075b45] via-[#08785a] to-[#075b45] px-3 py-2.5 text-white shadow-[0_7px_20px_rgba(4,92,67,0.18)]" : "gap-3"}`}>
+    <header
+      className={`relative z-20 flex items-center gap-3 ${
+        dashboard
+          ? "rounded-[20px] bg-gradient-to-r from-[#075b45] via-[#08785a] to-[#075b45] px-5 py-3.5 text-white shadow-[0_6px_20px_rgba(4,92,67,0.16)]"
+          : ""
+      }`}
+    >
       {showBack && (
         <button
           type="button"
@@ -88,34 +94,47 @@ const ManagerHeader = ({ title, showBack = false, onBack, variant = "default" })
       )}
 
       <div className="min-w-0 flex-1">
-        <p className={`text-[8px] font-bold uppercase tracking-[0.08em] ${dashboard ? "text-emerald-50/75" : "text-bpcl-navy"}`}>
-          {dashboard ? t("manager.manager") : "BPCL AUTHORISED OUTLET"}
+        <p
+          className={`truncate text-[15px] font-bold leading-tight ${
+            dashboard ? "text-white" : "text-slate-900"
+          }`}
+        >
+          {title || "Shobhadamodar Petroleum"}
         </p>
 
-        <p className={`mt-0.5 truncate text-[14px] font-bold ${dashboard ? "text-white" : "text-slate-900"}`}>
-          {title || "Shobhadamodar Petroleum"}
+        <p
+          className={`mt-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] ${
+            dashboard ? "text-emerald-100/70" : "text-bpcl-navy"
+          }`}
+        >
+          {dashboard ? t("manager.manager") : "BPCL AUTHORISED OUTLET"}
         </p>
       </div>
 
-      <div
-        ref={menuRef}
-        className="relative shrink-0"
-      >
+      <div ref={menuRef} className="relative shrink-0">
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
-          className={`flex items-center gap-1.5 rounded-[10px] px-1 py-1 transition active:scale-[0.98] ${dashboard ? "text-white" : "gap-2 rounded-[12px]"}`}
+          className={`flex items-center gap-1.5 rounded-[10px] px-1 py-1 transition active:scale-[0.98] ${
+            dashboard ? "text-white" : "gap-2 rounded-[12px]"
+          }`}
           aria-expanded={menuOpen}
           aria-haspopup="menu"
           aria-label={t("manager.profileMenu")}
         >
-          <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${dashboard ? "bg-white/15 text-white" : "h-9 w-9 bg-emerald-50 text-[#047857]"}`}>
+          <div
+            className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full ${
+              dashboard
+                ? "bg-white/20 text-white"
+                : "bg-emerald-50 text-emerald-700"
+            }`}
+          >
             <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.8"
-              className="h-4 w-4"
+              className="h-[18px] w-[18px]"
               aria-hidden="true"
             >
               <circle cx="12" cy="8" r="3.2" />
@@ -123,12 +142,23 @@ const ManagerHeader = ({ title, showBack = false, onBack, variant = "default" })
             </svg>
           </div>
 
-          <div className={`${dashboard ? "block max-w-[48px]" : "hidden sm:block"} min-w-0 text-left`}>
-            <p className={`max-w-[80px] truncate text-[9px] font-semibold leading-none ${dashboard ? "text-white" : "text-slate-900"}`}>
+          <div
+            className={`${
+              dashboard ? "block max-w-[52px]" : "hidden sm:block"
+            } min-w-0 text-left`}
+          >
+            <p
+              className={`max-w-[80px] truncate text-[10px] font-bold leading-none ${
+                dashboard ? "text-white" : "text-slate-900"
+              }`}
+            >
               {managerName}
             </p>
-
-            <p className={`mt-1 text-[6px] font-medium uppercase tracking-[0.04em] ${dashboard ? "text-emerald-50/75" : "text-slate-400"}`}>
+            <p
+              className={`mt-0.5 text-[7px] font-medium uppercase tracking-[0.04em] ${
+                dashboard ? "text-emerald-100/60" : "text-slate-400"
+              }`}
+            >
               {t("manager.manager")}
             </p>
           </div>
@@ -138,9 +168,9 @@ const ManagerHeader = ({ title, showBack = false, onBack, variant = "default" })
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
-            className={`h-3 w-3 transition-transform ${dashboard ? "text-white/75" : "text-slate-400"} ${
-              menuOpen ? "rotate-180" : ""
-            }`}
+            className={`h-3 w-3 transition-transform ${
+              dashboard ? "text-white/70" : "text-slate-400"
+            } ${menuOpen ? "rotate-180" : ""}`}
             aria-hidden="true"
           >
             <path d="m5 7.5 5 5 5-5" />

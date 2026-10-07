@@ -364,7 +364,9 @@
       "invalidSettlement": "अमान्य सेटलमेंट राशि।",
       "detailLoadError": "ग्राहक विवरण लोड नहीं हो सका।",
       "loadError": "ग्राहक सूची लोड नहीं हो सकी।"
-    }
+    },
+    "settings": "सेटिंग्स",
+    "settingsDescription": "स्टेशन, MPD, टैंक, दरें और अन्य"
   },
   "login": {
     "welcome": "नमस्ते!",

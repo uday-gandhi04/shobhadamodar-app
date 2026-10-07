@@ -19,7 +19,7 @@ const ManagerLayout = ({ title, showBack = false, onBack, children, variant = "d
         <main
           className={`mx-auto min-h-[100dvh] w-full max-w-[480px] overflow-hidden pb-[92px] pt-[max(0.65rem,env(safe-area-inset-top))] ${
             dashboard
-              ? "bg-[linear-gradient(180deg,#edf6f2_0%,#f4f7f6_35%,#f3f4f6_100%)] px-3"
+              ? "bg-[linear-gradient(180deg,#edf6f2_0%,#f4f7f6_35%,#f3f4f6_100%)] px-4"
               : "bg-[#F3F4F6] px-5 pt-[max(1rem,env(safe-area-inset-top))]"
           }`}
         >
@@ -30,7 +30,7 @@ const ManagerLayout = ({ title, showBack = false, onBack, children, variant = "d
             variant={variant}
           />
 
-          <section className={dashboard ? "mt-2" : "mt-6"}>{children}</section>
+          <section className={dashboard ? "mt-3" : "mt-6"}>{children}</section>
         </main>
 
         <ManagerBottomNav />
