@@ -234,7 +234,7 @@ export const getManagerAccounting = async (req, res, next) => {
     };
     const finalizedStatuses = ["ENDED", "FORCE_CLOSED"];
 
-    const [groupedShifts, expenseGroups, shifts, activeShifts, mpdDocuments] =
+    const [groupedShifts, expenseGroups, shifts, activeShifts, mpdDocuments, udhariTransactions] =
       await Promise.all([
         Shift.aggregate([
           {
@@ -347,6 +347,14 @@ export const getManagerAccounting = async (req, res, next) => {
         Mpd.find({})
           .select("_id mpdNumber serialNumber isActive")
           .lean(),
+        UdhariTransaction.find({
+          businessDate: businessDateFilter,
+          transactionType: "CREDIT"
+        })
+          .populate("customerId", "name")
+          .populate("employeeId", "name employeeId")
+          .sort({ createdAt: 1 })
+          .lean(),
       ]);
 
     const summary = emptyAccountingTotals();
@@ -389,6 +397,58 @@ export const getManagerAccounting = async (req, res, next) => {
       );
     }
 
+    // --- COMPUTE COLLECTION DETAILS ---
+    const periodCollections = {
+      cashBreakdown: {}, // Map of denomination -> count
+      coinsPaise: 0,
+      upiFirst: null, // { time, amountPaise }
+      upiLast: null,  // { time, amountPaise }
+      atmEntries: [],
+    };
+
+    shifts.forEach((shift) => {
+      // Cash
+      if (shift.cashCollections) {
+        shift.cashCollections.forEach((c) => {
+          if (c.count > 0) {
+            periodCollections.cashBreakdown[c.denomination] = (periodCollections.cashBreakdown[c.denomination] || 0) + c.count;
+          }
+        });
+      }
+      if (shift.coinsPaise) {
+        periodCollections.coinsPaise += shift.coinsPaise;
+      }
+      // Card
+      if (shift.atmEntries) {
+        periodCollections.atmEntries.push(...shift.atmEntries);
+      }
+      // UPI
+      if (shift.upiCollection) {
+        const upi = shift.upiCollection;
+        if (upi.firstTransactionTime || upi.firstTransactionAmountPaise) {
+          if (!periodCollections.upiFirst) {
+            periodCollections.upiFirst = { time: upi.firstTransactionTime, amountPaise: upi.firstTransactionAmountPaise, timestamp: shift.startedAt };
+          } else if (new Date(shift.startedAt) < new Date(periodCollections.upiFirst.timestamp)) {
+            periodCollections.upiFirst = { time: upi.firstTransactionTime, amountPaise: upi.firstTransactionAmountPaise, timestamp: shift.startedAt };
+          }
+        }
+        if (upi.lastTransactionTime || upi.lastTransactionAmountPaise) {
+          if (!periodCollections.upiLast) {
+            periodCollections.upiLast = { time: upi.lastTransactionTime, amountPaise: upi.lastTransactionAmountPaise, timestamp: shift.endedAt || shift.startedAt };
+          } else if (new Date(shift.endedAt || shift.startedAt) > new Date(periodCollections.upiLast.timestamp)) {
+            periodCollections.upiLast = { time: upi.lastTransactionTime, amountPaise: upi.lastTransactionAmountPaise, timestamp: shift.endedAt || shift.startedAt };
+          }
+        }
+      }
+    });
+
+    const cashDenominations = Object.entries(periodCollections.cashBreakdown)
+      .map(([denomination, count]) => ({
+        denomination: Number(denomination),
+        count: count,
+      }))
+      .sort((a, b) => b.denomination - a.denomination);
+
     const summaryResponse = {
       totalLitresPetrol: summary.totalLitresPetrol,
       totalLitresDiesel: summary.totalLitresDiesel,
@@ -409,6 +469,18 @@ export const getManagerAccounting = async (req, res, next) => {
       pendingShiftCount: summary.pendingShiftCount,
       shortShiftCount: summary.shortShiftCount,
       excessShiftCount: summary.excessShiftCount,
+      collectionDetails: {
+        cashCollections: cashDenominations,
+        coinsPaise: periodCollections.coinsPaise,
+        upiCollection: {
+          firstTransactionTime: periodCollections.upiFirst?.time || null,
+          firstTransactionAmountPaise: periodCollections.upiFirst?.amountPaise || 0,
+          lastTransactionTime: periodCollections.upiLast?.time || null,
+          lastTransactionAmountPaise: periodCollections.upiLast?.amountPaise || 0,
+        },
+        atmEntries: periodCollections.atmEntries,
+        udhariTransactions: udhariTransactions,
+      },
     };
 
     const dailyBreakdown = [...dailyTotals.entries()].map(

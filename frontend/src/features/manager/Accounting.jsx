@@ -82,6 +82,59 @@ const getDateRange = (period, businessDate) => {
   };
 };
 
+const CollectionAccordionRow = ({
+  icon,
+  iconBg,
+  iconColor,
+  label,
+  value,
+  isExpanded,
+  onToggle,
+  children,
+}) => (
+  <div className="overflow-hidden rounded-[11px] bg-slate-50 transition-colors">
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full items-center justify-between px-3 py-2.5 active:bg-slate-100"
+    >
+      <div className="flex items-center gap-2">
+        <div
+          className={`!h-5 !w-5 flex items-center justify-center !rounded-[6px] ${iconBg} ${iconColor}`}
+        >
+          {icon}
+        </div>
+        <span className="!text-[11px] !font-medium !text-slate-600">
+          {label}
+        </span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="!text-[11px] !font-medium !text-slate-800">
+          {value}
+        </span>
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className={`h-3 w-3 text-slate-400 transition-transform ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        >
+          <path d="m5 7.5 5 5 5-5" />
+        </svg>
+      </div>
+    </button>
+    {isExpanded && (
+      <div className="px-3 pb-2.5 pt-0">
+        <div className="mt-1 space-y-1.5 border-t border-slate-200/60 pt-2">
+          {children}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 const Accounting = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -95,6 +148,7 @@ const Accounting = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [expandedCollection, setExpandedCollection] = useState(null);
   const today = getBusinessDate();
 
   useEffect(() => {
@@ -298,43 +352,191 @@ const Accounting = () => {
               <div className="!rounded-[16px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100 flex flex-col justify-between">
                 <div>
                   <h2 className="!text-[14px] !font-bold !text-slate-900 !mb-4">Collections</h2>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-emerald-50 !text-emerald-600">
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="!h-3.5 !w-3.5"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+                  <div className="space-y-2">
+                    <CollectionAccordionRow
+                      icon={<rect x="2" y="6" width="20" height="12" rx="2" />}
+                      iconBg="!bg-emerald-50"
+                      iconColor="!text-emerald-600"
+                      label="Cash"
+                      value={formatMoney(summary.totalCashPaise)}
+                      isExpanded={expandedCollection === "CASH"}
+                      onToggle={() =>
+                        setExpandedCollection(
+                          expandedCollection === "CASH" ? null : "CASH",
+                        )
+                      }
+                    >
+                      {(summary.collectionDetails?.cashCollections || []).map(
+                        (item, idx) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between text-[10px] font-medium text-slate-500"
+                          >
+                            <span>
+                              ₹{item.denomination} × {item.count}
+                            </span>
+                            <span>
+                              {formatMoney(
+                                item.denomination * item.count * 100,
+                              )}
+                            </span>
+                          </div>
+                        ),
+                      )}
+                      {(summary.collectionDetails?.coinsPaise || 0) > 0 && (
+                        <div className="flex justify-between text-[10px] font-medium text-slate-500">
+                          <span>Coins</span>
+                          <span>
+                            {formatMoney(summary.collectionDetails.coinsPaise)}
+                          </span>
                         </div>
-                        <span className="!text-[11px] !font-medium !text-slate-600">Cash</span>
+                      )}
+                      <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[10px] font-bold text-slate-700">
+                        <span>Total Cash</span>
+                        <span>{formatMoney(summary.totalCashPaise)}</span>
                       </div>
-                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalCashPaise)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-blue-50 !text-blue-600">
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="!h-3.5 !w-3.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </CollectionAccordionRow>
+
+                    <CollectionAccordionRow
+                      icon={
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                      }
+                      iconBg="!bg-blue-50"
+                      iconColor="!text-blue-600"
+                      label="UPI"
+                      value={formatMoney(summary.totalUpiPaise)}
+                      isExpanded={expandedCollection === "UPI"}
+                      onToggle={() =>
+                        setExpandedCollection(
+                          expandedCollection === "UPI" ? null : "UPI",
+                        )
+                      }
+                    >
+                      {summary.collectionDetails?.upiCollection
+                        ?.firstTransactionTime ? (
+                        <>
+                          <div className="flex justify-between text-[10px] font-medium text-slate-500">
+                            <span>
+                              First (
+                              {
+                                summary.collectionDetails.upiCollection
+                                  .firstTransactionTime
+                              }
+                              )
+                            </span>
+                            <span>
+                              {formatMoney(
+                                summary.collectionDetails.upiCollection
+                                  .firstTransactionAmountPaise,
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-[10px] font-medium text-slate-500">
+                            <span>
+                              Last (
+                              {
+                                summary.collectionDetails.upiCollection
+                                  .lastTransactionTime
+                              }
+                              )
+                            </span>
+                            <span>
+                              {formatMoney(
+                                summary.collectionDetails.upiCollection
+                                  .lastTransactionAmountPaise,
+                              )}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-[10px] italic text-slate-400">
+                          No transactions recorded
                         </div>
-                        <span className="!text-[11px] !font-medium !text-slate-600">UPI</span>
+                      )}
+                      <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[10px] font-bold text-slate-700">
+                        <span>Total UPI</span>
+                        <span>{formatMoney(summary.totalUpiPaise)}</span>
                       </div>
-                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalUpiPaise)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-purple-50 !text-purple-600">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!h-3.5 !w-3.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    </CollectionAccordionRow>
+
+                    <CollectionAccordionRow
+                      icon={
+                        <>
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                          <line x1="1" y1="10" x2="23" y2="10" />
+                        </>
+                      }
+                      iconBg="!bg-purple-50"
+                      iconColor="!text-purple-600"
+                      label="Card"
+                      value={formatMoney(summary.totalCardPaise)}
+                      isExpanded={expandedCollection === "CARD"}
+                      onToggle={() =>
+                        setExpandedCollection(
+                          expandedCollection === "CARD" ? null : "CARD",
+                        )
+                      }
+                    >
+                      {(summary.collectionDetails?.atmEntries || []).map(
+                        (entry, idx) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between text-[10px] font-medium text-slate-500"
+                          >
+                            <span>{entry.time}</span>
+                            <span>{formatMoney(entry.amountPaise)}</span>
+                          </div>
+                        ),
+                      )}
+                      {(summary.collectionDetails?.atmEntries || []).length ===
+                        0 && (
+                        <div className="text-[10px] italic text-slate-400">
+                          No individual entries
                         </div>
-                        <span className="!text-[11px] !font-medium !text-slate-600">Card</span>
+                      )}
+                      <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[10px] font-bold text-slate-700">
+                        <span>Total Card</span>
+                        <span>{formatMoney(summary.totalCardPaise)}</span>
                       </div>
-                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalCardPaise)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="!h-5 !w-5 flex items-center justify-center !rounded-[6px] !bg-rose-50 !text-rose-500">
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="!h-3.5 !w-3.5"><path d="M5 12h14"/></svg>
+                    </CollectionAccordionRow>
+
+                    <CollectionAccordionRow
+                      icon={<path d="M5 12h14" />}
+                      iconBg="!bg-rose-50"
+                      iconColor="!text-rose-500"
+                      label="Udhari"
+                      value={formatMoney(summary.totalUdhariPaise)}
+                      isExpanded={expandedCollection === "UDHARI"}
+                      onToggle={() =>
+                        setExpandedCollection(
+                          expandedCollection === "UDHARI" ? null : "UDHARI",
+                        )
+                      }
+                    >
+                      {(summary.collectionDetails?.udhariTransactions || [])
+                        .length > 0 ? (
+                        (summary.collectionDetails?.udhariTransactions || [])
+                          .map((tx, idx) => (
+                            <div
+                              key={idx}
+                              className="flex justify-between text-[10px] font-medium text-slate-500"
+                            >
+                              <span className="truncate pr-2">
+                                {tx.customerId?.name || "Unknown Customer"}
+                              </span>
+                              <span>{formatMoney(tx.amountPaise)}</span>
+                            </div>
+                          ))
+                      ) : (
+                        <div className="text-[10px] italic text-slate-400">
+                          No udhari entries
                         </div>
-                        <span className="!text-[11px] !font-medium !text-slate-600">Udhari</span>
+                      )}
+                      <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[10px] font-bold text-slate-700">
+                        <span>Total Udhari</span>
+                        <span>{formatMoney(summary.totalUdhariPaise)}</span>
                       </div>
-                      <span className="!text-[11px] !font-medium !text-slate-800">{formatMoney(summary.totalUdhariPaise)}</span>
-                    </div>
+                    </CollectionAccordionRow>
                   </div>
                 </div>
                 <div className="!mt-5 flex items-center justify-between !border-t !border-slate-100 !pt-4">
