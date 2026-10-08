@@ -95,7 +95,7 @@
       "openShifts": "Open Shifts"
     },
     "accounting": "Sales & Accounting",
-    "accountingDescription": "Daily, weekly and monthly sales and collections.",
+    "accountingDescription": "Daily sales and collections",
     "accountingLabels": {
       "activeOvernightShifts": "Active / Overnight Shifts",
       "todaysCompletedShifts": "Today's Completed Shifts",
@@ -141,13 +141,13 @@
       "exportUnavailable": "Coming soon"
     },
     "operations": "Operations",
-    "operationsDescription": "MPDs, shifts and nozzle details.",
+    "operationsDescription": "MPDs, shifts and nozzle details",
     "stock": "Stock & Rates",
-    "stockDescription": "Fuel stock, receipts, dip and fuel rates.",
+    "stockDescription": "Stock, receipts, dips and rates",
     "udhari": "Udhari",
-    "udhariDescription": "Customer accounts and settlements.",
+    "udhariDescription": "Customer accounts and settlements",
     "employees": "Employees",
-    "employeesDescription": "Manage employee profiles and access.",
+    "employeesDescription": "Employee profiles and access",
     "employeesPage": {
       "subtitle": "Manage employee accounts and access.",
       "loading": "Loading employees",
@@ -366,7 +366,7 @@
       "loadError": "Unable to load customer list."
     },
     "settings": "Settings",
-    "settingsDescription": "Station, MPDs, tanks, rates and more"
+    "settingsDescription": "Station and configuration"
   },
   "login": {
     "welcome": "Welcome Back",

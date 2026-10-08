@@ -48,7 +48,7 @@ const formatBusinessDate = (businessDate, language) =>
   }).format(new Date(`${businessDate}T00:00:00+05:00`));
 
 /* ─── SVG icon set (consistent stroke, 24×24 viewBox) ─── */
-const ActionIcon = ({ type }) => {
+const ActionIcon = ({ type, className }) => {
   const common = {
     viewBox: "0 0 24 24",
     fill: "none",
@@ -56,7 +56,7 @@ const ActionIcon = ({ type }) => {
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    className: "h-[22px] w-[22px]",
+    className: className || "h-[22px] w-[22px]",
     "aria-hidden": true,
   };
 
@@ -190,31 +190,31 @@ const ManagerDashboard = () => {
       key: "accounting",
       path: "/manager/accounting",
       title: t("manager.accounting"),
-      description: t("manager.accountingDescription"),
+      description: t("manager.accountingDescription", "Daily sales and collections"),
     },
     {
       key: "operations",
       path: "/manager/operations",
       title: t("manager.operations"),
-      description: t("manager.operationsDescription"),
+      description: t("manager.operationsDescription", "MPDs, shifts and nozzle details"),
     },
     {
       key: "stock",
       path: "/manager/stock",
       title: t("manager.stock"),
-      description: t("manager.stockDescription"),
+      description: t("manager.stockDescription", "Stock, receipts, dips and rates"),
     },
     {
       key: "udhari",
       path: "/manager/udhari",
       title: t("manager.udhari"),
-      description: t("manager.udhariDescription"),
+      description: t("manager.udhariDescription", "Customer accounts and settlements"),
     },
     {
       key: "employees",
       path: "/manager/employees",
       title: t("manager.employees"),
-      description: t("manager.employeesDescription"),
+      description: t("manager.employeesDescription", "Employee profiles and access"),
     },
     {
       key: "settings",
@@ -222,7 +222,7 @@ const ManagerDashboard = () => {
       title: t("manager.settings", "Settings"),
       description: t(
         "manager.settingsDescription",
-        "Station, MPDs, tanks, rates and more"
+        "Station and configuration"
       ),
     },
   ];
@@ -271,7 +271,7 @@ const ManagerDashboard = () => {
         </div>
 
         {/* ── Navigation cards — 2-col grid ── */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2.5">
           {actions.map((action) => {
             const accent = cardAccents[action.key];
             return (
@@ -279,28 +279,28 @@ const ManagerDashboard = () => {
                 key={action.key}
                 type="button"
                 onClick={() => navigate(action.path)}
-                className="group relative flex flex-col justify-between overflow-hidden !rounded-[24px] bg-white !p-6 text-left shadow-[0_8px_24px_rgba(149,157,165,0.1)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(149,157,165,0.15)] active:scale-[0.98]"
-                style={{ minHeight: "136px" }}
+                className="group relative flex flex-col justify-between overflow-hidden !rounded-[16px] bg-white border border-slate-100/80 !p-3 text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
+                style={{ minHeight: "82px" }}
               >
                 {/* Top row: icon + chevron */}
                 <div className="flex w-full items-start justify-between">
                   <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-full ${accent.iconBg}`}
+                    className={`flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full ${accent.iconBg}`}
                   >
-                    <ActionIcon type={action.key} />
+                    <ActionIcon type={action.key} className="h-[16px] w-[16px]" />
                   </div>
 
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                    <Chevron className="text-slate-400" />
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-50/50">
+                    <Chevron className="text-slate-400 !h-[12px] !w-[12px]" />
                   </div>
                 </div>
 
                 {/* Bottom: title + desc */}
-                <div className="mt-4">
-                  <h3 className="text-[14px] font-extrabold tracking-tight text-slate-800">
+                <div className="mt-2.5">
+                  <h3 className="text-[13px] font-bold leading-tight tracking-tight text-slate-800 break-normal whitespace-normal">
                     {action.title}
                   </h3>
-                  <p className="mt-1.5 line-clamp-2 text-[10.5px] font-medium leading-relaxed text-slate-500">
+                  <p className="mt-0.5 line-clamp-2 text-[9px] font-medium leading-[1.2] text-slate-500 break-normal whitespace-normal">
                     {action.description}
                   </p>
                 </div>

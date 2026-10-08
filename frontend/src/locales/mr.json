@@ -64,7 +64,7 @@
       "openShifts": "सुरू शिफ्ट"
     },
     "accounting": "विक्री आणि हिशोब",
-    "accountingDescription": "दैनिक, साप्ताहिक आणि मासिक विक्री व जमा रक्कम.",
+    "accountingDescription": "दैनिक विक्री आणि जमा रक्कम",
     "accountingLabels": {
       "activeOvernightShifts": "सक्रिय / रात्रभरच्या शिफ्ट",
       "todaysCompletedShifts": "आजच्या पूर्ण शिफ्ट",
@@ -110,13 +110,13 @@
       "exportUnavailable": "लवकरच उपलब्ध होईल"
     },
     "operations": "कामकाज",
-    "operationsDescription": "MPD, शिफ्ट आणि नोजल तपशील.",
+    "operationsDescription": "MPD, शिफ्ट आणि नोजल तपशील",
     "stock": "स्टॉक आणि दर",
-    "stockDescription": "इंधन स्टॉक, पावत्या, डिप आणि इंधन दर.",
+    "stockDescription": "स्टॉक, पावत्या, डिप आणि दर",
     "udhari": "उधारी",
-    "udhariDescription": "ग्राहक खाती आणि पेमेंट सेटलमेंट.",
+    "udhariDescription": "ग्राहक खाती आणि सेटलमेंट",
     "employees": "कर्मचारी",
-    "employeesDescription": "कर्मचारी प्रोफाइल आणि प्रवेश व्यवस्थापन.",
+    "employeesDescription": "कर्मचारी प्रोफाइल आणि प्रवेश",
     "employeesPage": {
       "subtitle": "कर्मचारी खाती आणि प्रवेश व्यवस्थापित करा.",
       "loading": "कर्मचारी लोड होत आहेत",
@@ -335,7 +335,7 @@
       "loadError": "ग्राहक सूची लोड करता आली नाही."
     },
     "settings": "सेटिंग्ज",
-    "settingsDescription": "स्टेशन, MPD, टाक्या, दर आणि अधिक"
+    "settingsDescription": "स्टेशन आणि कॉन्फिगरेशन"
   },
   "login": {
     "welcome": "नमस्कार!",
