@@ -349,7 +349,10 @@ export const getManagerAccounting = async (req, res, next) => {
           .lean(),
         UdhariTransaction.find({
           businessDate: businessDateFilter,
-          transactionType: "CREDIT"
+          $or: [
+            { transactionType: "CREDIT" },
+            { transactionType: { $exists: false } }
+          ]
         })
           .populate("customerId", "name")
           .populate("employeeId", "name employeeId")

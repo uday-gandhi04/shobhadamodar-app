@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import ManagerLayout from "./ManagerLayout";
+import RoleToggle from "../../components/ui/RoleToggle";
 import {
   createEmployee,
   getManagerEmployeeDetail,
@@ -812,10 +813,11 @@ const EmployeeEditorDialog = ({ mode, profile, saving, error, onClose, onSubmit,
   const [name, setName] = useState(creating ? "" : profile?.name || "");
   const [employeeId, setEmployeeId] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("EMPLOYEE");
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSubmit(creating ? { name, employeeId, password } : { name });
+    onSubmit(creating ? { name, employeeId, password, role } : { name });
   };
 
   return (
@@ -852,6 +854,12 @@ const EmployeeEditorDialog = ({ mode, profile, saving, error, onClose, onSubmit,
                 onChange={(e) => setPassword(e.target.value)} 
                 required minLength={6} maxLength={128} autoComplete="new-password" 
               />
+              <div className="!mb-3">
+                <label className="block !text-[11px] !font-bold !text-slate-600 !mb-3">
+                  {t("manager.employeesPage.role", "Role")}
+                </label>
+                <RoleToggle role={role} setRole={setRole} />
+              </div>
             </>
           ) : (
             <Input 

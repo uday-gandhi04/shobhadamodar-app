@@ -9,7 +9,7 @@ import { recordAuditLog } from '../utils/auditLog.js';
  */
 export const createEmployee = async (req, res, next) => {
   try {
-    const { name, employeeId, password } = req.body;
+    const { name, employeeId, password, role } = req.body;
 
     // Authorization should already be enforced by middleware,
     // but keep this defensive check here as well.
@@ -39,7 +39,7 @@ export const createEmployee = async (req, res, next) => {
       name: name.trim(),
       employeeId: normalizedEmployeeId,
       password,
-      role: 'EMPLOYEE',
+      role: role || 'EMPLOYEE',
       isActive: true,
       accountStatus: 'ACTIVE',
       createdBy: req.user._id,

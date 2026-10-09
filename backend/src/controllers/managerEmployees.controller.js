@@ -36,7 +36,7 @@ const serializeEmployee = (employee, currentShift) => {
 const findEmployee = async (id) => {
   if (!mongoose.isValidObjectId(id)) return null;
 
-  return User.findOne({ _id: id, role: "EMPLOYEE" })
+  return User.findOne({ _id: id, role: { $in: ["EMPLOYEE", "MANAGER"] } })
     .select(employeeProjection)
     .lean();
 };
@@ -44,7 +44,7 @@ const findEmployee = async (id) => {
 export const getManagerEmployees = async (_req, res, next) => {
   try {
     const [users, activeShifts] = await Promise.all([
-      User.find({ role: "EMPLOYEE" })
+      User.find({ role: { $in: ["EMPLOYEE", "MANAGER"] } })
         .select(employeeProjection)
         .sort({ name: 1, employeeId: 1 })
         .lean(),
@@ -202,7 +202,7 @@ export const updateManagerEmployee = async (req, res, next) => {
       });
     }
 
-    const employee = await User.findOne({ _id: req.params.id, role: "EMPLOYEE" });
+    const employee = await User.findOne({ _id: req.params.id, role: { $in: ["EMPLOYEE", "MANAGER"] } });
     
     if (!employee) {
       return res.status(404).json({
@@ -251,7 +251,7 @@ export const updateManagerEmployeeStatus = async (req, res, next) => {
 
     const employee = await User.findOne({
       _id: req.params.id,
-      role: "EMPLOYEE",
+      role: { $in: ["EMPLOYEE", "MANAGER"] },
     }).select(employeeProjection);
     if (!employee) {
       return res.status(404).json({
@@ -329,7 +329,7 @@ export const resetManagerEmployeePassword = async (req, res, next) => {
   try {
     const employee = await User.findOne({
       _id: req.params.id,
-      role: "EMPLOYEE",
+      role: { $in: ["EMPLOYEE", "MANAGER"] },
     });
     if (!employee) {
       return res.status(404).json({

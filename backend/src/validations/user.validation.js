@@ -22,5 +22,10 @@ export const createEmployeeSchema = z.object({
       .string()
       .min(6, 'Password must be at least 6 characters')
       .max(128, 'Password cannot exceed 128 characters'),
+
+    role: z
+      .enum(['EMPLOYEE', 'MANAGER'])
+      .optional()
+      .default('EMPLOYEE'),
   }),
 });
