@@ -1065,7 +1065,8 @@ export const getManagerMpdShifts = async (req, res, next) => {
       totalLitresPetrol: Number(shift.totalLitresPetrol || 0),
       totalLitresDiesel: Number(shift.totalLitresDiesel || 0),
       totalCollectedPaise: Number(shift.totalCollectedPaise || 0),
-      expectedTotalSalePaise: Number(shift.expectedTotalSalePaise || 0)
+      expectedTotalSalePaise: Number(shift.expectedTotalSalePaise || 0),
+      differencePaise: Number(shift.differencePaise || 0)
     }));
 
     res.status(200).json({

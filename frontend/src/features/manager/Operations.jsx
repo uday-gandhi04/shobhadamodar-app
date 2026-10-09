@@ -10,6 +10,8 @@ import {
 } from "../../services/managerOperationsApi";
 import { getBusinessDate } from "../../utils/businessDate";
 import PastShiftsView from "./PastShiftsView";
+import CollectionCard from "../../components/business/accounting/CollectionCard";
+import { CashBreakdownModal, CardBreakdownModal, UpiBreakdownModal, UdhariBreakdownModal } from "../../components/business/accounting/CollectionModals";
 
 const formatMoney = (paise) => {
   const amount = Number(paise || 0) / 100;
@@ -288,13 +290,27 @@ const Operations = () => {
           )}
 
           {historyMpdId && (
-            <div className="flex items-center justify-between px-1">
-              <p className="text-[12px] font-bold text-slate-900">
-                {historyMpd?.mpdNumber || "MPD"} · {t("manager.todaysShifts")}
-              </p>
-              <span className="text-[10px] font-semibold text-slate-400">
-                {formatDate(businessDate)}
-              </span>
+            <div className="mb-2 mt-2 flex items-center justify-between px-1">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-gradient-to-br from-emerald-50 to-emerald-100/50 text-emerald-600 shadow-sm">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-[18px] font-black tracking-tight text-slate-900">
+                    {historyMpd?.mpdNumber || "MPD"}
+                  </h2>
+                  <p className="text-[11px] font-bold text-slate-500">
+                    {t("manager.todaysShifts")}
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-[10px] bg-white px-3 py-1.5 shadow-sm border border-slate-100">
+                <span className="text-[10px] font-bold uppercase tracking-[0.05em] text-slate-400">
+                  {formatDate(businessDate)}
+                </span>
+              </div>
             </div>
           )}
 
@@ -361,7 +377,7 @@ const Operations = () => {
 };
 
 const MpdShiftList = ({ shifts, t, onOpenShift }) => (
-  <section className="space-y-2">
+  <section className="space-y-3.5">
     {shifts.length === 0 ? (
       <EmptyState text={t("manager.noShiftsForDate")} />
     ) : (
@@ -541,91 +557,74 @@ const MpdCard = ({ mpd, lastShift, t, onViewTodayHistory }) => (
 const ShiftCard = ({ shift, t, active = false, onClick }) => {
   const difference = Number(shift.differencePaise || 0);
 
-  const differenceClass =
+  const differenceTextColor =
     difference === 0
-      ? "text-bpcl-emerald"
+      ? "!text-emerald-600"
       : difference < 0
-        ? "text-red-600"
-        : "text-amber-600";
+        ? "!text-red-600"
+        : "!text-amber-600";
 
   return (
-    <button
-      type="button"
+    <div
       onClick={onClick}
-      disabled={!onClick}
-      className={`
-    w-full
-    rounded-[18px]
-    border
-    bg-white
-    p-4
-    text-left
-    shadow-[0_5px_18px_rgba(15,23,42,0.05)]
-    ${active ? "border-emerald-100" : "border-slate-100"}
-    ${onClick ? "transition active:scale-[0.99]" : ""}
-  `}
+      className={`!group !cursor-pointer !rounded-[20px] !border !border-slate-100 !bg-white !p-4 !shadow-[0_4px_20px_rgba(15,23,42,0.03)] !transition-all !duration-300 ${
+        active 
+          ? "!border-emerald-200 !shadow-[0_8px_24px_rgba(16,185,129,0.08)]" 
+          : "hover:!border-emerald-200 hover:!shadow-[0_8px_30px_rgba(4,120,87,0.08)]"
+      }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[12px] font-bold text-slate-900">
-              {formatTime(shift.startedAt)} – {active ? t("manager.live") : formatTime(shift.endedAt)}
-            </p>
-            <span className={`rounded-full px-2 py-1 text-[8px] font-bold ${active ? "bg-emerald-50 text-bpcl-emerald" : "bg-slate-100 text-slate-500"}`}>
-              {statusLabel(shift.status, t)}
-            </span>
+      <div className="!mb-4 !flex !items-center !justify-between">
+        <div className="!flex !items-center !gap-2.5 !flex-1 !min-w-0">
+          <div className="!flex !h-8 !w-8 !shrink-0 !items-center !justify-center !rounded-full !bg-emerald-50 !text-emerald-700">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="!h-4 !w-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
           </div>
-
-          <p className="mt-1 text-[10px] font-medium text-slate-500">
-            {shift.employee?.name ||
-              shift.employee?.employeeId ||
-              t("manager.employeeUnknown")}
+          <p className="!text-[13px] !font-black !text-slate-900 !truncate">
+            {shift.employee?.name || shift.employee?.employeeId || t("manager.employeeUnknown")}
           </p>
         </div>
+        
+        <div className="!flex !flex-1 !items-center !justify-center">
+          <div className={`!flex !items-center !gap-1.5 !rounded-full !px-2.5 !py-1 !text-[10px] !font-bold !whitespace-nowrap ${active ? "!bg-emerald-100 !text-emerald-700" : "!bg-slate-50 !text-slate-600"}`}>
+            <span>{formatTime(shift.startedAt)}</span>
+            <svg className={`!h-3 !w-3 ${active ? "!text-emerald-600" : "!text-slate-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+            <span>{active ? t("manager.live") : formatTime(shift.endedAt)}</span>
+          </div>
+        </div>
 
-        {!active && onClick && (
-          <span className="text-[16px] text-slate-300">→</span>
+        <div className="!flex-1 !text-right">
+          <p className="!text-[11px] !font-bold !text-slate-400 !whitespace-nowrap">
+            {statusLabel(shift.status, t)}
+          </p>
+        </div>
+      </div>
+
+      <div className={`!mt-4 !grid ${active ? "!grid-cols-3" : "!grid-cols-4"} !divide-x !divide-slate-200/60 !rounded-[14px] !bg-slate-50/80 !p-3 !border !border-slate-100`}>
+        <div className="!flex !flex-col !items-center !justify-center !px-1">
+          <p className="!text-[9px] !font-extrabold !uppercase !tracking-wider !text-slate-400 !mb-1">{t("manager.petrol")}</p>
+          <p className="!text-[13px] !font-black !text-slate-700">{Number(shift.totalLitresPetrol || 0).toFixed(2)} <span className="!text-[10px] !font-bold !text-slate-400">L</span></p>
+        </div>
+        <div className="!flex !flex-col !items-center !justify-center !px-1">
+          <p className="!text-[9px] !font-extrabold !uppercase !tracking-wider !text-slate-400 !mb-1">{t("manager.diesel")}</p>
+          <p className="!text-[13px] !font-black !text-slate-700">{Number(shift.totalLitresDiesel || 0).toFixed(2)} <span className="!text-[10px] !font-bold !text-slate-400">L</span></p>
+        </div>
+        <div className="!flex !flex-col !items-center !justify-center !px-1">
+          <p className="!text-[9px] !font-extrabold !uppercase !tracking-wider !text-slate-400 !mb-1">{t("manager.sale")}</p>
+          <p className="!text-[14px] !font-black !text-emerald-600">{formatMoney(shift.expectedTotalSalePaise)}</p>
+        </div>
+        {!active && (
+          <div className="!flex !flex-col !items-center !justify-center !px-1">
+            <p className="!text-[9px] !font-extrabold !uppercase !tracking-wider !text-slate-400 !mb-1">{t("manager.difference")}</p>
+            <p className={`!text-[12px] !font-black ${differenceTextColor}`}>
+              {difference > 0 ? "+" : ""}{formatMoney(difference)}
+            </p>
+          </div>
         )}
       </div>
-
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <Metric
-          label={t("manager.petrol")}
-          value={`${Number(shift.totalLitresPetrol || 0).toFixed(2)} L`}
-        />
-
-        <Metric
-          label={t("manager.diesel")}
-          value={`${Number(shift.totalLitresDiesel || 0).toFixed(2)} L`}
-        />
-
-        <Metric
-          label={t("manager.totalLitres")}
-          value={`${(
-            Number(shift.totalLitresPetrol || 0) +
-            Number(shift.totalLitresDiesel || 0)
-          ).toFixed(2)} L`}
-        />
-
-        <Metric
-          label={t("manager.sale")}
-          value={formatMoney(shift.expectedTotalSalePaise)}
-        />
-      </div>
-
-      {!active && (
-        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-          <span className="text-[9px] font-medium text-slate-400">
-            {t("manager.difference")}
-          </span>
-
-          <span className={`text-[11px] font-bold ${differenceClass}`}>
-            {difference > 0 ? "+" : ""}
-            {formatMoney(difference)}
-          </span>
-        </div>
-      )}
-    </button>
+    </div>
   );
 };
 
@@ -634,7 +633,6 @@ const Metric = ({ label, value }) => (
     <p className="text-[9px] font-semibold uppercase tracking-[0.04em] text-slate-500">
       {label}
     </p>
-
     <p className="mt-1 text-[12px] font-bold text-slate-900">{value}</p>
   </div>
 );
@@ -652,6 +650,11 @@ const ShiftDetailView = ({
   onBack,
   t,
 }) => {
+  const [showCashModal, setShowCashModal] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [showUpiModal, setShowUpiModal] = useState(false);
+  const [showUdhariModal, setShowUdhariModal] = useState(false);
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -873,319 +876,231 @@ const ShiftDetailView = ({
       </section>
 
       {/* Nozzle readings */}
-      <section className="rounded-[22px] bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
-        <SectionTitle
-          title={t(
-            "manager.nozzleReadings",
-          )}
-        />
+      <section className="mt-4 overflow-hidden rounded-[18px] bg-white shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
+        <div className="p-4 pb-3">
+          <SectionTitle title={t("manager.nozzleReadings")} />
+        </div>
 
-        <div className="mt-3 space-y-2">
-          {(shift.readings || []).map(
-            (reading) => (
+        <div className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2 border-y border-slate-100 bg-slate-50/70 px-3 py-2.5 text-[9px] font-bold uppercase tracking-[0.05em] text-slate-500 sm:grid-cols-[88px_minmax(0,1fr)_minmax(0,1fr)] sm:gap-4 sm:px-4">
+          <span>{t("manager.nozzle", { defaultValue: "Nozzle" })}</span>
+          <span className="text-right">{t("manager.opening")}</span>
+          <span className="text-right">{t("manager.closing")}</span>
+        </div>
+
+        <div>
+          {(shift.readings || []).map((reading) => {
+            const fuelCode = reading.fuelType === "DIESEL" ? "D" : "P";
+            return (
               <div
-                key={
-                  reading.nozzleId
-                }
-                className="rounded-[16px] border border-slate-100 bg-white p-4 shadow-[0_3px_12px_rgba(15,23,42,0.035)]"
+                key={reading.nozzleId}
+                className="
+                  grid
+                  grid-cols-[64px_minmax(0,1fr)_minmax(0,1fr)]
+                  items-center
+                  gap-4
+                  border-t
+                  border-slate-100
+                  px-3
+                  py-3.5
+                  first:border-t-0
+                  sm:grid-cols-[76px_minmax(0,1fr)_minmax(0,1fr)]
+                  sm:gap-5
+                  sm:px-4
+                "
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-bold text-slate-900">
-                      {String(
-                        reading.nozzleId,
-                      ).toUpperCase()}
-                    </span>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-bold leading-none tracking-[-0.01em] text-slate-900">
+                    {String(reading.nozzleId).toUpperCase()} ({fuelCode})
+                  </p>
+                </div>
 
-                    <span
-                      className={`
-                        rounded-full
-                        px-2
-                        py-1
-                        text-[8px]
-                        font-bold
-                        ${
-                          reading.fuelType ===
-                          "PETROL"
-                            ? "bg-green-50 text-fuel-petrol"
-                            : "bg-blue-50 text-fuel-diesel"
-                        }
-                      `}
-                    >
-                      {reading.fuelType}
-                    </span>
-                  </div>
-
-                  <span className="text-[10px] font-bold text-slate-700">
-                    {t("manager.dispensed")}: {Number(reading.dispensedLitres || 0).toFixed(2)} L
+                <div className="min-w-0 text-right">
+                  <span className="font-mono text-[14px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-slate-800 sm:text-[15px]">
+                    {Number(reading.openingReading || 0).toFixed(2)}
                   </span>
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Metric
-                    label={t(
-                      "manager.opening",
-                    )}
-                    value={Number(
-                      reading.openingReading ||
-                        0,
-                    ).toFixed(2)}
-                  />
-
-                  <Metric
-                    label={t(
-                      "manager.closing",
-                    )}
-                    value={
-                      reading.closingReading !=
-                      null
-                        ? Number(
-                            reading.closingReading,
-                          ).toFixed(2)
-                        : "—"
-                    }
-                  />
-
-                  <Metric
-                    label={t(
-                      "manager.sale",
-                    )}
-                    value={formatMoney(
-                      reading.expectedSalePaise,
-                    )}
-                  />
+                <div className="min-w-0 pl-1 sm:pl-2">
+                  <div className="flex h-[36px] w-full min-w-0 items-center justify-end border-b-[2px] border-slate-100 bg-transparent px-1 text-right font-mono text-[14px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-slate-900 sm:h-[38px] sm:text-[15px]">
+                    {reading.closingReading != null
+                      ? Number(reading.closingReading).toFixed(2)
+                      : "—"}
+                  </div>
                 </div>
               </div>
-            ),
-          )}
+            );
+          })}
         </div>
       </section>
 
       {/* Collections */}
-      <section className="rounded-[22px] bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
-        <SectionTitle
-          title={t(
-            "manager.collections",
-          )}
-        />
-
-        <div className="mt-3 space-y-2">
-          <ExpandableCashRow shift={shift} t={t} />
-
-          <CollectionRow
-            label={t("manager.upi")}
-            value={formatMoney(
-              shift.totalUpiPaise,
-            )}
-          />
-
-          <ExpandableCardRow shift={shift} t={t} />
-
-          <CollectionRow
-            label={t(
-              "manager.udhari",
-            )}
-            value={formatMoney(
-              shift.totalUdhariPaise,
-            )}
-          />
-
-          <CollectionRow
-            label={t(
-              "manager.totalCollected",
-            )}
-            value={formatMoney(
-              collectionTotal,
-            )}
-            strong
-          />
-        </div>
-      </section>
+      <CollectionCard
+        title={t("manager.collections", { defaultValue: "Collections" })}
+        totalCashPaise={shift.totalCashPaise}
+        totalUpiPaise={shift.totalUpiPaise}
+        totalCardPaise={shift.totalCardPaise}
+        totalUdhariPaise={shift.totalUdhariPaise}
+        totalCollectedPaise={collectionTotal}
+        onCashClick={() => setShowCashModal(true)}
+        onUpiClick={() => setShowUpiModal(true)}
+        onCardClick={() => setShowCardModal(true)}
+        onUdhariClick={() => setShowUdhariModal(true)}
+      />
 
       {/* Reconciliation */}
-      <section className="rounded-[22px] bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
-        <div className="flex items-center justify-between">
-          <SectionTitle
-            title={t(
-              "manager.reconciliation",
-            )}
-          />
-
+      <section className="rounded-[20px] bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[15px] font-black tracking-tight text-slate-900">
+            {t("manager.reconciliation", "Reconciliation")}
+          </h2>
           <span
-            className={`
-              rounded-full
-              px-2
-              py-1
-              text-[8px]
-              font-bold
-              ${
-                shift.reconciliationStatus ===
-                "MATCHED"
-                  ? "bg-emerald-50 text-bpcl-emerald"
-                  : shift.reconciliationStatus === "SHORT"
-                    ? "bg-red-50 text-red-600"
-                  : "bg-amber-50 text-amber-600"
-              }
-            `}
+            className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
+              shift.reconciliationStatus === "MATCHED"
+                ? "bg-emerald-100 text-emerald-700"
+                : shift.reconciliationStatus === "SHORT"
+                ? "bg-rose-100 text-rose-600"
+                : shift.reconciliationStatus === "EXCESS"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-amber-100 text-amber-700"
+            }`}
           >
             {t(`manager.reconciliationStatus.${String(shift.reconciliationStatus || "PENDING").toLowerCase()}`)}
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Metric
-            label={t(
-              "manager.expectedSale",
-            )}
-            value={formatMoney(
-              shift.expectedTotalSalePaise,
-            )}
-          />
-
-          <Metric
-            label={t(
-              "manager.totalCollected",
-            )}
-            value={formatMoney(
-              collectionTotal,
-            )}
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-[14px] bg-slate-50/70 border border-slate-100/50 p-3.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+              {t("manager.expectedSale", "Expected Sale")}
+            </p>
+            <p className="text-[14px] font-black text-slate-900">
+              {formatMoney(shift.expectedTotalSalePaise)}
+            </p>
+          </div>
+          <div className="rounded-[14px] bg-slate-50/70 border border-slate-100/50 p-3.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+              {t("manager.totalCollected", "Total Collected")}
+            </p>
+            <p className="text-[14px] font-black text-slate-900">
+              {formatMoney(collectionTotal)}
+            </p>
+          </div>
         </div>
 
-        <div className="mt-2 flex items-center justify-between rounded-[13px] bg-slate-50 px-3 py-2.5">
-          <span className="text-[9px] font-medium text-slate-500">
-            {t(
-              "manager.difference",
-            )}
+        <div className="mt-3 flex items-center justify-between rounded-[14px] bg-slate-50/70 border border-slate-100/50 px-4 py-3">
+          <span className="text-[11px] font-bold text-slate-600">
+            {t("manager.difference", "Difference")}
           </span>
-
-          <span
-            className={`text-[12px] font-bold ${differenceClass}`}
-          >
-            {difference > 0
-              ? "+"
-              : ""}
-            {formatMoney(
-              difference,
-            )}
+          <span className={`text-[14px] font-black ${differenceClass}`}>
+            {difference > 0 ? "+" : ""}
+            {formatMoney(difference)}
           </span>
         </div>
       </section>
 
       {/* Expenses */}
-      <section className="rounded-[22px] bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
-        <SectionTitle
-          title={t(
-            "manager.expenses",
-          )}
-        />
+      <section className="rounded-[20px] bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-4">
+        <h2 className="text-[15px] font-black tracking-tight text-slate-900 mb-4">
+          {t("manager.expenses", "Expenses")}
+        </h2>
 
-        {(shift.expenses || [])
-          .length === 0 ? (
-          <p className="mt-3 text-[10px] text-slate-400">
-            {t(
-              "manager.noExpenses",
-            )}
+        {(shift.expenses || []).length === 0 ? (
+          <p className="text-[12px] font-medium text-slate-400 italic">
+            {t("manager.noExpenses", "No expenses recorded")}
           </p>
         ) : (
-          <div className="mt-3 space-y-2">
-            {shift.expenses.map(
-              (expense) => (
-                <CollectionRow
-                  key={
-                    expense._id
-                  }
-                  label={
-                    expense.reason
-                  }
-                  value={formatMoney(
-                    expense.amountPaise,
-                  )}
-                />
-              ),
-            )}
-
-            <CollectionRow
-              label={t(
-                "manager.total",
-              )}
-              value={formatMoney(
-                expenseTotal,
-              )}
-              strong
-            />
+          <div className="space-y-2.5">
+            {shift.expenses.map((expense) => (
+              <SummaryRow
+                key={expense._id}
+                label={expense.reason}
+                value={formatMoney(expense.amountPaise)}
+              />
+            ))}
+            <div className="pt-2 border-t border-slate-100">
+              <SummaryRow
+                label={t("manager.total", "Total")}
+                value={formatMoney(expenseTotal)}
+                strong
+                bg="bg-transparent border-0 px-0 py-1 hover:bg-transparent"
+              />
+            </div>
           </div>
         )}
       </section>
 
       {/* Udhari transactions */}
-      <section className="rounded-[22px] bg-white p-4 shadow-[0_7px_22px_rgba(15,23,42,0.06)]">
-        <SectionTitle
-          title={t(
-            "manager.udhariTransactions",
-          )}
-        />
+      <section className="rounded-[20px] bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 mt-4 mb-8">
+        <h2 className="text-[15px] font-black tracking-tight text-slate-900 mb-4">
+          {t("manager.udhariTransactions", "Udhari Transactions")}
+        </h2>
 
-        {(shift.udhariTransactions ||
-          []).length === 0 ? (
-          <p className="mt-3 text-[10px] text-slate-400">
-            {t(
-              "manager.noUdhariTransactions",
-            )}
+        {(shift.udhariTransactions || []).length === 0 ? (
+          <p className="text-[12px] font-medium text-slate-400 italic">
+            {t("manager.noUdhariTransactions", "No udhari entries")}
           </p>
         ) : (
-          <div className="mt-3 space-y-2">
-            {shift.udhariTransactions.map(
-              (transaction) => (
-                <div
-                  key={
-                    transaction._id
-                  }
-                  className="rounded-[14px] border border-slate-100 p-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-bold text-slate-800">
-                      {transaction
-                        .customerId
-                        ?.name ||
-                        "—"}
-                    </p>
-
-                    <p className="text-[11px] font-bold text-slate-900">
-                      {formatMoney(
-                        transaction.amountPaise,
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="mt-1 flex items-center justify-between">
-                    <p className="text-[8px] text-slate-400">
-                      {transaction
-                        .vehicleNumber ||
-                        "—"}
-                    </p>
-
-                    <p className="text-[8px] text-slate-400">
-                      {
-                        transaction.fuelType
-                      }{" "}
-                      •{" "}
-                      {Number(
-                        transaction.litres ||
-                          0,
-                      ).toFixed(2)}{" "}
-                      L
-                    </p>
-                  </div>
-                  <p className="mt-1 text-[8px] text-slate-400">
-                    {formatDate(transaction.createdAt)} · {formatTime(transaction.createdAt)}
+          <div className="space-y-2.5">
+            {shift.udhariTransactions.map((transaction) => (
+              <div
+                key={transaction._id}
+                className="rounded-[14px] bg-slate-50/70 border border-slate-100/50 p-4 transition-all hover:bg-slate-50 hover:shadow-sm"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[13px] font-bold text-slate-800">
+                    {transaction.customerId?.name || "—"}
+                  </p>
+                  <p className="text-[13px] font-black text-slate-900">
+                    {formatMoney(transaction.amountPaise)}
                   </p>
                 </div>
-              ),
-            )}
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">
+                    {transaction.vehicleNumber || "—"}
+                  </p>
+                  <p className="text-[10px] font-bold text-slate-500">
+                    {transaction.fuelType} • {Number(transaction.litres || 0).toFixed(2)} L
+                  </p>
+                </div>
+                <p className="text-[9px] font-medium text-slate-400">
+                  {formatDate(transaction.createdAt)} · {formatTime(transaction.createdAt)}
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </section>
+
+      {/* Modals */}
+      {showCashModal && (
+        <CashBreakdownModal
+          cashCollections={shift.cashCollections}
+          coinsPaise={shift.coinsPaise}
+          totalCashPaise={shift.totalCashPaise}
+          onClose={() => setShowCashModal(false)}
+        />
+      )}
+      {showUpiModal && (
+        <UpiBreakdownModal
+          upiCollection={shift.upiCollection}
+          totalUpiPaise={shift.totalUpiPaise}
+          onClose={() => setShowUpiModal(false)}
+        />
+      )}
+      {showCardModal && (
+        <CardBreakdownModal
+          atmEntries={shift.atmEntries}
+          totalCardPaise={shift.totalCardPaise}
+          onClose={() => setShowCardModal(false)}
+        />
+      )}
+      {showUdhariModal && (
+        <UdhariBreakdownModal
+          udhariTransactions={shift.udhariTransactions}
+          totalUdhariPaise={shift.totalUdhariPaise}
+          onClose={() => setShowUdhariModal(false)}
+        />
+      )}
     </div>
   );
 };
@@ -1198,128 +1113,33 @@ const SectionTitle = ({
   </p>
 );
 
-const CollectionRow = ({
+const SummaryRow = ({
   label,
   value,
   strong = false,
+  bg = "bg-slate-50/70 border border-slate-100/50 px-3.5 py-3"
 }) => (
-  <div className="flex items-center justify-between rounded-[11px] bg-slate-50 px-3 py-2.5">
+  <div className={`flex items-center justify-between rounded-[14px] ${bg} transition-all hover:bg-slate-50`}>
     <span
-      className={`text-[9px] ${
+      className={`text-[13px] ${
         strong
-          ? "font-bold text-slate-800"
-          : "font-medium text-slate-500"
+          ? "font-black text-slate-700"
+          : "font-semibold text-slate-500"
       }`}
     >
       {label}
     </span>
 
     <span
-      className={`text-[10px] ${
+      className={`text-[13px] ${
         strong
-          ? "font-bold text-slate-900"
-          : "font-semibold text-slate-700"
+          ? "font-black text-slate-900"
+          : "font-bold text-slate-700"
       }`}
     >
       {value}
     </span>
   </div>
 );
-
-const ExpandableCashRow = ({ shift, t }) => {
-  const [expanded, setExpanded] = useState(false);
-  const collections = shift.cashCollections || [];
-  
-  return (
-    <div className="overflow-hidden rounded-[11px] bg-slate-50 transition-colors">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center justify-between px-3 py-2.5 active:bg-slate-100"
-      >
-        <span className="text-[9px] font-medium text-slate-500">{t("manager.cash")}</span>
-        <div className="flex items-center gap-1.5">
-           <span className="text-[10px] font-semibold text-slate-700">{formatMoney(shift.totalCashPaise)}</span>
-           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className={`h-2.5 w-2.5 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}>
-             <path d="m5 7.5 5 5 5-5" />
-           </svg>
-        </div>
-      </button>
-      {expanded && (
-        <div className="px-3 pb-2.5 pt-0">
-           <div className="mt-1 space-y-1.5 border-t border-slate-200/60 pt-2">
-             {collections.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-[8px] font-medium text-slate-500">
-                   <span>₹{item.denomination} × {item.count}</span>
-                   <span>{formatMoney((item.denomination * item.count) * 100)}</span>
-                </div>
-             ))}
-             {(shift.coinsPaise || 0) > 0 && (
-                <div className="flex justify-between text-[8px] font-medium text-slate-500">
-                   <span>{t("manager.coins")}</span>
-                   <span>{formatMoney(shift.coinsPaise)}</span>
-                </div>
-             )}
-             <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[8.5px] font-bold text-slate-700">
-                <span>{t("manager.totalCash") || "Total Cash"}</span>
-                <span>{formatMoney(shift.totalCashPaise)}</span>
-             </div>
-           </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const ExpandableCardRow = ({ shift, t }) => {
-  const [expanded, setExpanded] = useState(false);
-  const entries = shift.atmEntries || [];
-  
-  if (entries.length === 0 && (!shift.totalCardPaise || shift.totalCardPaise === 0)) {
-     return (
-        <CollectionRow
-            label={t("manager.card")}
-            value={formatMoney(shift.totalCardPaise)}
-        />
-     );
-  }
-
-  return (
-    <div className="overflow-hidden rounded-[11px] bg-slate-50 transition-colors">
-      <button
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center justify-between px-3 py-2.5 active:bg-slate-100"
-      >
-        <span className="text-[9px] font-medium text-slate-500">{t("manager.card")}</span>
-        <div className="flex items-center gap-1.5">
-           <span className="text-[10px] font-semibold text-slate-700">{formatMoney(shift.totalCardPaise)}</span>
-           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" className={`h-2.5 w-2.5 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`}>
-             <path d="m5 7.5 5 5 5-5" />
-           </svg>
-        </div>
-      </button>
-      {expanded && (
-        <div className="px-3 pb-2.5 pt-0">
-           <div className="mt-1 space-y-1.5 border-t border-slate-200/60 pt-2">
-             {entries.map((entry, idx) => (
-                <div key={`${entry.time}-${idx}`} className="flex justify-between text-[8px] font-medium text-slate-500">
-                   <span>{entry.time}</span>
-                   <span>{formatMoney(entry.amountPaise)}</span>
-                </div>
-             ))}
-             {entries.length === 0 && (
-                <div className="text-[8px] italic text-slate-400">No individual entries</div>
-             )}
-             <div className="flex justify-between border-t border-slate-200/60 pt-1.5 text-[8.5px] font-bold text-slate-700">
-                <span>{t("manager.total") || "Total"}</span>
-                <span>{formatMoney(shift.totalCardPaise)}</span>
-             </div>
-           </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default Operations;

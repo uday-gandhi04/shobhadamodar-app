@@ -101,8 +101,17 @@ const PastShiftsView = ({ mpds, t, onOpenShift }) => {
             <p className="text-[12px] font-medium text-slate-500">No past shifts found.</p>
           </div>
         ) : (
-          shifts.map((shift) => (
-            <div
+          shifts.map((shift) => {
+            const difference = Number(shift.differencePaise || 0);
+            const differenceTextColor =
+              difference === 0
+                ? "text-emerald-600"
+                : difference < 0
+                  ? "text-red-600"
+                  : "text-amber-600";
+
+            return (
+              <div
               key={shift._id}
               onClick={() => onOpenShift(shift._id)}
               className="group cursor-pointer rounded-[20px] border border-slate-100 bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.03)] hover:border-emerald-200 hover:shadow-[0_8px_30px_rgba(4,120,87,0.08)] transition-all duration-300"
@@ -130,22 +139,29 @@ const PastShiftsView = ({ mpds, t, onOpenShift }) => {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-3 divide-x divide-slate-200/60 rounded-[14px] bg-slate-50/80 p-3 border border-slate-100">
-                <div className="flex flex-col items-center justify-center">
+              <div className="mt-4 grid grid-cols-4 divide-x divide-slate-200/60 rounded-[14px] bg-slate-50/80 p-3 border border-slate-100">
+                <div className="flex flex-col items-center justify-center px-1">
                   <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Petrol</p>
                   <p className="text-[13px] font-black text-slate-700">{shift.totalLitresPetrol.toFixed(2)} <span className="text-[10px] font-bold text-slate-400">L</span></p>
                 </div>
-                <div className="flex flex-col items-center justify-center">
+                <div className="flex flex-col items-center justify-center px-1">
                   <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Diesel</p>
                   <p className="text-[13px] font-black text-slate-700">{shift.totalLitresDiesel.toFixed(2)} <span className="text-[10px] font-bold text-slate-400">L</span></p>
                 </div>
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Collected</p>
-                  <p className="text-[14px] font-black text-emerald-600">{formatMoney(shift.totalCollectedPaise)}</p>
+                <div className="flex flex-col items-center justify-center px-1">
+                  <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Sale</p>
+                  <p className="text-[14px] font-black text-emerald-600">{formatMoney(shift.expectedTotalSalePaise)}</p>
+                </div>
+                <div className="flex flex-col items-center justify-center px-1">
+                  <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">Difference</p>
+                  <p className={`text-[12px] font-black ${differenceTextColor}`}>
+                    {difference > 0 ? "+" : ""}{formatMoney(difference)}
+                  </p>
                 </div>
               </div>
             </div>
-          ))
+            );
+          })
         )}
 
         {loading && (
