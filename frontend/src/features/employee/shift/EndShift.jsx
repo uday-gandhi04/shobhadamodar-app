@@ -13,7 +13,6 @@ import NozzleReadingRow from "../../../components/business/nozzle/NozzleReadingR
 import EmployeeShiftHeader from "../../../components/business/workflow/EmployeeShiftHeader";
 import WorkflowStatusBar from "../../../components/business/workflow/WorkflowStatusBar";
 import {
-  formatReading,
   getFuelType,
   getNozzleNumber,
 } from "../../../components/business/nozzle/nozzleUtils";
@@ -274,10 +273,6 @@ const EndShift = () => {
     };
   });
 
-  const totalLitres = nozzleReadings.reduce(
-    (total, reading) => total + (reading.litresDispensed || 0),
-    0,
-  );
 
   const totalLitresPetrol = nozzleReadings.reduce(
     (total, reading) =>

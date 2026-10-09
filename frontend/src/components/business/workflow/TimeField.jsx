@@ -62,6 +62,7 @@ const TimeField = ({ value, onChange }) => {
   useEffect(() => {
     if (!/^\d{2}:\d{2}$/.test(value || "")) {
       if (!value) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setHour("");
         setMinute("");
         setPeriod("AM");
@@ -121,7 +122,7 @@ const TimeField = ({ value, onChange }) => {
     }
   };
 
-  const normalizeOnBlur = (field) => {
+  const normalizeOnBlur = () => {
     let nextHour = hour;
     let nextMinute = minute;
 

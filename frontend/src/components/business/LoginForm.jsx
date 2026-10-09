@@ -50,7 +50,7 @@ const EyeIcon = ({ visible }) => (
   </svg>
 );
 
-const LoginForm = ({ role }) => {
+const LoginForm = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 

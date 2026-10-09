@@ -84,13 +84,7 @@ const densityFormFor = (records, product) => {
   };
 };
 
-const formatMoney = (paise) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(paise || 0) / 100);
+
 
 const formatLitres = (litres) =>
   `${Number(litres || 0).toLocaleString("en-IN", {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import ManagerLayout from "./ManagerLayout";
@@ -39,12 +39,6 @@ const formatBusinessDate = (businessDate, options) => {
   }).format(date);
 };
 
-const formatTime = (date) =>
-  new Intl.DateTimeFormat("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(date));
 
 const formatMoney = (paise) =>
   new Intl.NumberFormat("en-IN", {
@@ -84,12 +78,10 @@ const getDateRange = (period, businessDate) => {
   };
 };
 
-const DENOMINATIONS = [500, 200, 100, 50, 20, 10];
 
 const Accounting = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
   const [period, setPeriod] = useState(
     () => location.state?.accountingPeriod || "today",
   );
@@ -99,7 +91,7 @@ const Accounting = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expandedCollection, setExpandedCollection] = useState(null);
+
   const [showCashModal, setShowCashModal] = useState(false);
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
@@ -139,22 +131,6 @@ const Accounting = () => {
   const dateRange = getDateRange(period, businessDate);
   const nextDisabled = dateRange.end >= today;
 
-  const navigateToOperationsShift = (shiftId) => {
-    navigate("/manager/operations", {
-      state: {
-        accountingShiftId: shiftId,
-        accountingReturn: {
-          accountingPeriod: period,
-          businessDate,
-        },
-      },
-    });
-  };
-
-  const openDailyAccounting = (day) => {
-    setPeriod("today");
-    setBusinessDate(day);
-  };
 
   return (
     <ManagerLayout title={t("manager.accounting", "Sales & Accounting")} showBack>

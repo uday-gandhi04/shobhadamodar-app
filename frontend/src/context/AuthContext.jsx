@@ -3,23 +3,22 @@ import { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
 import { clearShiftServiceCache } from '../services/shiftApi';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+  });
+  const [isLoading] = useState(false);
 
   // Check local storage for an existing session when the app boots
   useEffect(() => {
-    const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
-    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Session is already initialized in state synchronously
   }, []);
 
   const login = async (employeeId, password, persistSession = true) => {

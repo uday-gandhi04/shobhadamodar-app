@@ -15,7 +15,9 @@ import {
 const originals = {
   stationFindOne: Station.findOne,
   stockUpsert: DailyStock.findOneAndUpdate,
+  stockFindOne: DailyStock.findOne,
   densityUpsert: DailyDensity.findOneAndUpdate,
+  densityFindOne: DailyDensity.findOne,
   receiptCreate: FuelReceipt.create,
   auditCreate: AuditLog.create,
 };
@@ -32,11 +34,15 @@ const response = () => ({
 const setup = (callback) => {
   let auditEntry;
   Station.findOne = () => ({ lean: async () => ({ _id: stationId }) });
+  DailyStock.findOne = () => ({ lean: async () => null });
+  DailyDensity.findOne = () => ({ lean: async () => null });
   AuditLog.create = async (entry) => { auditEntry = entry; };
   const restore = () => {
     Station.findOne = originals.stationFindOne;
     DailyStock.findOneAndUpdate = originals.stockUpsert;
+    DailyStock.findOne = originals.stockFindOne;
     DailyDensity.findOneAndUpdate = originals.densityUpsert;
+    DailyDensity.findOne = originals.densityFindOne;
     FuelReceipt.create = originals.receiptCreate;
     AuditLog.create = originals.auditCreate;
   };
@@ -58,7 +64,7 @@ test("manager stock upsert produces an audit with business date and product", as
       );
       assert.equal(res.body.data._id, entityId);
       assert.equal(getAudit().action, "STOCK_UPSERTED");
-      assert.deepEqual(getAudit().metadata, { businessDate: "2026-10-05", product: "PETROL" });
+      assert.deepEqual(getAudit().metadata, { businessDate: "2026-10-05", product: "PETROL", isUpdate: false });
       assert.equal(getAudit().actorId, managerId);
     } finally {
       restore();
@@ -80,7 +86,7 @@ test("manager density upsert produces an audit with business date and product", 
         assert.fail,
       );
       assert.equal(getAudit().action, "DENSITY_UPSERTED");
-      assert.deepEqual(getAudit().metadata, { businessDate: "2026-10-05", product: "DIESEL" });
+      assert.deepEqual(getAudit().metadata, { businessDate: "2026-10-05", product: "DIESEL", isUpdate: false });
     } finally {
       restore();
     }
@@ -112,6 +118,8 @@ test("manager receipt creation audits safe receipt context", async () => {
         businessDate: "2026-10-05",
         product: "PETROL",
         invoiceNumber: "INV-1",
+        quantityLitres: 10,
+        receiptId: entityId,
       });
     } finally {
       restore();
@@ -122,6 +130,7 @@ test("manager receipt creation audits safe receipt context", async () => {
 test("stock update succeeds when audit persistence fails", async () => {
   const originalConsoleError = console.error;
   Station.findOne = () => ({ lean: async () => ({ _id: stationId }) });
+  DailyStock.findOne = () => ({ lean: async () => null });
   DailyStock.findOneAndUpdate = async () => ({ _id: entityId });
   AuditLog.create = async () => { throw new Error("audit store unavailable"); };
   console.error = () => {};

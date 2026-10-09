@@ -380,11 +380,11 @@ test("manager employee profile edit generates a profile audit record", async () 
     accountStatus: "ACTIVE",
     createdAt: new Date("2025-01-01T00:00:00.000Z"),
   };
-  User.findOneAndUpdate = (filter) => {
+  User.findOne = async (filter) => {
     updateFilter = filter;
     return {
-      select() { return this; },
-      lean: async () => employee,
+      ...employee,
+      save: async function() { employee.name = this.name; return this; }
     };
   };
   AuditLog.create = async (entry) => { auditEntry = entry; };
@@ -405,7 +405,7 @@ test("manager employee profile edit generates a profile audit record", async () 
     assert.equal(result().statusCode, 200);
     assert.equal(auditEntry.actorId, manager._id);
     assert.equal(auditEntry.action, "EMPLOYEE_PROFILE_UPDATED");
-    assert.deepEqual(auditEntry.metadata, { employeeId: "EMP001" });
+    assert.deepEqual(auditEntry.metadata, { employeeId: "EMP001", oldName: "Updated Employee", newName: "Updated Employee" });
   } finally {
     restoreModels();
   }

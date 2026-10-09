@@ -202,7 +202,7 @@ export const updateManagerEmployee = async (req, res, next) => {
       });
     }
 
-    const employee = await User.findOne({ _id: req.params.id, role: { $in: ["EMPLOYEE", "MANAGER"] } });
+    const employee = await User.findOne({ _id: req.params.id, role: "EMPLOYEE" });
     
     if (!employee) {
       return res.status(404).json({
@@ -251,7 +251,7 @@ export const updateManagerEmployeeStatus = async (req, res, next) => {
 
     const employee = await User.findOne({
       _id: req.params.id,
-      role: { $in: ["EMPLOYEE", "MANAGER"] },
+      role: "EMPLOYEE",
     }).select(employeeProjection);
     if (!employee) {
       return res.status(404).json({
@@ -329,7 +329,7 @@ export const resetManagerEmployeePassword = async (req, res, next) => {
   try {
     const employee = await User.findOne({
       _id: req.params.id,
-      role: { $in: ["EMPLOYEE", "MANAGER"] },
+      role: "EMPLOYEE",
     });
     if (!employee) {
       return res.status(404).json({

@@ -32,7 +32,7 @@ const formatTime = (date) => {
   });
 };
 
-const PastShiftsView = ({ mpds, t, onOpenShift }) => {
+const PastShiftsView = ({ mpds, onOpenShift }) => {
   const [activeMpdId, setActiveMpdId] = useState(mpds.length > 0 ? mpds[0]._id : null);
   const [shifts, setShifts] = useState([]);
   const [page, setPage] = useState(1);

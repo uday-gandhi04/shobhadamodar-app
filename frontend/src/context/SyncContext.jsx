@@ -4,6 +4,7 @@ import { AuthContext } from './AuthContext';
 import api from '../services/api';
 import { dbService } from '../database/sqlite';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const SyncContext = createContext();
 
 export const SyncProvider = ({ children }) => {

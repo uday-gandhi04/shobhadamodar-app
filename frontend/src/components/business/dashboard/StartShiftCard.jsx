@@ -1,12 +1,9 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import { startShift } from '../../../services/shiftApi';
 import { getBusinessDate } from '../../../utils/businessDate';
 
 const StartShiftCard = ({ mpds, onStarted }) => {
-  const { t } = useTranslation();
-
   const [selectedMpd, setSelectedMpd] = useState(
     mpds?.[0]?._id ||
       mpds?.[0]?.mpd_id ||

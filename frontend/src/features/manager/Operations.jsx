@@ -6,7 +6,6 @@ import ManagerLayout from "./ManagerLayout";
 import {
   getManagerOperations,
   getManagerShiftDetail,
-  getManagerMpdShifts,
 } from "../../services/managerOperationsApi";
 import { getBusinessDate } from "../../utils/businessDate";
 import PastShiftsView from "./PastShiftsView";
@@ -396,7 +395,7 @@ const MpdShiftList = ({ shifts, t, onOpenShift }) => (
 
 
 
-const MpdCard = ({ mpd, lastShift, t, onViewTodayHistory }) => (
+const MpdCard = ({ mpd, onViewTodayHistory }) => (
   <section className="!rounded-[24px] !border !border-slate-100/60 !bg-white !p-4 !shadow-[0_4px_20px_rgba(15,23,42,0.04)] !mb-4">
     {/* TOP ROW: MPD NAME + ACTIVE BADGE */}
     <div className="flex items-center justify-between">

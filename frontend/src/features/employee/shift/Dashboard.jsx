@@ -36,27 +36,25 @@ const Dashboard = () => {
   const language = i18n.language?.split('-')[0] || 'en';
   const businessDate = getBusinessDate();
 
-  const loadShift = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await getCurrentShift();
-      if (!response.data) {
-        navigate('/select-mpd', { replace: true });
-        return;
-      }
-      const activeMpdId = response.data.mpdId?._id || response.data.mpdId;
-      navigate(`/shift/${activeMpdId}`, { replace: true });
-    } catch (err) {
-      setError(err.message || 'Unable to load your shift.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadShift = async () => {
+      try {
+        setError('');
+        const response = await getCurrentShift();
+        if (!response.data) {
+          navigate('/select-mpd', { replace: true });
+          return;
+        }
+        const activeMpdId = response.data.mpdId?._id || response.data.mpdId;
+        navigate(`/shift/${activeMpdId}`, { replace: true });
+      } catch (err) {
+        setError(err.message || 'Unable to load your shift.');
+      } finally {
+        setLoading(false);
+      }
+    };
     loadShift();
-  }, []);
+  }, [navigate]);
 
   const mpdId = currentShift?.mpdId?._id || currentShift?.mpdId;
 

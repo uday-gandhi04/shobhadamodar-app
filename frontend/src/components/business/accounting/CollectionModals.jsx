@@ -1,4 +1,3 @@
-import React from 'react';
 const formatMoney = (paise) => {
   const amount = Number(paise || 0) / 100;
   const sign = amount < 0 ? "-" : "";

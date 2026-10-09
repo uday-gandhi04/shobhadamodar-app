@@ -4,6 +4,7 @@ import test from "node:test";
 import Expense from "../models/Expense.js";
 import Mpd from "../models/Mpd.js";
 import Shift from "../models/Shift.js";
+import UdhariTransaction from "../models/UdhariTransaction.js";
 import { getManagerAccounting } from "./manager.controller.js";
 
 const mpdOneId = "111111111111111111111111";
@@ -56,6 +57,7 @@ const originalMethods = {
   shiftFind: Shift.find,
   expenseAggregate: Expense.aggregate,
   mpdFind: Mpd.find,
+  udhariFind: UdhariTransaction.find,
 };
 
 const withMocks = async (query) => {
@@ -132,6 +134,11 @@ const withMocks = async (query) => {
       };
     },
   });
+  UdhariTransaction.find = () => ({
+    populate() { return this; },
+    sort() { return this; },
+    lean: async () => []
+  });
 
   try {
     let statusCode;
@@ -159,6 +166,7 @@ const withMocks = async (query) => {
     Shift.find = originalMethods.shiftFind;
     Expense.aggregate = originalMethods.expenseAggregate;
     Mpd.find = originalMethods.mpdFind;
+    UdhariTransaction.find = originalMethods.udhariFind;
   }
 };
 
