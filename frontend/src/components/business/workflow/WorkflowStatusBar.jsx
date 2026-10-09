@@ -55,25 +55,25 @@ const WorkflowStatusBar = ({
   };
 
   const handleStageClick = async (stage, index) => {
-  if (index === currentIndex) return;
-  if (!navigationUnlocked) return;
+    if (index === currentIndex) return;
+    if (stage === "review" && !navigationUnlocked) return;
 
-  const route = getStageRoute(stage);
-  if (!route) return;
+    const route = getStageRoute(stage);
+    if (!route) return;
 
-  try {
-    if (onBeforeNavigate) {
-      await onBeforeNavigate();
+    try {
+      if (onBeforeNavigate) {
+        await onBeforeNavigate();
+      }
+
+      navigate(route);
+    } catch (error) {
+      console.error(
+        "[Workflow Navigation] Save failed:",
+        error,
+      );
     }
-
-    navigate(route);
-  } catch (error) {
-    console.error(
-      "[Workflow Navigation] Save failed:",
-      error,
-    );
-  }
-};
+  };
 
   return (
     <div className="mt-5 rounded-[18px] bg-white p-3 shadow-[0_4px_16px_rgba(15,23,42,0.05)]">
@@ -87,7 +87,7 @@ const WorkflowStatusBar = ({
               index < currentIndex;
 
             const isClickable =
-              navigationUnlocked &&
+              (navigationUnlocked || stage !== "review") &&
               !isCurrent;
 
             return (

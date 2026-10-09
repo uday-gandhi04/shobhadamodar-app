@@ -11,6 +11,7 @@ import WorkflowStatusBar from "../../../components/business/workflow/WorkflowSta
 import {
   readShiftWorkflowState,
   saveShiftWorkflowState,
+  hasValidNozzleReadings,
 } from "../../../utils/shiftWorkflow";
 
 import { getCurrentShift } from "../../../services/shiftApi";
@@ -244,7 +245,7 @@ const Expenses = () => {
           {/* STATUS */}
           <WorkflowStatusBar
             currentStage="expense"
-            navigationUnlocked={true}
+            navigationUnlocked={hasValidNozzleReadings(shift)}
             mpdId={
               shift?.mpdId?._id ||
               shift?.mpdId
@@ -484,6 +485,10 @@ const Expenses = () => {
             <button
               type="button"
               onClick={() => {
+                if (!hasValidNozzleReadings(shift)) {
+                  setError(t("error.missingNozzleReadings", "Please complete nozzle readings before reviewing."));
+                  return;
+                }
                 saveShiftWorkflowState(
                   workflowState,
                 );

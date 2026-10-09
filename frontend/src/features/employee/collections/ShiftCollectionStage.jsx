@@ -17,6 +17,7 @@ import WorkflowStatusBar from "../../../components/business/workflow/WorkflowSta
 import {
   readShiftWorkflowState,
   saveShiftWorkflowState,
+  hasValidNozzleReadings,
 } from "../../../utils/shiftWorkflow";
 
 const DENOMINATIONS = [500, 200, 100, 50, 20, 10];
@@ -378,7 +379,7 @@ const ShiftCollectionStage = ({ stage }) => {
           />
           <WorkflowStatusBar
             currentStage={stage}
-            navigationUnlocked={true}
+            navigationUnlocked={hasValidNozzleReadings(shift)}
             mpdId={shift?.mpdId?._id || shift?.mpdId}
             onBeforeNavigate={saveProgress}
           />

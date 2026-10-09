@@ -428,23 +428,23 @@ const EndShift = () => {
             <div className="mx-auto max-w-[480px]">
               <button
                 type="button"
-                disabled={!canContinue}
+                disabled={false}
                 onClick={async () => {
                   const finalReadingsPayload = readings.map((reading) => {
                     const nozzleId =
                       reading.nozzleId || reading.nozzle || reading._id;
 
-                    const finalValue =
-                      finalReadings[nozzleId] ??
-                      formatReading(
-                        Number(reading.openingReading ?? reading.opening ?? 0),
-                      );
+                    const finalValue = finalReadings[nozzleId];
+
+                    if (finalValue === undefined || finalValue === "") {
+                      return null;
+                    }
 
                     return {
                       nozzleId,
                       closingReading: Number(finalValue),
                     };
-                  });
+                  }).filter(Boolean);
 
                   (async () => {
                     const workflowState = {
@@ -453,7 +453,9 @@ const EndShift = () => {
                     };
                     try {
                       setError("");
-                      await updateReadings(shift._id, finalReadingsPayload);
+                      if (finalReadingsPayload.length > 0) {
+                        await updateReadings(shift._id, finalReadingsPayload);
+                      }
                       saveShiftWorkflowState(workflowState);
                       navigate("/shift/cash", { state: workflowState });
                     } catch (err) {
