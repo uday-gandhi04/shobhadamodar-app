@@ -24,3 +24,10 @@ export const getManagerShiftDetail = async (
 
   return response.data;
 };
+export const getManagerMpdShifts = async (mpdId, page = 1, limit = 10) => {
+  const response = await api.get(`/manager/operations/mpds/${mpdId}/shifts`, {
+    params: { page, limit }
+  });
+  return response.data;
+};
+

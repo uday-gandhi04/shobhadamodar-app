@@ -1037,3 +1037,51 @@ export const getManagerShiftDetail = async (
     next(error);
   }
 };
+
+export const getManagerMpdShifts = async (req, res, next) => {
+  try {
+    const mpdId = req.params.mpdId;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const [shifts, totalCount] = await Promise.all([
+      Shift.find({ mpdId, status: { $ne: 'IN_PROGRESS' } })
+        .populate('employeeId', 'name')
+        .sort({ businessDate: -1, startedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Shift.countDocuments({ mpdId, status: { $ne: 'IN_PROGRESS' } })
+    ]);
+
+    const formattedShifts = shifts.map(shift => ({
+      _id: shift._id,
+      businessDate: shift.businessDate,
+      startedAt: shift.startedAt,
+      endedAt: shift.endedAt,
+      status: shift.status,
+      employeeName: shift.employeeId?.name || 'Unknown',
+      totalLitresPetrol: Number(shift.totalLitresPetrol || 0),
+      totalLitresDiesel: Number(shift.totalLitresDiesel || 0),
+      totalCollectedPaise: Number(shift.totalCollectedPaise || 0),
+      expectedTotalSalePaise: Number(shift.expectedTotalSalePaise || 0)
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        shifts: formattedShifts,
+        pagination: {
+          total: totalCount,
+          page,
+          limit,
+          totalPages: Math.ceil(totalCount / limit)
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

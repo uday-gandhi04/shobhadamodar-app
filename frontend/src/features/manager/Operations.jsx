@@ -6,8 +6,10 @@ import ManagerLayout from "./ManagerLayout";
 import {
   getManagerOperations,
   getManagerShiftDetail,
+  getManagerMpdShifts,
 } from "../../services/managerOperationsApi";
 import { getBusinessDate } from "../../utils/businessDate";
+import PastShiftsView from "./PastShiftsView";
 
 const formatMoney = (paise) => {
   const amount = Number(paise || 0) / 100;
@@ -346,10 +348,8 @@ const Operations = () => {
           )}
 
           {!loading && !error && activeTab === "TODAY" && !historyMpdId && (
-            <TodayShiftGroups
+            <PastShiftsView
               mpds={mpds}
-              shifts={shifts}
-              businessDate={businessDate}
               t={t}
               onOpenShift={openShiftDetail}
             />
@@ -378,51 +378,7 @@ const MpdShiftList = ({ shifts, t, onOpenShift }) => (
   </section>
 );
 
-const TodayShiftGroups = ({ mpds, shifts, businessDate, t, onOpenShift }) => (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between px-1">
-      <p className="text-[12px] font-bold text-slate-900">
-        {t("manager.todaysShifts")}
-      </p>
-      <span className="text-[10px] font-semibold text-slate-400">
-        {formatDate(businessDate)}
-      </span>
-    </div>
-    {mpds.map((mpd) => {
-      const mpdShifts = sortShiftsChronologically(
-        shifts.filter((shift) => String(shift.mpd?._id) === String(mpd._id)),
-      );
 
-      return (
-        <section key={mpd._id}>
-          <div className="mb-2 flex items-center justify-between px-1">
-            <p className="text-[12px] font-bold text-slate-900">
-              {mpd.mpdNumber}
-            </p>
-            <span className="text-[9px] font-semibold text-slate-400">
-              {mpd.status === "ACTIVE" ? t("manager.live") : t("manager.free")}
-            </span>
-          </div>
-          {mpdShifts.length === 0 ? (
-            <EmptyState text={t("manager.noShiftsForDate")} />
-          ) : (
-            <div className="space-y-2">
-              {mpdShifts.map((shift) => (
-                <ShiftCard
-                  key={shift._id}
-                  shift={shift}
-                  active={shift.status === "IN_PROGRESS"}
-                  t={t}
-                  onClick={() => onOpenShift(shift._id)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      );
-    })}
-  </div>
-);
 
 const MpdCard = ({ mpd, lastShift, t, onViewTodayHistory }) => (
   <section className="!rounded-[24px] !border !border-slate-100/60 !bg-white !p-4 !shadow-[0_4px_20px_rgba(15,23,42,0.04)] !mb-4">
@@ -563,42 +519,7 @@ const MpdCard = ({ mpd, lastShift, t, onViewTodayHistory }) => (
             <path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
           <span className="!text-[12px] !font-bold !text-slate-800">
-            View Nozzle Details
-          </span>
-        </div>
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="!h-4 !w-4 !text-slate-400"
-        >
-          <path d="M9 18l6-6-6-6" />
-        </svg>
-      </button>
-
-      <button
-        type="button"
-        onClick={onViewTodayHistory}
-        className="flex w-full items-center justify-between !rounded-[12px] !border !border-slate-100 !bg-slate-50/50 !p-3 !text-left"
-      >
-        <div className="flex items-center gap-3">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="!h-4 !w-4 !text-slate-500"
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
-          <span className="!text-[12px] !font-bold !text-slate-800">
-            View Live Shifts
+            View Today's Shifts
           </span>
         </div>
         <svg

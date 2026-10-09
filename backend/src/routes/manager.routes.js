@@ -4,6 +4,7 @@ import {
   getManagerAccounting,
   getManagerOperations,
   getManagerShiftDetail,
+  getManagerMpdShifts,
 } from "../controllers/manager.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { getManagerAccountingSchema } from "../validations/manager.validation.js";
@@ -94,6 +95,13 @@ router.get(
   protect,
   authorize("MANAGER"),
   getManagerOperations,
+);
+
+router.get(
+  "/operations/mpds/:mpdId/shifts",
+  protect,
+  authorize("MANAGER"),
+  getManagerMpdShifts,
 );
 
 router.get(
