@@ -6,6 +6,16 @@ import TankCalibration from "../models/TankCalibration.js";
 import Mpd from "../models/Mpd.js";
 import DailyMeterRegister from "../models/DailyMeterRegister.js";
 
+// Safe query execution helper that supports chaining in real Mongoose as well as simple mock stubs in tests
+const execQuery = (q, { sort, limit, select } = {}) => {
+  let query = q;
+  if (!query) return query;
+  if (sort && typeof query.sort === "function") query = query.sort(sort);
+  if (limit && typeof query.limit === "function") query = query.limit(limit);
+  if (select && typeof query.select === "function") query = query.select(select);
+  return typeof query.lean === "function" ? query.lean() : query;
+};
+
 // Helper to interpolate volume from calibration points (strict: no extrapolation, capacity bound)
 export const interpolateVolume = (dipCm, points, maxCapacityLitres = null) => {
   if (dipCm == null || isNaN(dipCm) || dipCm < 0) return null;
@@ -84,9 +94,17 @@ export const getProductRegisterNozzles = (product, mpds) => {
 };
 
 // Automatic Opening Totalizer carry-forward helper
-export const deriveNozzleOpeningReading = async (stationId, product, registerNozzle, businessDate) => {
+export const deriveNozzleOpeningReading = async (
+  stationId,
+  product,
+  registerNozzle,
+  businessDate,
+  context = {}
+) => {
   // 1. Check if DailyMeterRegister exists on this date with an opening reading or manual correction
-  const currentReg = await DailyMeterRegister.findOne({ stationId, product, businessDate }).lean();
+  const currentReg = context.currentReg !== undefined
+    ? context.currentReg
+    : await DailyMeterRegister.findOne({ stationId, product, businessDate }).lean();
   const currentNz = currentReg?.nozzles?.find((n) => n.registerNozzle === registerNozzle);
 
   if (currentNz?.isManualOpeningCorrection && currentNz.openingReading != null) {
@@ -110,18 +128,18 @@ export const deriveNozzleOpeningReading = async (stationId, product, registerNoz
   }
 
   // 2. Query MPD info to identify physical nozzle
-  const mpds = await Mpd.find({ stationId, isActive: true }).lean();
+  const mpds = context.mpds || (await Mpd.find({ stationId, isActive: true }).lean());
   const specs = getProductRegisterNozzles(product, mpds);
   const spec = specs.find((s) => s.registerNozzle === registerNozzle);
 
   // 3. Search backwards for latest confirmed closing totalizer (d < businessDate)
-  const prevRegs = await DailyMeterRegister.find({
-    stationId,
-    product,
-    businessDate: { $lt: businessDate },
-  })
-    .sort({ businessDate: -1 })
-    .lean();
+  const prevRegs = context.prevRegs !== undefined
+    ? context.prevRegs.filter((r) => r.product === product)
+    : await execQuery(DailyMeterRegister.find({
+        stationId,
+        product,
+        businessDate: { $lt: businessDate },
+      }), { sort: { businessDate: -1 }, limit: 35 });
 
   let histCandidate = null;
   for (const pr of prevRegs) {
@@ -136,14 +154,15 @@ export const deriveNozzleOpeningReading = async (stationId, product, registerNoz
   }
 
   let shiftCandidate = null;
+  let prevShifts = [];
   if (spec?.mpdId) {
-    const prevShifts = await Shift.find({
-      mpdId: spec.mpdId,
-      status: { $in: ["ENDED", "FORCE_CLOSED"] },
-      businessDate: { $lt: businessDate },
-    })
-      .sort({ businessDate: -1, endedAt: -1, startedAt: -1 })
-      .lean();
+    prevShifts = context.prevShifts !== undefined
+      ? context.prevShifts.filter((s) => s.mpdId?.toString() === spec.mpdId.toString())
+      : await execQuery(Shift.find({
+          mpdId: spec.mpdId,
+          status: { $in: ["ENDED", "FORCE_CLOSED"] },
+          businessDate: { $lt: businessDate },
+        }), { sort: { businessDate: -1, endedAt: -1, startedAt: -1 }, limit: 50 });
 
     for (const ps of prevShifts) {
       const r = ps.readings?.find((rd) => rd.nozzleId === spec.nozzleId && rd.fuelType === product);
@@ -159,12 +178,8 @@ export const deriveNozzleOpeningReading = async (stationId, product, registerNoz
     if (shiftCandidate.businessDate > histCandidate.businessDate) {
       confirmedCandidate = shiftCandidate;
     } else {
-      const interveningShifts = await Shift.find({
-        mpdId: spec.mpdId,
-        status: { $in: ["ENDED", "FORCE_CLOSED"] },
-        businessDate: { $gt: histCandidate.businessDate, $lt: businessDate },
-      }).sort({ businessDate: -1, endedAt: -1 }).lean();
-
+      // Find intervening shifts in-memory from prevShifts without extra DB query
+      const interveningShifts = prevShifts.filter((s) => s.businessDate > histCandidate.businessDate);
       if (interveningShifts.length > 0) {
         const lastIntShift = interveningShifts[0];
         const r = lastIntShift.readings?.find((rd) => rd.nozzleId === spec.nozzleId && rd.fuelType === product);
@@ -202,7 +217,7 @@ export const deriveNozzleOpeningReading = async (stationId, product, registerNoz
   };
 };
 
-export const deriveOpeningStock = async (stationId, product, businessDate, row = null) => {
+export const deriveOpeningStock = async (stationId, product, businessDate, row = null, context = {}) => {
   if (!row) {
     row = await DailyStock.findOne({ stationId, product, businessDate }).lean();
   }
@@ -237,14 +252,14 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
   }
 
   // 2. Look backwards for the last valid physical dip checkpoint:
-  const checkpoint = await DailyStock.findOne({
-    stationId,
-    product,
-    businessDate: { $lt: businessDate },
-    actualDipStockLitres: { $ne: null, $gt: 0 },
-  })
-    .sort({ businessDate: -1 })
-    .lean();
+  const checkpoint = context.checkpoint !== undefined
+    ? context.checkpoint
+    : await execQuery(DailyStock.findOne({
+        stationId,
+        product,
+        businessDate: { $lt: businessDate },
+        actualDipStockLitres: { $ne: null, $gt: 0 },
+      }), { sort: { businessDate: -1 } });
 
   if (!checkpoint) {
     return {
@@ -262,31 +277,48 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
   const dCp = checkpoint.businessDate;
   const vCp = checkpoint.actualDipStockLitres;
 
-  // 3. Find any intervening receipts between dCp and businessDate (dCp < d < businessDate)
-  const receiptAgg = await FuelReceipt.aggregate([
-    {
-      $match: {
-        stationId,
-        product,
-        businessDate: { $gt: dCp, $lt: businessDate },
+  // Check if dCp and businessDate have intervening dates
+  const [y1, m1, day1] = dCp.split("-").map(Number);
+  const [y2, m2, day2] = businessDate.split("-").map(Number);
+  const diffDays = Math.round((new Date(y2, m2 - 1, day2) - new Date(y1, m1 - 1, day1)) / 86400000);
+
+  if (diffDays <= 1) {
+    return {
+      openingStockLitres: vCp,
+      openingStockType: "CONFIRMED_PHYSICAL_CARRYOVER",
+      openingStockSource: "CONFIRMED_PHYSICAL_CARRYOVER",
+      lastConfirmedDipDate: dCp,
+      openingStockCheckpointDate: dCp,
+      lastConfirmedDipLitres: vCp,
+      interveningReceiptsLitres: 0,
+      interveningSalesLitres: 0,
+    };
+  }
+
+  // 3 & 4. Parallel fetch for intervening receipts and sales
+  const [receiptAgg, interveningShifts, interveningMeterRegs] = await Promise.all([
+    FuelReceipt.aggregate([
+      {
+        $match: {
+          stationId,
+          product,
+          businessDate: { $gt: dCp, $lt: businessDate },
+        },
       },
-    },
-    { $group: { _id: null, total: { $sum: "$quantityLitres" } } },
+      { $group: { _id: null, total: { $sum: "$quantityLitres" } } },
+    ]),
+    execQuery(Shift.find({
+      businessDate: { $gt: dCp, $lt: businessDate },
+      status: { $in: ["ENDED", "FORCE_CLOSED"] },
+    }), { select: "businessDate readings.fuelType readings.dispensedLitres readings.openingReading readings.closingReading" }),
+    execQuery(DailyMeterRegister.find({
+      stationId,
+      product,
+      businessDate: { $gt: dCp, $lt: businessDate },
+    }), { select: "businessDate recordedTotalMeterSale nozzles.recordedSale nozzles.openingReading nozzles.closingReading" }),
   ]);
+
   const interveningReceipts = receiptAgg.length > 0 ? Number(receiptAgg[0].total.toFixed(2)) : 0;
-
-  // 4. Find any intervening finalized shift sales and register sales between dCp and businessDate (dCp < d < businessDate)
-  const interveningShifts = await Shift.find({
-    businessDate: { $gt: dCp, $lt: businessDate },
-    status: { $in: ["ENDED", "FORCE_CLOSED"] },
-  }).lean();
-
-  const interveningMeterRegs = await DailyMeterRegister.find({
-    stationId,
-    product,
-    businessDate: { $gt: dCp, $lt: businessDate },
-  }).lean();
-
   let interveningSales = 0;
   const shiftDates = new Set(interveningShifts.map((s) => s.businessDate));
 
@@ -314,7 +346,7 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
   });
   interveningSales = Number(interveningSales.toFixed(2));
 
-  // 5. If no intervening movements occurred, carry the last confirmed physical stock forward unchanged
+  // 5. If no intervening movements occurred, carry forward unchanged
   if (interveningReceipts === 0 && interveningSales === 0) {
     return {
       openingStockLitres: vCp,
@@ -328,7 +360,7 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
     };
   }
 
-  // 6. If intervening receipts or sales occurred, calculate provisional opening balance
+  // 6. Provisional opening balance
   const provisional = Number((vCp + interveningReceipts - interveningSales).toFixed(2));
   return {
     openingStockLitres: provisional,
@@ -346,7 +378,7 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
 export const getDailyRegister = async (stationId, businessDate) => {
   const products = ["PETROL", "DIESEL"];
 
-  // Fetch all necessary data
+  // Consolidated parallel fetch for current day and recent historical checkpoints/readings
   const [
     stockRows,
     receiptGroups,
@@ -355,262 +387,307 @@ export const getDailyRegister = async (stationId, businessDate) => {
     meterRegisterDocs,
     configuredTanks,
     mpds,
-    calibrations
+    calibrations,
+    prevRegs,
+    prevShifts,
+    prevCheckpoints
   ] = await Promise.all([
-    DailyStock.find({ stationId, businessDate }).lean(),
+    execQuery(DailyStock.find({ stationId, businessDate })),
     FuelReceipt.aggregate([
       { $match: { stationId, businessDate } },
       { $group: { _id: "$product", receiptStockLitres: { $sum: "$quantityLitres" } } }
     ]),
-    Shift.find({ businessDate, status: { $in: ["ENDED", "FORCE_CLOSED"] } }).sort({ startedAt: 1 }).lean(),
-    Shift.find({ businessDate, status: "IN_PROGRESS" }).sort({ startedAt: 1 }).lean(),
-    DailyMeterRegister.find({ stationId, businessDate }).lean(),
-    Tank.find({ stationId, isActive: true }).sort({ product: 1, tankNumber: 1 }).lean(),
-    Mpd.find({ stationId, isActive: true }).sort({ mpdNumber: 1 }).lean(),
-    TankCalibration.find().lean()
+    execQuery(Shift.find({ businessDate, status: { $in: ["ENDED", "FORCE_CLOSED"] } }), { sort: { startedAt: 1 } }),
+    execQuery(Shift.find({ businessDate, status: "IN_PROGRESS" }), { sort: { startedAt: 1 } }),
+    execQuery(DailyMeterRegister.find({ stationId, businessDate })),
+    execQuery(Tank.find({ stationId, isActive: true }), { sort: { product: 1, tankNumber: 1 } }),
+    execQuery(Mpd.find({ stationId, isActive: true }), { sort: { mpdNumber: 1 } }),
+    execQuery(TankCalibration.find()),
+    execQuery(DailyMeterRegister.find({ stationId, businessDate: { $lt: businessDate } }), {
+      sort: { businessDate: -1 },
+      limit: 35,
+      select: "product businessDate nozzles"
+    }),
+    execQuery(Shift.find({ status: { $in: ["ENDED", "FORCE_CLOSED"] }, businessDate: { $lt: businessDate } }), {
+      sort: { businessDate: -1, endedAt: -1, startedAt: -1 },
+      limit: 60,
+      select: "mpdId businessDate status endedAt startedAt readings"
+    }),
+    execQuery(DailyStock.find({ stationId, businessDate: { $lt: businessDate }, actualDipStockLitres: { $ne: null, $gt: 0 } }), {
+      sort: { businessDate: -1 },
+      limit: 10
+    })
   ]);
 
   const calibrationMap = new Map(calibrations.map(c => [c.tankId.toString(), c.points]));
   
-  // Calculate Meter Register per product
-  const meterRegisters = {};
-  
-  for (const product of products) {
-    const specs = getProductRegisterNozzles(product, mpds);
-    const meterDoc = meterRegisterDocs.find((d) => d.product === product);
-
-    const nozzleData = [];
-
-    for (const spec of specs) {
-      const nzDoc = meterDoc?.nozzles?.find((n) => n.registerNozzle === spec.registerNozzle);
-
-      // Determine opening reading
-      let openingReading = null;
-      let isManualOpeningCorrection = false;
-      let openingCorrectionReason = null;
-      let isOpeningCarriedForward = false;
-      let openingCarriedForwardFromDate = null;
-      let openingSource = "MISSING";
-
-      if (nzDoc?.isManualOpeningCorrection && nzDoc.openingReading != null) {
-        openingReading = nzDoc.openingReading;
-        isManualOpeningCorrection = true;
-        openingCorrectionReason = nzDoc.openingCorrectionReason;
-        openingSource = "MANUAL_CORRECTION";
-      } else if (nzDoc?.openingReading != null) {
-        openingReading = nzDoc.openingReading;
-        openingSource = "HISTORICAL_REGISTER";
-      } else {
-        const derived = await deriveNozzleOpeningReading(stationId, product, spec.registerNozzle, businessDate);
-        openingReading = derived.openingReading;
-        isManualOpeningCorrection = derived.isManualCorrection;
-        openingCorrectionReason = derived.reason;
-        isOpeningCarriedForward = derived.source === "CARRIED_FORWARD";
-        openingCarriedForwardFromDate = derived.carriedForwardFromDate;
-        openingSource = derived.source;
-      }
-
-      // Finalized shift readings for this physical nozzle on this date
-      const nozzleShifts = finalizedShifts.filter((s) => s.mpdId.toString() === spec.mpdId);
-      const nozzleShiftReadings = nozzleShifts
-        .map((s) => s.readings?.find((r) => r.nozzleId === spec.nozzleId && r.fuelType === product))
-        .filter(Boolean);
-
-      const hasShiftActivity = nozzleShiftReadings.length > 0;
-      const shiftClosing = hasShiftActivity ? nozzleShiftReadings[nozzleShiftReadings.length - 1].closingReading : null;
-      const shiftLitres = hasShiftActivity
-        ? Number(nozzleShiftReadings.reduce((sum, r) => sum + (r.dispensedLitres || 0), 0).toFixed(2))
-        : null;
-
-      // In-progress shift readings
-      const ipShifts = inProgressShifts.filter((s) => s.mpdId.toString() === spec.mpdId);
-      const ipReadings = ipShifts
-        .map((s) => s.readings?.find((r) => r.nozzleId === spec.nozzleId && r.fuelType === product))
-        .filter(Boolean);
-      const hasLiveInProgressShift = ipReadings.length > 0;
-
-      // Determine closing reading & sale
-      let closingReading = null;
-      let sale = null;
-      let status = "INCOMPLETE";
-      let statusMessage = "";
-      let hasDiscrepancy = false;
-      let discrepancyLitres = 0;
-
-      if (nzDoc) {
-        // Historical/source register record exists
-        const recordedClosing = nzDoc.closingReading ?? ((nzDoc.openingReading != null && nzDoc.recordedSale != null) ? Number((nzDoc.openingReading + nzDoc.recordedSale).toFixed(2)) : null);
-        closingReading = recordedClosing;
-        sale = nzDoc.recordedSale ?? ((closingReading != null && openingReading != null) ? Number((closingReading - openingReading).toFixed(2)) : null);
-
-        if (hasShiftActivity && shiftClosing != null) {
-          if (closingReading != null && Math.abs(shiftClosing - closingReading) > 0.05) {
-            hasDiscrepancy = true;
-            discrepancyLitres = Number((closingReading - shiftClosing).toFixed(2));
-            status = "DISCREPANCY";
-            statusMessage = `Register closing (${closingReading}) differs from shift closing (${shiftClosing})`;
-          } else if (sale != null && shiftLitres != null && Math.abs(sale - shiftLitres) > 0.05) {
-            hasDiscrepancy = true;
-            discrepancyLitres = Number((sale - shiftLitres).toFixed(2));
-            status = "DISCREPANCY";
-            statusMessage = `Register sale (${sale} L) differs from shift dispensed litres (${shiftLitres} L)`;
-          } else if (sale === 0 && openingReading === closingReading) {
-            status = "VALID_ZERO_SALE";
-            statusMessage = "Confirmed zero sale (meter readings unchanged)";
-          } else if (sale != null) {
-            status = "HISTORICAL_RECORD";
-            statusMessage = "Historical register record verified";
-          } else {
-            status = "INCOMPLETE";
-            statusMessage = "Closing reading missing in register";
-          }
-        } else {
-          if (sale === 0 && openingReading === closingReading) {
-            status = "VALID_ZERO_SALE";
-            statusMessage = "Confirmed zero sale (meter readings unchanged)";
-          } else if (sale != null) {
-            status = "HISTORICAL_RECORD";
-            statusMessage = "Transcribed historical register record";
-          } else {
-            status = "INCOMPLETE";
-            statusMessage = "Closing reading missing in register";
-          }
-        }
-      } else if (hasShiftActivity && shiftClosing != null) {
-        // Normal finalized shift operation
-        closingReading = shiftClosing;
-        sale = (openingReading != null && closingReading != null) ? Number((closingReading - openingReading).toFixed(2)) : null;
-
-        if (sale != null && shiftLitres != null && Math.abs(sale - shiftLitres) > 0.05) {
-          hasDiscrepancy = true;
-          discrepancyLitres = Number((sale - shiftLitres).toFixed(2));
-          status = "DISCREPANCY";
-          statusMessage = `Totalizer difference (${sale} L) differs from dispensed sum (${shiftLitres} L)`;
-        } else if (sale === 0 && openingReading === closingReading) {
-          status = "VALID_ZERO_SALE";
-          statusMessage = "Confirmed zero sale (meter readings unchanged across shifts)";
-        } else if (sale != null) {
-          status = "FINALIZED";
-          statusMessage = "Finalized from shift totalizers";
-        } else {
-          status = "INCOMPLETE";
-          statusMessage = "Incomplete shift totalizer readings";
-        }
-      } else if (hasLiveInProgressShift) {
-        // Active shift in progress
-        closingReading = null;
-        sale = null;
-        status = "IN_PROGRESS_SHIFT";
-        statusMessage = "Shift in progress — live readings excluded from finalized register totals";
-      } else {
-        // No shifts and no register record on this date
-        closingReading = null;
-        sale = null;
-        if (openingReading != null) {
-          status = "AWAITING_SHIFTS";
-          statusMessage = isOpeningCarriedForward
-            ? `Opening carried forward from ${openingCarriedForwardFromDate || "previous confirmed closing"}. Awaiting shift completion.`
-            : "Awaiting shift completion.";
-        } else {
-          status = "NO_RECORD";
-          statusMessage = "No opening reading available. Manager initialization required.";
-        }
-      }
-
-      nozzleData.push({
-        registerNozzle: spec.registerNozzle,
-        label: spec.label,
-        mpdNumber: spec.mpdNumber,
-        nozzleId: spec.nozzleId,
-        fuelType: product,
-        openingReading,
-        closingReading,
-        sale,
-        status,
-        statusMessage,
-        isOpeningCarriedForward,
-        openingCarriedForwardFromDate,
-        isManualOpeningCorrection,
-        openingCorrectionReason,
-        openingSource,
-        shiftLitres,
-        hasDiscrepancy,
-        discrepancyLitres,
-      });
-    }
-
-    // Calculate Total Meter Sale safely
-    const allNozzlesHaveSale = nozzleData.every((n) => n.sale != null);
-    let calculatedNozzleTotalSale = null;
-    if (allNozzlesHaveSale) {
-      calculatedNozzleTotalSale = Number(nozzleData.reduce((sum, n) => sum + n.sale, 0).toFixed(2));
-    }
-
-    let totalMeterSale = null;
-    let recordedTotalMeterSale = meterDoc?.recordedTotalMeterSale ?? null;
-    let hasRegisterDiscrepancy = false;
-    let registerDiscrepancyLitres = 0;
-
-    if (recordedTotalMeterSale != null) {
-      totalMeterSale = recordedTotalMeterSale;
-      if (calculatedNozzleTotalSale != null && Math.abs(recordedTotalMeterSale - calculatedNozzleTotalSale) > 0.05) {
-        hasRegisterDiscrepancy = true;
-        registerDiscrepancyLitres = Number((recordedTotalMeterSale - calculatedNozzleTotalSale).toFixed(2));
-      }
-    } else if (allNozzlesHaveSale) {
-      totalMeterSale = calculatedNozzleTotalSale;
-    } else {
-      totalMeterSale = null;
-    }
-
-    // Determine overall register status
-    let registerStatus = "INCOMPLETE";
-    if (nozzleData.every((n) => n.status === "VALID_ZERO_SALE")) {
-      registerStatus = "VALID_ZERO_SALE";
-    } else if (hasRegisterDiscrepancy || nozzleData.some((n) => n.status === "DISCREPANCY")) {
-      registerStatus = "DISCREPANCY";
-    } else if (meterDoc && totalMeterSale != null) {
-      registerStatus = "HISTORICAL_RECORD";
-    } else if (allNozzlesHaveSale) {
-      registerStatus = "FINALIZED";
-    } else if (nozzleData.some((n) => n.status === "IN_PROGRESS_SHIFT")) {
-      registerStatus = "IN_PROGRESS";
-    } else if (nozzleData.some((n) => n.status === "AWAITING_SHIFTS")) {
-      registerStatus = "AWAITING_SHIFTS";
-    } else if (nozzleData.every((n) => n.status === "NO_RECORD")) {
-      registerStatus = "NO_RECORD";
-    }
-
-    meterRegisters[product] = {
-      product,
-      businessDate,
-      nozzles: nozzleData,
-      totalMeterSale,
-      recordedTotalMeterSale,
-      calculatedNozzleTotalSale,
-      hasDiscrepancy: hasRegisterDiscrepancy,
-      discrepancyLitres: registerDiscrepancyLitres,
-      status: registerStatus,
-      pumpTestingLitres: meterDoc?.pumpTestingLitres ?? null,
-      remarks: meterDoc?.remarks || "",
-    };
-  }
-
   const stored = new Map(stockRows.map((row) => [row.product, row]));
   const receipts = new Map(receiptGroups.map((row) => [row._id, Number(row.receiptStockLitres || 0)]));
+
+  // Compute Meter Register and Opening Stock concurrently for all products
+  const [meterRegisterEntries, derivedOpenings] = await Promise.all([
+    Promise.all(
+      products.map(async (product) => {
+        const specs = getProductRegisterNozzles(product, mpds);
+        const meterDoc = meterRegisterDocs.find((d) => d.product === product);
+
+        const nozzleData = await Promise.all(
+          specs.map(async (spec) => {
+            const nzDoc = meterDoc?.nozzles?.find((n) => n.registerNozzle === spec.registerNozzle);
+
+            // Determine opening reading
+            let openingReading = null;
+            let isManualOpeningCorrection = false;
+            let openingCorrectionReason = null;
+            let isOpeningCarriedForward = false;
+            let openingCarriedForwardFromDate = null;
+            let openingSource = "MISSING";
+
+            if (nzDoc?.isManualOpeningCorrection && nzDoc.openingReading != null) {
+              openingReading = nzDoc.openingReading;
+              isManualOpeningCorrection = true;
+              openingCorrectionReason = nzDoc.openingCorrectionReason;
+              openingSource = "MANUAL_CORRECTION";
+            } else if (nzDoc?.openingReading != null) {
+              openingReading = nzDoc.openingReading;
+              openingSource = "HISTORICAL_REGISTER";
+            } else {
+              const derived = await deriveNozzleOpeningReading(
+                stationId,
+                product,
+                spec.registerNozzle,
+                businessDate,
+                { currentReg: meterDoc, mpds, prevRegs, prevShifts }
+              );
+              openingReading = derived.openingReading;
+              isManualOpeningCorrection = derived.isManualCorrection;
+              openingCorrectionReason = derived.reason;
+              isOpeningCarriedForward = derived.source === "CARRIED_FORWARD";
+              openingCarriedForwardFromDate = derived.carriedForwardFromDate;
+              openingSource = derived.source;
+            }
+
+            // Finalized shift readings for this physical nozzle on this date
+            const nozzleShifts = finalizedShifts.filter((s) => s.mpdId.toString() === spec.mpdId);
+            const nozzleShiftReadings = nozzleShifts
+              .map((s) => s.readings?.find((r) => r.nozzleId === spec.nozzleId && r.fuelType === product))
+              .filter(Boolean);
+
+            const hasShiftActivity = nozzleShiftReadings.length > 0;
+            const shiftClosing = hasShiftActivity ? nozzleShiftReadings[nozzleShiftReadings.length - 1].closingReading : null;
+            const shiftLitres = hasShiftActivity
+              ? Number(nozzleShiftReadings.reduce((sum, r) => sum + (r.dispensedLitres || 0), 0).toFixed(2))
+              : null;
+
+            // In-progress shift readings
+            const ipShifts = inProgressShifts.filter((s) => s.mpdId.toString() === spec.mpdId);
+            const ipReadings = ipShifts
+              .map((s) => s.readings?.find((r) => r.nozzleId === spec.nozzleId && r.fuelType === product))
+              .filter(Boolean);
+            const hasLiveInProgressShift = ipReadings.length > 0;
+
+            // Determine closing reading & sale
+            let closingReading = null;
+            let sale = null;
+            let status = "INCOMPLETE";
+            let statusMessage = "";
+            let hasDiscrepancy = false;
+            let discrepancyLitres = 0;
+
+            if (nzDoc) {
+              // Historical/source register record exists
+              const recordedClosing = nzDoc.closingReading ?? ((nzDoc.openingReading != null && nzDoc.recordedSale != null) ? Number((nzDoc.openingReading + nzDoc.recordedSale).toFixed(2)) : null);
+              closingReading = recordedClosing;
+              sale = nzDoc.recordedSale ?? ((closingReading != null && openingReading != null) ? Number((closingReading - openingReading).toFixed(2)) : null);
+
+              if (hasShiftActivity && shiftClosing != null) {
+                if (closingReading != null && Math.abs(shiftClosing - closingReading) > 0.05) {
+                  hasDiscrepancy = true;
+                  discrepancyLitres = Number((closingReading - shiftClosing).toFixed(2));
+                  status = "DISCREPANCY";
+                  statusMessage = `Register closing (${closingReading}) differs from shift closing (${shiftClosing})`;
+                } else if (sale != null && shiftLitres != null && Math.abs(sale - shiftLitres) > 0.05) {
+                  hasDiscrepancy = true;
+                  discrepancyLitres = Number((sale - shiftLitres).toFixed(2));
+                  status = "DISCREPANCY";
+                  statusMessage = `Register sale (${sale} L) differs from shift dispensed litres (${shiftLitres} L)`;
+                } else if (sale === 0 && openingReading === closingReading) {
+                  status = "VALID_ZERO_SALE";
+                  statusMessage = "Confirmed zero sale (meter readings unchanged)";
+                } else if (sale != null) {
+                  status = "HISTORICAL_RECORD";
+                  statusMessage = "Historical register record verified";
+                } else {
+                  status = "INCOMPLETE";
+                  statusMessage = "Closing reading missing in register";
+                }
+              } else {
+                if (sale === 0 && openingReading === closingReading) {
+                  status = "VALID_ZERO_SALE";
+                  statusMessage = "Confirmed zero sale (meter readings unchanged)";
+                } else if (sale != null) {
+                  status = "HISTORICAL_RECORD";
+                  statusMessage = "Transcribed historical register record";
+                } else {
+                  status = "INCOMPLETE";
+                  statusMessage = "Closing reading missing in register";
+                }
+              }
+            } else if (hasShiftActivity && shiftClosing != null) {
+              // Normal finalized shift operation
+              closingReading = shiftClosing;
+              sale = (openingReading != null && closingReading != null) ? Number((closingReading - openingReading).toFixed(2)) : null;
+
+              if (sale != null && shiftLitres != null && Math.abs(sale - shiftLitres) > 0.05) {
+                hasDiscrepancy = true;
+                discrepancyLitres = Number((sale - shiftLitres).toFixed(2));
+                status = "DISCREPANCY";
+                statusMessage = `Totalizer difference (${sale} L) differs from dispensed sum (${shiftLitres} L)`;
+              } else if (sale === 0 && openingReading === closingReading) {
+                status = "VALID_ZERO_SALE";
+                statusMessage = "Confirmed zero sale (meter readings unchanged across shifts)";
+              } else if (sale != null) {
+                status = "FINALIZED";
+                statusMessage = "Finalized from shift totalizers";
+              } else {
+                status = "INCOMPLETE";
+                statusMessage = "Incomplete shift totalizer readings";
+              }
+            } else if (hasLiveInProgressShift) {
+              // Active shift in progress
+              closingReading = null;
+              sale = null;
+              status = "IN_PROGRESS_SHIFT";
+              statusMessage = "Shift in progress — live readings excluded from finalized register totals";
+            } else {
+              // No shifts and no register record on this date
+              if (openingReading != null) {
+                closingReading = openingReading;
+                sale = 0.0;
+                status = "VALID_ZERO_SALE";
+                statusMessage = isOpeningCarriedForward
+                  ? `Confirmed zero sale (meter readings unchanged from ${openingCarriedForwardFromDate || "previous confirmed closing"})`
+                  : "Confirmed zero sale (meter readings unchanged across shifts)";
+              } else {
+                closingReading = null;
+                sale = null;
+                status = "NO_RECORD";
+                statusMessage = "No opening reading available. Manager initialization required.";
+              }
+            }
+
+            return {
+              registerNozzle: spec.registerNozzle,
+              label: spec.label,
+              mpdNumber: spec.mpdNumber,
+              nozzleId: spec.nozzleId,
+              fuelType: product,
+              openingReading,
+              closingReading,
+              sale,
+              status,
+              statusMessage,
+              isOpeningCarriedForward,
+              openingCarriedForwardFromDate,
+              isManualOpeningCorrection,
+              openingCorrectionReason,
+              openingSource,
+              shiftLitres,
+              hasDiscrepancy,
+              discrepancyLitres,
+            };
+          })
+        );
+
+        // Calculate Total Meter Sale safely
+        const allNozzlesHaveSale = nozzleData.every((n) => n.sale != null);
+        const anyNozzleHasSale = nozzleData.some((n) => n.sale != null && n.sale > 0);
+        let calculatedNozzleTotalSale = null;
+        if (allNozzlesHaveSale || anyNozzleHasSale) {
+          calculatedNozzleTotalSale = Number(nozzleData.reduce((sum, n) => sum + (n.sale || 0), 0).toFixed(2));
+        }
+
+        let totalMeterSale = null;
+        let recordedTotalMeterSale = meterDoc?.recordedTotalMeterSale ?? null;
+        let hasRegisterDiscrepancy = false;
+        let registerDiscrepancyLitres = 0;
+
+        if (recordedTotalMeterSale != null) {
+          totalMeterSale = recordedTotalMeterSale;
+          if (calculatedNozzleTotalSale != null && Math.abs(recordedTotalMeterSale - calculatedNozzleTotalSale) > 0.05) {
+            hasRegisterDiscrepancy = true;
+            registerDiscrepancyLitres = Number((recordedTotalMeterSale - calculatedNozzleTotalSale).toFixed(2));
+          }
+        } else if (nozzleData.some((n) => n.status === "IN_PROGRESS_SHIFT")) {
+          totalMeterSale = null;
+        } else if (allNozzlesHaveSale || anyNozzleHasSale) {
+          totalMeterSale = calculatedNozzleTotalSale;
+        } else {
+          totalMeterSale = null;
+        }
+
+        // Determine overall register status
+        let registerStatus = "INCOMPLETE";
+        if (nozzleData.every((n) => n.status === "VALID_ZERO_SALE")) {
+          registerStatus = "VALID_ZERO_SALE";
+        } else if (hasRegisterDiscrepancy || nozzleData.some((n) => n.status === "DISCREPANCY")) {
+          registerStatus = "DISCREPANCY";
+        } else if (meterDoc && totalMeterSale != null) {
+          registerStatus = "HISTORICAL_RECORD";
+        } else if (nozzleData.some((n) => n.status === "IN_PROGRESS_SHIFT")) {
+          registerStatus = "IN_PROGRESS";
+        } else if (allNozzlesHaveSale || anyNozzleHasSale) {
+          registerStatus = "FINALIZED";
+        } else if (nozzleData.some((n) => n.status === "AWAITING_SHIFTS")) {
+          registerStatus = "AWAITING_SHIFTS";
+        } else if (nozzleData.every((n) => n.status === "NO_RECORD")) {
+          registerStatus = "NO_RECORD";
+        }
+
+        return [
+          product,
+          {
+            product,
+            businessDate,
+            nozzles: nozzleData,
+            totalMeterSale,
+            recordedTotalMeterSale,
+            calculatedNozzleTotalSale,
+            hasDiscrepancy: hasRegisterDiscrepancy,
+            discrepancyLitres: registerDiscrepancyLitres,
+            status: registerStatus,
+            pumpTestingLitres: meterDoc?.pumpTestingLitres ?? null,
+            remarks: meterDoc?.remarks || "",
+          },
+        ];
+      })
+    ),
+    Promise.all(
+      products.map((product) =>
+        deriveOpeningStock(stationId, product, businessDate, stored.get(product), {
+          checkpoint: prevCheckpoints.find((c) => c.product === product),
+        })
+      )
+    ),
+  ]);
+
+  const meterRegisters = Object.fromEntries(meterRegisterEntries);
+  const derivedOpeningMap = new Map(products.map((p, i) => [p, derivedOpenings[i]]));
 
   // Build the stock response
   const stock = [];
   
   for (const product of products) {
     let row = stored.get(product);
-    const derivedOpening = await deriveOpeningStock(stationId, product, businessDate, row);
+    const derivedOpening = derivedOpeningMap.get(product);
     const openingStockLitres = derivedOpening.openingStockLitres;
 
     const receiptStockLitres = receipts.get(product) || 0;
     const actualSalesLitres = meterRegisters[product].totalMeterSale;
     const totalAvailableLitres = openingStockLitres != null ? Number((openingStockLitres + receiptStockLitres).toFixed(2)) : null;
-    const calculatedClosingStockLitres = totalAvailableLitres != null ? Number((totalAvailableLitres - actualSalesLitres).toFixed(2)) : null;
+    const calculatedClosingStockLitres = totalAvailableLitres != null
+      ? (actualSalesLitres != null ? Number((totalAvailableLitres - actualSalesLitres).toFixed(2)) : totalAvailableLitres)
+      : null;
 
     const productTanks = configuredTanks.filter((tank) => tank.product === product);
     const hasMultipleTanks = productTanks.length > 1;

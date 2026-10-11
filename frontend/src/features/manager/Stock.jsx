@@ -105,12 +105,10 @@ const ReadRow = ({ label, value, unit = " L", isText = false, isHighlighted = fa
   </div>
 );
 
-const fetchStockPage = (date) => Promise.all([
+const fetchStockDateData = (date) => Promise.all([
   getManagerStock(date),
   getManagerDensity(date),
   getManagerReceipts(date),
-  getFuelRateHistory(),
-  getManagerTanks(),
 ]);
 
 const stockFormFor = (row = {}) => ({
@@ -202,12 +200,11 @@ const Stock = () => {
 
   const load = async () => {
     try {
-      const [s, d, r, h, configuredTanks] = await fetchStockPage(date);
+      const [s, d, r] = await fetchStockDateData(date);
       setStock(s.data.stock);
-      setTanks(configuredTanks.data);
+      if (s.data.tanks) setTanks(s.data.tanks);
       setDensity(d.data);
       setReceipts(r.data);
-      setRates(h.data);
       const currentProduct = productRef.current;
       setForm(stockFormFor(s.data.stock.find((item) => item.product === currentProduct)));
       setDensityForm(densityFormFor(d.data, currentProduct));
@@ -218,15 +215,24 @@ const Stock = () => {
 
   useEffect(() => {
     let current = true;
+    getFuelRateHistory()
+      .then((h) => {
+        if (current && h?.data) setRates(h.data);
+      })
+      .catch((err) => console.error("Failed to load fuel rate history", err));
+    return () => { current = false; };
+  }, []);
+
+  useEffect(() => {
+    let current = true;
     const fetchData = async () => {
       try {
-        const [s, d, r, h, configuredTanks] = await fetchStockPage(date);
+        const [s, d, r] = await fetchStockDateData(date);
         if (!current) return;
         setStock(s.data.stock);
-        setTanks(configuredTanks.data);
+        if (s.data.tanks) setTanks(s.data.tanks);
         setDensity(d.data);
         setReceipts(r.data);
-        setRates(h.data);
         const currentProduct = productRef.current;
         setForm(stockFormFor(s.data.stock.find((item) => item.product === currentProduct)));
         setDensityForm(densityFormFor(d.data, currentProduct));
@@ -447,21 +453,40 @@ const Stock = () => {
       setNotice(t("manager.stockLabels.saved"));
       setEditingTank(null);
       setTankDialog(false);
+      const configuredTanks = await getManagerTanks();
+      setTanks(configuredTanks.data);
       await load();
     } catch (e) {
       setNotice(e.response?.data?.message || t("manager.stockLabels.saveError"));
     }
   };
 
-  const setTankActive = (tank) => save(() => updateManagerTank(tank._id, { isActive: !tank.isActive }));
+  const setTankActive = async (tank) => {
+    try {
+      await updateManagerTank(tank._id, { isActive: !tank.isActive });
+      setNotice(t("manager.stockLabels.saved"));
+      const configuredTanks = await getManagerTanks();
+      setTanks(configuredTanks.data);
+      await load();
+    } catch (e) {
+      setNotice(e.response?.data?.message || t("manager.stockLabels.saveError"));
+    }
+  };
 
-  const saveRate = () => {
+  const saveRate = async () => {
     const payload = {
       businessDate: rate.businessDate,
       petrolRatePaise: Math.round(Number(rate.petrolRateRupees) * 100),
       dieselRatePaise: Math.round(Number(rate.dieselRateRupees) * 100),
     };
-    return save(() => createFuelRate(payload));
+    try {
+      await createFuelRate(payload);
+      setNotice(t("manager.stockLabels.saved"));
+      const h = await getFuelRateHistory();
+      if (h?.data) setRates(h.data);
+    } catch (e) {
+      setNotice(e.response?.data?.message || t("manager.stockLabels.saveError"));
+    }
   };
 
 

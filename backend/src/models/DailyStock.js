@@ -17,4 +17,6 @@ const dailyStockSchema = new mongoose.Schema({
 
 
 dailyStockSchema.index({ stationId: 1, businessDate: 1, product: 1 }, { unique: true });
+dailyStockSchema.index({ stationId: 1, product: 1, businessDate: -1 });
 export default mongoose.model("DailyStock", dailyStockSchema);
+
