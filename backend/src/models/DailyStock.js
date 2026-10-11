@@ -9,7 +9,12 @@ const dailyStockSchema = new mongoose.Schema({
   actualDipStockLitres: { type: Number, min: 0, default: null },
   waterDip: { type: Number, min: 0, default: null },
   waterDipVolumeLitres: { type: Number, min: 0, default: null },
+  isManualOpeningCorrection: { type: Boolean, default: false },
+  openingCorrectionReason: { type: String, default: null },
+  openingCorrectionBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+  openingCorrectionAt: { type: Date, default: null },
 }, { timestamps: true });
+
 
 dailyStockSchema.index({ stationId: 1, businessDate: 1, product: 1 }, { unique: true });
 export default mongoose.model("DailyStock", dailyStockSchema);

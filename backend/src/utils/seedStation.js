@@ -10,7 +10,7 @@ dotenv.config();
 
 const seedStationData = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
     console.log('MongoDB Connected for Seeding...');
 
     // 1. Clear existing physical config to prevent duplicates

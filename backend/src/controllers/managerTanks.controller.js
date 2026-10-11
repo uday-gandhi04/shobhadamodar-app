@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 import Station from "../models/Station.js";
 import Tank from "../models/Tank.js";
+import TankCalibration from "../models/TankCalibration.js";
 import { recordAuditLog } from "../utils/auditLog.js";
 
 const activeStation = async () => {
@@ -92,6 +93,58 @@ export const updateManagerTank = async (req, res, next) => {
     return res.json({ success: true, data: tank });
   } catch (error) {
     if (error?.code === 11000) return duplicateTankResponse(res);
+    return next(error);
+  }
+};
+
+export const getManagerTankCalibration = async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid tank ID." });
+    }
+    const station = await activeStation();
+    const tank = await Tank.findOne({ _id: req.params.id, stationId: station._id }).lean();
+    if (!tank) return res.status(404).json({ success: false, message: "Tank not found." });
+
+    const calibration = await TankCalibration.findOne({ tankId: tank._id }).lean();
+    return res.json({ success: true, data: calibration?.points || [] });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const upsertManagerTankCalibration = async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ success: false, message: "Invalid tank ID." });
+    }
+    const station = await activeStation();
+    const tank = await Tank.findOne({ _id: req.params.id, stationId: station._id }).lean();
+    if (!tank) return res.status(404).json({ success: false, message: "Tank not found." });
+
+    const points = req.body.points || [];
+    // sort and validate
+    points.sort((a, b) => a.dipCm - b.dipCm);
+
+    const calibration = await TankCalibration.findOneAndUpdate(
+      { tankId: tank._id },
+      { $set: { points, lastUpdatedBy: req.user._id } },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "TANK_CALIBRATION_UPDATED",
+      entityType: "TANK",
+      entityId: tank._id,
+      metadata: {
+        tankNumber: tank.tankNumber,
+        pointsCount: points.length,
+      },
+    });
+
+    return res.json({ success: true, data: calibration.points });
+  } catch (error) {
     return next(error);
   }
 };

@@ -5,6 +5,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+.test-credentials.json
 
 # Logs and runtime output
 npm-debug.log*
@@ -13,3 +14,4 @@ logs/
 coverage/
 tmp/
 temp/
+*.xlsx
