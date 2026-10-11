@@ -4,6 +4,11 @@ import FuelReceipt from "../models/FuelReceipt.js";
 import DailyDensity from "../models/DailyDensity.js";
 import Shift from "../models/Shift.js";
 import Tank from "../models/Tank.js";
+import TankCalibration from "../models/TankCalibration.js";
+import Mpd from "../models/Mpd.js";
+import DailyMeterRegister from "../models/DailyMeterRegister.js";
+import { getDailyRegister, interpolateVolume, deriveOpeningStock, getProductRegisterNozzles } from "../services/stockRegisterService.js";
+import { generateMonthlyExcel, getMonthlyRegisterReportData } from "../services/exportRegisterService.js";
 import { recordAuditLog } from "../utils/auditLog.js";
 
 const products = ["PETROL", "DIESEL"];
@@ -15,27 +20,85 @@ const activeStation = async () => {
 
 export const getManagerStock = async (req, res, next) => {
   try {
-    const station = await activeStation(); const { date: businessDate } = req.query;
-    const [stockRows, receiptGroups, sales, configuredTanks] = await Promise.all([
-      DailyStock.find({ stationId: station._id, businessDate }).lean(),
-      FuelReceipt.aggregate([{ $match: { stationId: station._id, businessDate } }, { $group: { _id: "$product", receiptStockLitres: { $sum: "$quantityLitres" } } }]),
-      Shift.aggregate([{ $match: { businessDate, status: { $in: ["ENDED", "FORCE_CLOSED"] } } }, { $group: { _id: null, petrol: { $sum: "$totalLitresPetrol" }, diesel: { $sum: "$totalLitresDiesel" } } }]),
-      Tank.find({ stationId: station._id, isActive: true }).sort({ product: 1, tankNumber: 1 }).lean(),
-    ]);
-    const stored = new Map(stockRows.map((row) => [row.product, row])); const receipts = new Map(receiptGroups.map((row) => [row._id, Number(row.receiptStockLitres || 0)])); const salesRow = sales[0] || {};
-    const stock = products.map((product) => {
-      const row = stored.get(product); const hasStockRecord = Boolean(row); const openingStockLitres = hasStockRecord ? Number(row.openingStockLitres) : null; const receiptStockLitres = receipts.get(product) || 0; const actualSalesLitres = Number(product === "PETROL" ? salesRow.petrol || 0 : salesRow.diesel || 0); const totalAvailableLitres = hasStockRecord ? openingStockLitres + receiptStockLitres : null; const calculatedClosingStockLitres = totalAvailableLitres == null ? null : totalAvailableLitres - actualSalesLitres; const actualDipStockLitres = row?.actualDipStockLitres ?? null; const productTanks = configuredTanks.filter((tank) => tank.product === product); const tank = productTanks.length === 1 ? productTanks[0] : null;
-      return { product, hasStockRecord, openingStockLitres, productDip: row?.productDip ?? null, actualDipStockLitres, waterDip: row?.waterDip ?? null, waterDipVolumeLitres: row?.waterDipVolumeLitres ?? null, receiptStockLitres, totalAvailableLitres, actualSalesLitres, calculatedClosingStockLitres, variationLitres: actualDipStockLitres == null || calculatedClosingStockLitres == null ? null : actualDipStockLitres - calculatedClosingStockLitres, tankNumber: tank?.tankNumber ?? null, capacityLitres: tank?.capacityLitres ?? null };
+    const station = await activeStation();
+    const { date: businessDate } = req.query;
+
+    const { stock, tanks } = await getDailyRegister(station._id, businessDate);
+
+    res.json({
+      success: true,
+      data: {
+        businessDate,
+        stock,
+        tanks: tanks.map(({ _id, tankNumber, product, capacityLitres, calibrationPoints }) => ({
+          _id,
+          tankNumber,
+          product,
+          capacityLitres,
+          calibrationPoints: calibrationPoints || []
+        }))
+      }
     });
-    res.json({ success: true, data: { businessDate, stock, tanks: configuredTanks.map(({ _id, tankNumber, product, capacityLitres }) => ({ _id, tankNumber, product, capacityLitres })) } });
   } catch (error) { next(error); }
 };
 export const upsertManagerStock = async (req, res, next) => {
   try {
     const station = await activeStation();
     const { businessDate, product, ...values } = req.body;
-    
+
     const existing = await DailyStock.findOne({ stationId: station._id, businessDate, product }).lean();
+
+    // Opening stock fallback / derivation if not provided
+    if (values.openingStockLitres == null) {
+      if (existing && existing.openingStockLitres != null) {
+        values.openingStockLitres = existing.openingStockLitres;
+      } else {
+        const derived = await deriveOpeningStock(station._id, product, businessDate, existing);
+        values.openingStockLitres = derived.openingStockLitres ?? 0;
+      }
+    }
+
+    // Server calculation authority: Derive actualDipStockLitres from productDip and tank calibration
+    // Reject arbitrary client overrides of actualDipStockLitres
+    if (values.productDip != null) {
+      const activeTanks = await Tank.find({ stationId: station._id, product, isActive: true }).lean();
+      if (activeTanks.length === 1) {
+        const tank = activeTanks[0];
+        const calibration = await TankCalibration.findOne({ tankId: tank._id }).lean();
+        if (calibration && calibration.points && calibration.points.length > 0) {
+          const converted = interpolateVolume(values.productDip, calibration.points, tank.capacityLitres);
+          if (converted != null) {
+            values.actualDipStockLitres = converted;
+          } else {
+            // Dip is out of calibration range or invalid
+            // If dip was not changed, preserve historical record; otherwise set to null (no fabrication)
+            if (existing && existing.productDip === values.productDip && existing.actualDipStockLitres != null) {
+              values.actualDipStockLitres = existing.actualDipStockLitres;
+            } else {
+              values.actualDipStockLitres = null;
+            }
+          }
+        } else {
+          // Missing calibration
+          if (existing && existing.productDip === values.productDip && existing.actualDipStockLitres != null) {
+            values.actualDipStockLitres = existing.actualDipStockLitres;
+          } else {
+            values.actualDipStockLitres = null;
+          }
+        }
+      } else {
+        // Multiple tanks or no tank: cannot determine single calibration
+        if (existing && existing.productDip === values.productDip && existing.actualDipStockLitres != null) {
+          values.actualDipStockLitres = existing.actualDipStockLitres;
+        } else {
+          values.actualDipStockLitres = null;
+        }
+      }
+    } else {
+      // productDip is null or empty
+      values.productDip = null;
+      values.actualDipStockLitres = null;
+    }
 
     const stock = await DailyStock.findOneAndUpdate(
       { stationId: station._id, businessDate, product },
@@ -56,11 +119,11 @@ export const upsertManagerStock = async (req, res, next) => {
       action: "STOCK_UPSERTED",
       entityType: "STOCK",
       entityId: stock._id,
-      metadata: { 
-        businessDate, 
-        product, 
+      metadata: {
+        businessDate,
+        product,
         isUpdate: !!existing,
-        ...changedFields 
+        ...changedFields
       },
     });
     res.json({ success: true, data: stock });
@@ -71,7 +134,7 @@ export const upsertManagerDensity = async (req, res, next) => {
   try {
     const station = await activeStation();
     const { businessDate, product, ...values } = req.body;
-    
+
     const existing = await DailyDensity.findOne({ stationId: station._id, businessDate, product }).lean();
 
     const record = await DailyDensity.findOneAndUpdate(
@@ -91,8 +154,8 @@ export const upsertManagerDensity = async (req, res, next) => {
       action: "DENSITY_UPSERTED",
       entityType: "DENSITY",
       entityId: record._id,
-      metadata: { 
-        businessDate, 
+      metadata: {
+        businessDate,
         product,
         isUpdate: !!existing,
         ...changedFields
@@ -135,5 +198,184 @@ export const createManagerReceipt = async (req, res, next) => {
       },
     });
     res.status(201).json({ success: true, data: receipt });
+  } catch (error) { next(error); }
+};
+
+export const getManagerStockPreview = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { month } = req.query; // format "YYYY-MM"
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ success: false, message: "Valid month in YYYY-MM format is required." });
+    }
+
+    const reportData = await getMonthlyRegisterReportData(station._id, month);
+    res.json({ success: true, data: reportData });
+  } catch (error) { next(error); }
+};
+
+export const getManagerStockExport = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { month } = req.query; // format "YYYY-MM"
+    if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ success: false, message: "Valid month in YYYY-MM format is required." });
+    }
+
+    const workbook = await generateMonthlyExcel(station._id, month);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="Registers_${month}.xlsx"`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) { next(error); }
+};
+
+export const correctManagerOpeningStock = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { businessDate, product, correctedOpeningStockLitres, reason } = req.body;
+
+    if (!reason || reason.trim().length < 3) {
+      return res.status(400).json({ success: false, message: "A valid reason for opening stock correction is required." });
+    }
+
+    const existing = await DailyStock.findOne({ stationId: station._id, businessDate, product }).lean();
+    const previousOpeningStockLitres = existing?.openingStockLitres ?? null;
+
+    const stock = await DailyStock.findOneAndUpdate(
+      { stationId: station._id, businessDate, product },
+      {
+        $set: {
+          openingStockLitres: correctedOpeningStockLitres,
+          isManualOpeningCorrection: true,
+          openingCorrectionReason: reason.trim(),
+          openingCorrectionBy: req.user._id,
+          openingCorrectionAt: new Date(),
+        },
+        $setOnInsert: { stationId: station._id, businessDate, product }
+      },
+      { new: true, upsert: true, runValidators: true }
+    );
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "OPENING_STOCK_CORRECTED",
+      entityType: "STOCK",
+      entityId: stock._id,
+      metadata: {
+        businessDate,
+        product,
+        previousOpeningStockLitres,
+        correctedOpeningStockLitres,
+        reason: reason.trim(),
+        isUpdate: !!existing,
+      },
+    });
+
+    res.json({ success: true, data: stock });
+  } catch (error) { next(error); }
+};
+
+export const correctManagerMeterOpening = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { businessDate, product, registerNozzle, correctedOpeningReading, reason } = req.body;
+
+    if (!reason || reason.trim().length < 3) {
+      return res.status(400).json({ success: false, message: "A valid reason for opening reading correction is required." });
+    }
+
+    const mpds = await Mpd.find({ stationId: station._id, isActive: true }).lean();
+    const nozzleSpecs = getProductRegisterNozzles(product, mpds);
+    const spec = nozzleSpecs.find((s) => s.registerNozzle === registerNozzle);
+
+    if (!spec) {
+      return res.status(400).json({ success: false, message: `Invalid register nozzle: ${registerNozzle}` });
+    }
+
+    let reg = await DailyMeterRegister.findOne({ stationId: station._id, businessDate, product });
+    let previousOpeningReading = null;
+
+    if (!reg) {
+      const nozzles = nozzleSpecs.map((s) => {
+        const isTarget = s.registerNozzle === registerNozzle;
+        return {
+          registerNozzle: s.registerNozzle,
+          nozzleId: s.nozzleId,
+          mpdNumber: s.mpdNumber,
+          openingReading: isTarget ? correctedOpeningReading : null,
+          closingReading: null,
+          recordedSale: null,
+          isManualOpeningCorrection: isTarget,
+          openingCorrectionReason: isTarget ? reason.trim() : null,
+          openingCorrectionBy: isTarget ? req.user._id : null,
+          openingCorrectionAt: isTarget ? new Date() : null,
+        };
+      });
+
+      reg = new DailyMeterRegister({
+        stationId: station._id,
+        businessDate,
+        product,
+        nozzles,
+        sourceType: "MANUAL_INITIALIZED",
+      });
+    } else {
+      let targetNozzle = reg.nozzles.find((n) => n.registerNozzle === registerNozzle);
+      if (!targetNozzle) {
+        targetNozzle = {
+          registerNozzle: spec.registerNozzle,
+          nozzleId: spec.nozzleId,
+          mpdNumber: spec.mpdNumber,
+          openingReading: correctedOpeningReading,
+          closingReading: null,
+          recordedSale: null,
+          isManualOpeningCorrection: true,
+          openingCorrectionReason: reason.trim(),
+          openingCorrectionBy: req.user._id,
+          openingCorrectionAt: new Date(),
+        };
+        reg.nozzles.push(targetNozzle);
+      } else {
+        previousOpeningReading = targetNozzle.openingReading;
+        targetNozzle.openingReading = correctedOpeningReading;
+        targetNozzle.isManualOpeningCorrection = true;
+        targetNozzle.openingCorrectionReason = reason.trim();
+        targetNozzle.openingCorrectionBy = req.user._id;
+        targetNozzle.openingCorrectionAt = new Date();
+        if (targetNozzle.closingReading != null) {
+          targetNozzle.recordedSale = Number((targetNozzle.closingReading - correctedOpeningReading).toFixed(2));
+        }
+      }
+    }
+
+    await reg.save();
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "METER_OPENING_CORRECTED",
+      entityType: "METER_REGISTER",
+      entityId: reg._id,
+      metadata: {
+        businessDate,
+        product,
+        registerNozzle,
+        nozzleId: spec.nozzleId,
+        mpdNumber: spec.mpdNumber,
+        previousOpeningReading,
+        correctedOpeningReading,
+        reason: reason.trim(),
+      },
+    });
+
+    res.json({ success: true, data: reg });
   } catch (error) { next(error); }
 };

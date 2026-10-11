@@ -1,0 +1,10 @@
+# Environment and credentials
+.env
+.env.*
+!.env.example
+.test-credentials.json
+node_modules/
+dist/
+build/
+*.log
+*.xlsx

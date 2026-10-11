@@ -24,3 +24,13 @@ export const updateTankSchema = z.object({
     isActive: z.boolean().optional(),
   }).strict().refine((value) => Object.keys(value).length > 0, "At least one tank field must be provided."),
 });
+
+export const tankCalibrationSchema = z.object({
+  params: z.object({ id: z.string().regex(/^[a-f\d]{24}$/i, "Invalid tank ID.") }),
+  body: z.object({
+    points: z.array(z.object({
+      dipCm: z.number().min(0),
+      volumeLitres: z.number().min(0),
+    })),
+  }).strict(),
+});

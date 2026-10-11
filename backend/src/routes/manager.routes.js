@@ -26,15 +26,19 @@ import {
   protect,
   authorize,
 } from "../middlewares/auth.middleware.js";
-import { getManagerStock, upsertManagerStock, getManagerDensity, upsertManagerDensity, getManagerReceipts, createManagerReceipt } from "../controllers/managerStock.controller.js";
-import { stockDateSchema, stockSchema, densitySchema, receiptSchema } from "../validations/managerStock.validation.js";
-import { getManagerTanks, createManagerTank, updateManagerTank } from "../controllers/managerTanks.controller.js";
-import { createTankSchema, updateTankSchema } from "../validations/managerTanks.validation.js";
+import { getManagerStock, upsertManagerStock, correctManagerOpeningStock, correctManagerMeterOpening, getManagerDensity, upsertManagerDensity, getManagerReceipts, createManagerReceipt, getManagerStockExport, getManagerStockPreview } from "../controllers/managerStock.controller.js";
+import { stockDateSchema, stockMonthSchema, stockSchema, openingCorrectionSchema, meterOpeningCorrectionSchema, densitySchema, receiptSchema } from "../validations/managerStock.validation.js";
+import { getManagerTanks, createManagerTank, updateManagerTank, getManagerTankCalibration, upsertManagerTankCalibration } from "../controllers/managerTanks.controller.js";
+import { createTankSchema, updateTankSchema, tankCalibrationSchema } from "../validations/managerTanks.validation.js";
 
 const router = express.Router();
 
 router.get("/stock", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerStock);
+router.get("/stock/preview", protect, authorize("MANAGER"), validate(stockMonthSchema), getManagerStockPreview);
+router.get("/stock/export", protect, authorize("MANAGER"), validate(stockMonthSchema), getManagerStockExport);
 router.put("/stock", protect, authorize("MANAGER"), validate(stockSchema), upsertManagerStock);
+router.post("/stock/correct-opening", protect, authorize("MANAGER"), validate(openingCorrectionSchema), correctManagerOpeningStock);
+router.post("/stock/correct-meter-opening", protect, authorize("MANAGER"), validate(meterOpeningCorrectionSchema), correctManagerMeterOpening);
 router.get("/stock/density", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerDensity);
 router.post("/stock/density", protect, authorize("MANAGER"), validate(densitySchema), upsertManagerDensity);
 router.get("/stock/receipts", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerReceipts);
@@ -42,6 +46,8 @@ router.post("/stock/receipts", protect, authorize("MANAGER"), validate(receiptSc
 router.get("/tanks", protect, authorize("MANAGER"), getManagerTanks);
 router.post("/tanks", protect, authorize("MANAGER"), validate(createTankSchema), createManagerTank);
 router.patch("/tanks/:id", protect, authorize("MANAGER"), validate(updateTankSchema), updateManagerTank);
+router.get("/tanks/:id/calibration", protect, authorize("MANAGER"), getManagerTankCalibration);
+router.put("/tanks/:id/calibration", protect, authorize("MANAGER"), validate(tankCalibrationSchema), upsertManagerTankCalibration);
 
 router.get(
   "/employees",
