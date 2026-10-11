@@ -504,16 +504,14 @@ export const getDailyRegister = async (stationId, businessDate) => {
         statusMessage = "Shift in progress — live readings excluded from finalized register totals";
       } else {
         // No shifts and no register record on this date
+        closingReading = null;
+        sale = null;
         if (openingReading != null) {
-          closingReading = openingReading;
-          sale = 0.0;
-          status = "VALID_ZERO_SALE";
+          status = "AWAITING_SHIFTS";
           statusMessage = isOpeningCarriedForward
-            ? `Confirmed zero sale (meter readings unchanged from ${openingCarriedForwardFromDate || "previous confirmed closing"})`
-            : "Confirmed zero sale (meter readings unchanged across shifts)";
+            ? `Opening carried forward from ${openingCarriedForwardFromDate || "previous confirmed closing"}. Awaiting shift completion.`
+            : "Awaiting shift completion.";
         } else {
-          closingReading = null;
-          sale = null;
           status = "NO_RECORD";
           statusMessage = "No opening reading available. Manager initialization required.";
         }
@@ -543,10 +541,9 @@ export const getDailyRegister = async (stationId, businessDate) => {
 
     // Calculate Total Meter Sale safely
     const allNozzlesHaveSale = nozzleData.every((n) => n.sale != null);
-    const anyNozzleHasSale = nozzleData.some((n) => n.sale != null && n.sale > 0);
     let calculatedNozzleTotalSale = null;
-    if (allNozzlesHaveSale || anyNozzleHasSale) {
-      calculatedNozzleTotalSale = Number(nozzleData.reduce((sum, n) => sum + (n.sale || 0), 0).toFixed(2));
+    if (allNozzlesHaveSale) {
+      calculatedNozzleTotalSale = Number(nozzleData.reduce((sum, n) => sum + n.sale, 0).toFixed(2));
     }
 
     let totalMeterSale = null;
@@ -560,9 +557,7 @@ export const getDailyRegister = async (stationId, businessDate) => {
         hasRegisterDiscrepancy = true;
         registerDiscrepancyLitres = Number((recordedTotalMeterSale - calculatedNozzleTotalSale).toFixed(2));
       }
-    } else if (nozzleData.some((n) => n.status === "IN_PROGRESS_SHIFT")) {
-      totalMeterSale = null;
-    } else if (allNozzlesHaveSale || anyNozzleHasSale) {
+    } else if (allNozzlesHaveSale) {
       totalMeterSale = calculatedNozzleTotalSale;
     } else {
       totalMeterSale = null;
@@ -576,10 +571,10 @@ export const getDailyRegister = async (stationId, businessDate) => {
       registerStatus = "DISCREPANCY";
     } else if (meterDoc && totalMeterSale != null) {
       registerStatus = "HISTORICAL_RECORD";
+    } else if (allNozzlesHaveSale) {
+      registerStatus = "FINALIZED";
     } else if (nozzleData.some((n) => n.status === "IN_PROGRESS_SHIFT")) {
       registerStatus = "IN_PROGRESS";
-    } else if (allNozzlesHaveSale || anyNozzleHasSale) {
-      registerStatus = "FINALIZED";
     } else if (nozzleData.some((n) => n.status === "AWAITING_SHIFTS")) {
       registerStatus = "AWAITING_SHIFTS";
     } else if (nozzleData.every((n) => n.status === "NO_RECORD")) {

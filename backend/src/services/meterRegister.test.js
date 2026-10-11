@@ -319,7 +319,6 @@ test("18. Existing Stock Register, receipt, density, rate remain unaffected", as
   assert.equal(msStock.actualDipStockLitres, 10606.18);
   assert.equal(msStock.hasStockRecord, true);
 });
-
 test("19. Unoperated nozzles have closing equal to opening, sale of 0, and total meter sale reflects active nozzles", async () => {
   const station = await Station.findOne({ isActive: true }).lean();
   const reg = await getDailyRegister(station._id, "2026-10-11");
