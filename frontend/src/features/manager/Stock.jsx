@@ -240,9 +240,12 @@ const Stock = () => {
         if (h?.data) setRates(h.data);
         if (configuredTanks?.data) setTanks(configuredTanks.data);
       })
-      .catch((err) => console.error("Failed to load initial rates and tanks", err));
+      .catch((err) => {
+        console.error("Failed to load initial rates and tanks", err);
+        if (current) setNotice(err.message || t("manager.stockLabels.loadError"));
+      });
     return () => { current = false; };
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let current = true;
