@@ -364,6 +364,72 @@ test("FUEL RECEIPTS: missing before or after observations produce null derived f
   }
 });
 
+test("FUEL RECEIPTS: defaults supplierName to BPCL and calculates afterDensityDifference using challanDensity15 when afterChallanDensity15 is omitted", async () => {
+  const stationId = "000000000000000000000001";
+  const managerId = "000000000000000000000002";
+  const entityId = "000000000000000000000006";
+
+  const origStation = Station.findOne;
+  const origCreate = FuelReceipt.create;
+  const origAudit = AuditLog.create;
+
+  let createdReceipt = null;
+
+  Station.findOne = () => ({ lean: async () => ({ _id: stationId }) });
+  FuelReceipt.create = async (doc) => {
+    createdReceipt = { _id: entityId, ...doc };
+    return createdReceipt;
+  };
+  AuditLog.create = async (doc) => doc;
+
+  try {
+    const res = {
+      statusCode: 200,
+      status(c) { this.statusCode = c; return this; },
+      json(data) { this.body = data; return this; },
+    };
+
+    await createManagerReceipt(
+      {
+        body: {
+          businessDate: "2026-10-15",
+          product: "PETROL",
+          invoiceNumber: "INV-102",
+          quantityLitres: 12000,
+          tankerNumber: "MH-14-CC-9999",
+          // supplierName omitted -> should default to BPCL
+
+          // Before decantation: 745 at 25°C => 753.8
+          beforeHydrometer: 745,
+          beforeTemperatureC: 25,
+          challanDensity15: 753.0,
+
+          // After decantation: 746 at 25°C => 754.8
+          // afterChallanDensity15 omitted -> should fallback to challanDensity15 (753.0)
+          afterHydrometer: 746,
+          afterTemperatureC: 25,
+        },
+        user: { _id: managerId, role: "MANAGER" },
+      },
+      res,
+      assert.fail,
+    );
+
+    assert.equal(res.statusCode, 201);
+    assert.equal(createdReceipt.supplierName, "BPCL");
+    assert.equal(createdReceipt.beforeDensity15, 753.8);
+    assert.equal(createdReceipt.beforeDensityDifference, 0.8);
+    assert.equal(createdReceipt.afterDensity15, 754.8);
+    // After difference = 754.8 - 753.0 = 1.8
+    assert.equal(createdReceipt.afterDensityDifference, 1.8);
+    assert.equal(createdReceipt.afterChallanDensity15, 753.0);
+  } finally {
+    Station.findOne = origStation;
+    FuelReceipt.create = origCreate;
+    AuditLog.create = origAudit;
+  }
+});
+
 test("CONVERSION PREVIEW ENDPOINT: returns correct calculation details via GET /stock/density/convert", async () => {
   const req = {
     query: { hydrometer: "745", temperature: "25" },

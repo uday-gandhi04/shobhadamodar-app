@@ -227,6 +227,10 @@ export const createManagerReceipt = async (req, res, next) => {
       payload.afterDensity15 = null;
     }
 
+    if (!payload.supplierName || !payload.supplierName.trim()) {
+      payload.supplierName = "BPCL";
+    }
+
     // Server-authoritative density differences (Observed @15°C - Challan @15°C)
     if (payload.beforeDensity15 != null && payload.challanDensity15 != null) {
       payload.beforeDensityDifference = Number((payload.beforeDensity15 - payload.challanDensity15).toFixed(4));
@@ -234,8 +238,12 @@ export const createManagerReceipt = async (req, res, next) => {
       payload.beforeDensityDifference = null;
     }
 
-    if (payload.afterDensity15 != null && payload.afterChallanDensity15 != null) {
-      payload.afterDensityDifference = Number((payload.afterDensity15 - payload.afterChallanDensity15).toFixed(4));
+    const afterChallan = payload.afterChallanDensity15 ?? payload.challanDensity15;
+    if (payload.afterDensity15 != null && afterChallan != null) {
+      payload.afterDensityDifference = Number((payload.afterDensity15 - afterChallan).toFixed(4));
+      if (payload.afterChallanDensity15 == null) {
+        payload.afterChallanDensity15 = afterChallan;
+      }
     } else {
       payload.afterDensityDifference = null;
     }
@@ -252,7 +260,7 @@ export const createManagerReceipt = async (req, res, next) => {
         product: receipt.product,
         invoiceNumber: receipt.invoiceNumber,
         quantityLitres: receipt.quantityLitres,
-        vendor: receipt.supplierName
+        vendor: req.body.supplierName ? receipt.supplierName : undefined
       },
     });
     res.status(201).json({ success: true, data: receipt });

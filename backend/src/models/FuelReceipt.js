@@ -7,7 +7,7 @@ const fuelReceiptSchema = new mongoose.Schema({
   product: { type: String, enum: ["PETROL", "DIESEL"], required: true },
   invoiceNumber: { type: String, required: true, trim: true },
   quantityLitres: { type: Number, required: true, min: 0 },
-  supplierName: { type: String, trim: true, default: "" },
+  supplierName: { type: String, trim: true, default: "BPCL" },
   tankerNumber: { type: String, trim: true, default: "" },
   beforeHydrometer: optionalNumber, beforeTemperatureC: optionalNumber, beforeDensity15: optionalNumber,
   challanDensity15: optionalNumber, beforeDensityDifference: { type: Number, default: null },

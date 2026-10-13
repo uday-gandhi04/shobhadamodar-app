@@ -23,6 +23,7 @@
       "density15": "Density @15°C",
       "saveDensity": "Save Density",
       "fuelReceipts": "Fuel Receipts",
+      "addReceipt": "Add Receipt",
       "invoiceNumber": "Invoice Number",
       "quantityLitres": "Quantity (L)",
       "supplierName": "Supplier",

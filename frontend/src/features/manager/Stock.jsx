@@ -197,11 +197,10 @@ const Stock = () => {
   const [form, setForm] = useState({ openingStockLitres: "", productDip: "", actualDipStockLitres: "", waterDip: "", waterDipVolumeLitres: "" });
   const [densityForm, setDensityForm] = useState({ hydrometerReading: "", temperatureC: "", density15: "" });
   const [receipt, setReceipt] = useState({
-    invoiceNumber: "", quantityLitres: "", supplierName: "", tankerNumber: "",
+    invoiceNumber: "", quantityLitres: "", supplierName: "BPCL", tankerNumber: "",
     beforeHydrometer: "", beforeTemperatureC: "", beforeDensity15: "",
     challanDensity15: "", beforeDensityDifference: "",
-    afterHydrometer: "", afterTemperatureC: "", afterDensity15: "",
-    afterChallanDensity15: "", afterDensityDifference: ""
+    afterHydrometer: "", afterTemperatureC: "", afterDensity15: ""
   });
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [rate, setRate] = useState({ businessDate: getBusinessDate(), petrolRateRupees: "", dieselRateRupees: "" });
@@ -246,12 +245,6 @@ const Stock = () => {
         next.afterDensity15 = String(aStatus.density15);
       } else {
         next.afterDensity15 = "";
-      }
-
-      if (next.afterDensity15 && next.afterChallanDensity15 !== "") {
-        next.afterDensityDifference = (Number(next.afterDensity15) - Number(next.afterChallanDensity15)).toFixed(2);
-      } else {
-        next.afterDensityDifference = "";
       }
 
       return next;
@@ -1081,49 +1074,45 @@ const Stock = () => {
 
                 <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3">{t("manager.stockLabels.basicDetails", "Basic Details")}</h3>
                 <Input type="text" label={t("manager.stockLabels.invoiceNumber", "Invoice Number")} value={receipt.invoiceNumber} onChange={changeReceipt("invoiceNumber")} required />
-                <Input type="number" step="any" label={t("manager.stockLabels.quantityLitres", "Quantity (Ltr)")} value={receipt.quantityLitres} onChange={changeReceipt("quantityLitres")} required />
-                <Input type="text" label={t("manager.stockLabels.supplierName", "Supplier Name")} value={receipt.supplierName} onChange={changeReceipt("supplierName")} />
+                <Input type="number" step="any" label={t("manager.stockLabels.quantityLitres", "Quantity (L)")} value={receipt.quantityLitres} onChange={changeReceipt("quantityLitres")} required />
                 <Input type="text" label={t("manager.stockLabels.tankerNumber", "Tanker Number")} value={receipt.tankerNumber} onChange={changeReceipt("tankerNumber")} />
 
-                <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3 !mt-4">{t("manager.stockLabels.beforeDecantation", "Before Decantation (Observed)")}</h3>
-                <Input type="number" step="any" label={t("manager.stockLabels.beforeHydrometer", "Hydrometer")} value={receipt.beforeHydrometer} onChange={changeReceipt("beforeHydrometer")} />
-                <Input type="number" step="any" label={t("manager.stockLabels.beforeTemperatureC", "Temperature (°C)")} value={receipt.beforeTemperatureC} onChange={changeReceipt("beforeTemperatureC")} />
+                <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3 !mt-4">{t("manager.stockLabels.beforeDecantation", "Before Decantation")}</h3>
+                <Input type="number" step="any" label={t("manager.stockLabels.beforeHydrometer", "Before Hydrometer")} value={receipt.beforeHydrometer} onChange={changeReceipt("beforeHydrometer")} />
+                <Input type="number" step="any" label={t("manager.stockLabels.beforeTemperatureC", "Before Temp (°C)")} value={receipt.beforeTemperatureC} onChange={changeReceipt("beforeTemperatureC")} />
                 <Input
                   type="text"
-                  label={t("manager.stockLabels.beforeDensity15", "Density @15°C")}
+                  label={t("manager.stockLabels.beforeDensity15", "Before Density @15°C")}
                   value={receipt.beforeDensity15 || "—"}
                   readOnly={true}
                 />
 
-                <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3 !mt-4">{t("manager.stockLabels.challan", "Challan Details")}</h3>
+                <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3 !mt-4">{t("manager.stockLabels.challan", "Challan")}</h3>
                 <Input type="number" step="any" label={t("manager.stockLabels.challanDensity15", "Challan Density @15°C")} value={receipt.challanDensity15} onChange={changeReceipt("challanDensity15")} />
                 <Input
                   type="text"
-                  label={t("manager.stockLabels.beforeDensityDifference", "Density Difference (Observed - Challan)")}
+                  label={t("manager.stockLabels.beforeDensityDifference", "Before Density Diff")}
                   value={receipt.beforeDensityDifference !== "" ? receipt.beforeDensityDifference : "—"}
                   readOnly={true}
                 />
 
                 <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3 !mt-4">{t("manager.stockLabels.afterDecantation", "After Decantation")}</h3>
-                <Input type="number" step="any" label={t("manager.stockLabels.afterHydrometer", "Hydrometer")} value={receipt.afterHydrometer} onChange={changeReceipt("afterHydrometer")} />
-                <Input type="number" step="any" label={t("manager.stockLabels.afterTemperatureC", "Temperature (°C)")} value={receipt.afterTemperatureC} onChange={changeReceipt("afterTemperatureC")} />
+                <Input type="number" step="any" label={t("manager.stockLabels.afterHydrometer", "After Hydrometer")} value={receipt.afterHydrometer} onChange={changeReceipt("afterHydrometer")} />
+                <Input type="number" step="any" label={t("manager.stockLabels.afterTemperatureC", "After Temp (°C)")} value={receipt.afterTemperatureC} onChange={changeReceipt("afterTemperatureC")} />
                 <Input
                   type="text"
-                  label={t("manager.stockLabels.afterDensity15", "Density @15°C")}
+                  label={t("manager.stockLabels.afterDensity15", "After Density @15°C")}
                   value={receipt.afterDensity15 || "—"}
-                  readOnly={true}
-                />
-                <Input type="number" step="any" label={t("manager.stockLabels.afterChallanDensity15", "Challan Density @15°C")} value={receipt.afterChallanDensity15} onChange={changeReceipt("afterChallanDensity15")} />
-                <Input
-                  type="text"
-                  label={t("manager.stockLabels.afterDensityDifference", "Density Difference (Observed - Challan)")}
-                  value={receipt.afterDensityDifference !== "" ? receipt.afterDensityDifference : "—"}
                   readOnly={true}
                 />
 
                 <div className="!mt-4">
                   <Button onClick={() => save(async () => {
-                    const payload = { businessDate: date, product };
+                    const payload = {
+                      businessDate: date,
+                      product,
+                      supplierName: receipt.supplierName || "BPCL",
+                    };
                     Object.keys(receipt).forEach(k => {
                       if (["invoiceNumber", "supplierName", "tankerNumber"].includes(k)) {
                         payload[k] = receipt[k];
@@ -1131,17 +1120,22 @@ const Stock = () => {
                         payload[k] = receipt[k] === "" ? null : Number(receipt[k]);
                       }
                     });
+                    if (!payload.supplierName) {
+                      payload.supplierName = "BPCL";
+                    }
+                    if (payload.challanDensity15 != null) {
+                      payload.afterChallanDensity15 = payload.challanDensity15;
+                    }
                     const res = await createManagerReceipt(payload);
                     setReceipt({
-                      invoiceNumber: "", quantityLitres: "", supplierName: "", tankerNumber: "",
+                      invoiceNumber: "", quantityLitres: "", supplierName: "BPCL", tankerNumber: "",
                       beforeHydrometer: "", beforeTemperatureC: "", beforeDensity15: "",
                       challanDensity15: "", beforeDensityDifference: "",
-                      afterHydrometer: "", afterTemperatureC: "", afterDensity15: "",
-                      afterChallanDensity15: "", afterDensityDifference: ""
+                      afterHydrometer: "", afterTemperatureC: "", afterDensity15: ""
                     });
                     return res;
                   })}>
-                    {t("manager.stockLabels.saveReceipt", "+ Save Fuel Receipt")}
+                    {t("manager.stockLabels.saveReceipt", "Save Receipt")}
                   </Button>
                 </div>
               </section>
@@ -1333,21 +1327,19 @@ const Stock = () => {
             </div>
 
             <div className="!space-y-1">
-              <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-2">Before Receipt (Observed)</h3>
-              <ReadRow label="Hydrometer Reading" value={selectedReceipt.beforeHydrometer} unit=" kg/m³" />
-              <ReadRow label="Temperature (°C)" value={selectedReceipt.beforeTemperatureC} unit=" °C" />
-              <ReadRow label="Density at 15°C" value={selectedReceipt.beforeDensity15} unit=" kg/m³" />
+              <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-2">Before Decantation</h3>
+              <ReadRow label="Before Hydrometer" value={selectedReceipt.beforeHydrometer} unit=" kg/m³" />
+              <ReadRow label="Before Temp (°C)" value={selectedReceipt.beforeTemperatureC} unit=" °C" />
+              <ReadRow label="Before Density @15°C" value={selectedReceipt.beforeDensity15} unit=" kg/m³" />
 
-              <h3 className="!text-[11px] !font-extrabold !text-amber-700 !bg-amber-50 !py-1.5 !px-3 !rounded-lg !mb-2 !mt-4">Challan Details</h3>
-              <ReadRow label="Challan Density at 15°C" value={selectedReceipt.challanDensity15} unit=" kg/m³" />
-              <ReadRow label="Density Difference (Observed - Challan)" value={selectedReceipt.beforeDensityDifference} unit=" kg/m³" isHighlighted />
+              <h3 className="!text-[11px] !font-extrabold !text-amber-700 !bg-amber-50 !py-1.5 !px-3 !rounded-lg !mb-2 !mt-4">Challan</h3>
+              <ReadRow label="Challan Density @15°C" value={selectedReceipt.challanDensity15} unit=" kg/m³" />
+              <ReadRow label="Before Density Diff" value={selectedReceipt.beforeDensityDifference} unit=" kg/m³" isHighlighted />
 
               <h3 className="!text-[11px] !font-extrabold !text-purple-700 !bg-purple-50 !py-1.5 !px-3 !rounded-lg !mb-2 !mt-4">After Decantation</h3>
-              <ReadRow label="Hydrometer Reading" value={selectedReceipt.afterHydrometer} unit=" kg/m³" />
-              <ReadRow label="Temperature (°C)" value={selectedReceipt.afterTemperatureC} unit=" °C" />
-              <ReadRow label="Density at 15°C" value={selectedReceipt.afterDensity15} unit=" kg/m³" />
-              <ReadRow label="Challan Density at 15°C" value={selectedReceipt.afterChallanDensity15} unit=" kg/m³" />
-              <ReadRow label="Density Difference (Observed - Challan)" value={selectedReceipt.afterDensityDifference} unit=" kg/m³" isHighlighted />
+              <ReadRow label="After Hydrometer" value={selectedReceipt.afterHydrometer} unit=" kg/m³" />
+              <ReadRow label="After Temp (°C)" value={selectedReceipt.afterTemperatureC} unit=" °C" />
+              <ReadRow label="After Density @15°C" value={selectedReceipt.afterDensity15} unit=" kg/m³" />
             </div>
 
           </section>
