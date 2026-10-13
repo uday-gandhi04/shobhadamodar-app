@@ -10,6 +10,7 @@ import DailyMeterRegister from "../models/DailyMeterRegister.js";
 import { getDailyRegister, interpolateVolume, deriveOpeningStock, getProductRegisterNozzles } from "../services/stockRegisterService.js";
 import { generateMonthlyExcel, getMonthlyRegisterReportData } from "../services/exportRegisterService.js";
 import { recordAuditLog } from "../utils/auditLog.js";
+import { convertHydrometerToDensity15, getDensityCalculationDetails } from "../services/densityCalculationService.js";
 
 const products = ["PETROL", "DIESEL"];
 const activeStation = async () => {
@@ -130,10 +131,39 @@ export const upsertManagerStock = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 export const getManagerDensity = async (req, res, next) => { try { const station = await activeStation(); const records = await DailyDensity.find({ stationId: station._id, businessDate: req.query.date }).lean(); res.json({ success: true, data: records }); } catch (error) { next(error); } };
+export const getDensityConversionPreview = async (req, res, next) => {
+  try {
+    const { hydrometer, temperature } = req.query;
+    if (hydrometer == null || temperature == null) {
+      return res.status(400).json({ success: false, message: "Hydrometer reading and temperature query parameters are required." });
+    }
+    const hyd = Number(hydrometer);
+    const temp = Number(temperature);
+    if (isNaN(hyd) || isNaN(temp)) {
+      return res.status(400).json({ success: false, message: "Hydrometer reading and temperature must be valid numbers." });
+    }
+    const details = getDensityCalculationDetails(hyd, temp);
+    if (!details.isValid) {
+      return res.status(400).json({ success: false, message: details.error, data: details });
+    }
+    res.json({ success: true, data: details });
+  } catch (error) { next(error); }
+};
+
 export const upsertManagerDensity = async (req, res, next) => {
   try {
     const station = await activeStation();
     const { businessDate, product, ...values } = req.body;
+
+    if (values.hydrometerReading != null && values.temperatureC != null) {
+      const calc = getDensityCalculationDetails(values.hydrometerReading, values.temperatureC);
+      if (!calc.isValid) {
+        return res.status(400).json({ success: false, message: calc.error || "Density calculation failed: inputs outside ASTM 53B range." });
+      }
+      values.density15 = calc.density15;
+    } else if (values.density15 == null) {
+      return res.status(400).json({ success: false, message: "Hydrometer reading and temperature (°C) are required." });
+    }
 
     const existing = await DailyDensity.findOne({ stationId: station._id, businessDate, product }).lean();
 
@@ -145,8 +175,9 @@ export const upsertManagerDensity = async (req, res, next) => {
 
     const changedFields = {};
     if (existing) {
-      if (existing.density !== record.density) changedFields.previousDensity = existing.density;
-      if (existing.temperature !== record.temperature) changedFields.previousTemperature = existing.temperature;
+      if (existing.density15 !== record.density15) changedFields.previousDensity15 = existing.density15;
+      if (existing.temperatureC !== record.temperatureC) changedFields.previousTemperatureC = existing.temperatureC;
+      if (existing.hydrometerReading !== record.hydrometerReading) changedFields.previousHydrometerReading = existing.hydrometerReading;
     }
 
     await recordAuditLog({
@@ -170,6 +201,33 @@ export const createManagerReceipt = async (req, res, next) => {
     const station = await activeStation();
     const payload = { ...req.body, stationId: station._id };
 
+    // Server-authoritative before decantation density
+    if (payload.beforeHydrometer != null && payload.beforeTemperatureC != null) {
+      const beforeCalc = getDensityCalculationDetails(payload.beforeHydrometer, payload.beforeTemperatureC);
+      if (!beforeCalc.isValid) {
+        return res.status(400).json({ success: false, message: `Before decantation error: ${beforeCalc.error}` });
+      }
+      payload.beforeDensity15 = beforeCalc.density15;
+    } else if (payload.beforeHydrometer != null || payload.beforeTemperatureC != null) {
+      return res.status(400).json({ success: false, message: "Both before hydrometer reading and temperature (°C) must be provided." });
+    } else if (payload.beforeDensity15 == null) {
+      payload.beforeDensity15 = null;
+    }
+
+    // Server-authoritative after decantation density
+    if (payload.afterHydrometer != null && payload.afterTemperatureC != null) {
+      const afterCalc = getDensityCalculationDetails(payload.afterHydrometer, payload.afterTemperatureC);
+      if (!afterCalc.isValid) {
+        return res.status(400).json({ success: false, message: `After decantation error: ${afterCalc.error}` });
+      }
+      payload.afterDensity15 = afterCalc.density15;
+    } else if (payload.afterHydrometer != null || payload.afterTemperatureC != null) {
+      return res.status(400).json({ success: false, message: "Both after hydrometer reading and temperature (°C) must be provided." });
+    } else if (payload.afterDensity15 == null) {
+      payload.afterDensity15 = null;
+    }
+
+    // Server-authoritative density differences (Observed @15°C - Challan @15°C)
     if (payload.beforeDensity15 != null && payload.challanDensity15 != null) {
       payload.beforeDensityDifference = Number((payload.beforeDensity15 - payload.challanDensity15).toFixed(4));
     } else {
@@ -200,6 +258,7 @@ export const createManagerReceipt = async (req, res, next) => {
     res.status(201).json({ success: true, data: receipt });
   } catch (error) { next(error); }
 };
+
 
 export const getManagerStockPreview = async (req, res, next) => {
   try {

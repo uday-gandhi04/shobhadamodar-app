@@ -16,3 +16,4 @@ tmp/
 temp/
 *.xlsx
 !data/calibration/*.xlsx
+!data/density/*.xlsx

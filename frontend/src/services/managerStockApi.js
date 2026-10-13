@@ -17,5 +17,7 @@ export const getManagerReceipts = async (date) => (await api.get("/manager/stock
 export const createManagerReceipt = async (payload) => (await api.post("/manager/stock/receipts", payload)).data;
 export const getFuelRateHistory = async () => (await api.get("/fuel-rates/history")).data;
 export const createFuelRate = async (payload) => (await api.post("/fuel-rates", payload)).data;
+export const getDensityConversionPreview = async (hydrometer, temperature) => (await api.get("/manager/stock/density/convert", { params: { hydrometer, temperature } })).data;
+
 export const getManagerStockExport = async (month) => (await api.get("/manager/stock/export", { params: { month }, responseType: 'blob', timeout: 120000 })).data;
 export const getManagerStockPreview = async (month) => (await api.get("/manager/stock/preview", { params: { month }, timeout: 60000 })).data;

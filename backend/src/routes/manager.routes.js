@@ -26,7 +26,7 @@ import {
   protect,
   authorize,
 } from "../middlewares/auth.middleware.js";
-import { getManagerStock, upsertManagerStock, correctManagerOpeningStock, correctManagerMeterOpening, getManagerDensity, upsertManagerDensity, getManagerReceipts, createManagerReceipt, getManagerStockExport, getManagerStockPreview } from "../controllers/managerStock.controller.js";
+import { getManagerStock, upsertManagerStock, correctManagerOpeningStock, correctManagerMeterOpening, getManagerDensity, upsertManagerDensity, getDensityConversionPreview, getManagerReceipts, createManagerReceipt, getManagerStockExport, getManagerStockPreview } from "../controllers/managerStock.controller.js";
 import { stockDateSchema, stockMonthSchema, stockSchema, openingCorrectionSchema, meterOpeningCorrectionSchema, densitySchema, receiptSchema } from "../validations/managerStock.validation.js";
 import { getManagerTanks, createManagerTank, updateManagerTank, getManagerTankCalibration, upsertManagerTankCalibration } from "../controllers/managerTanks.controller.js";
 import { createTankSchema, updateTankSchema, tankCalibrationSchema } from "../validations/managerTanks.validation.js";
@@ -40,6 +40,7 @@ router.put("/stock", protect, authorize("MANAGER"), validate(stockSchema), upser
 router.post("/stock/correct-opening", protect, authorize("MANAGER"), validate(openingCorrectionSchema), correctManagerOpeningStock);
 router.post("/stock/correct-meter-opening", protect, authorize("MANAGER"), validate(meterOpeningCorrectionSchema), correctManagerMeterOpening);
 router.get("/stock/density", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerDensity);
+router.get("/stock/density/convert", protect, authorize("MANAGER"), getDensityConversionPreview);
 router.post("/stock/density", protect, authorize("MANAGER"), validate(densitySchema), upsertManagerDensity);
 router.get("/stock/receipts", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerReceipts);
 router.post("/stock/receipts", protect, authorize("MANAGER"), validate(receiptSchema), createManagerReceipt);
