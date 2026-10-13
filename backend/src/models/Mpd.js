@@ -6,6 +6,9 @@ const nozzleSchema = new mongoose.Schema({
     type: String, // e.g. 'n1', 'n2', 'n3', 'n4'
     required: true,
   },
+  nozzleNumber: {
+    type: Number,
+  },
   name: {
     type: String, // e.g. 'N1 - Petrol'
     required: true,
@@ -49,6 +52,8 @@ const mpdSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+mpdSchema.index({ stationId: 1, mpdNumber: 1 });
 
 const Mpd = mongoose.model('Mpd', mpdSchema);
 export default Mpd;

@@ -30,6 +30,23 @@ import { getManagerStock, upsertManagerStock, correctManagerOpeningStock, correc
 import { stockDateSchema, stockMonthSchema, stockSchema, openingCorrectionSchema, meterOpeningCorrectionSchema, densitySchema, receiptSchema } from "../validations/managerStock.validation.js";
 import { getManagerTanks, createManagerTank, updateManagerTank, getManagerTankCalibration, upsertManagerTankCalibration } from "../controllers/managerTanks.controller.js";
 import { createTankSchema, updateTankSchema, tankCalibrationSchema } from "../validations/managerTanks.validation.js";
+import {
+  getManagerMpds,
+  createManagerMpd,
+  updateManagerMpd,
+  deleteManagerMpd,
+  addManagerMpdNozzle,
+  updateManagerMpdNozzle,
+  deleteManagerMpdNozzle,
+} from "../controllers/managerMpds.controller.js";
+import {
+  createMpdSchema,
+  updateMpdSchema,
+  addNozzleSchema,
+  updateNozzleSchema,
+  mpdIdParamSchema,
+  nozzleIdParamSchema,
+} from "../validations/managerMpds.validation.js";
 
 const router = express.Router();
 
@@ -49,6 +66,14 @@ router.post("/tanks", protect, authorize("MANAGER"), validate(createTankSchema),
 router.patch("/tanks/:id", protect, authorize("MANAGER"), validate(updateTankSchema), updateManagerTank);
 router.get("/tanks/:id/calibration", protect, authorize("MANAGER"), getManagerTankCalibration);
 router.put("/tanks/:id/calibration", protect, authorize("MANAGER"), validate(tankCalibrationSchema), upsertManagerTankCalibration);
+
+router.get("/mpds", protect, authorize("MANAGER"), getManagerMpds);
+router.post("/mpds", protect, authorize("MANAGER"), validate(createMpdSchema), createManagerMpd);
+router.patch("/mpds/:id", protect, authorize("MANAGER"), validate(updateMpdSchema), updateManagerMpd);
+router.delete("/mpds/:id", protect, authorize("MANAGER"), validate(mpdIdParamSchema), deleteManagerMpd);
+router.post("/mpds/:id/nozzles", protect, authorize("MANAGER"), validate(addNozzleSchema), addManagerMpdNozzle);
+router.patch("/mpds/:id/nozzles/:nozzleId", protect, authorize("MANAGER"), validate(updateNozzleSchema), updateManagerMpdNozzle);
+router.delete("/mpds/:id/nozzles/:nozzleId", protect, authorize("MANAGER"), validate(nozzleIdParamSchema), deleteManagerMpdNozzle);
 
 router.get(
   "/employees",

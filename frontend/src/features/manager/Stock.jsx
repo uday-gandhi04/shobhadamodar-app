@@ -196,12 +196,35 @@ const Stock = () => {
   const [calibrationPoints, setCalibrationPoints] = useState([]);
   const [form, setForm] = useState({ openingStockLitres: "", productDip: "", actualDipStockLitres: "", waterDip: "", waterDipVolumeLitres: "" });
   const [densityForm, setDensityForm] = useState({ hydrometerReading: "", temperatureC: "", density15: "" });
-  const [receipt, setReceipt] = useState({
-    invoiceNumber: "", quantityLitres: "", supplierName: "BPCL", tankerNumber: "",
-    beforeHydrometer: "", beforeTemperatureC: "", beforeDensity15: "",
-    challanDensity15: "", beforeDensityDifference: "",
-    afterHydrometer: "", afterTemperatureC: "", afterDensity15: ""
+  const initialReceiptFields = () => ({
+    quantityLitres: "",
+    beforeHydrometer: "",
+    beforeTemperatureC: "",
+    beforeDensity15: "",
+    challanDensity15: "",
+    beforeDensityDifference: "",
+    afterHydrometer: "",
+    afterTemperatureC: "",
+    afterDensity15: "",
   });
+
+  const [receiptDelivery, setReceiptDelivery] = useState({
+    invoiceNumber: "",
+    tankerNumber: "",
+  });
+
+  const [productReceipts, setProductReceipts] = useState({
+    PETROL: initialReceiptFields(),
+    DIESEL: initialReceiptFields(),
+  });
+
+  const currentProductReceipt = productReceipts[product] || initialReceiptFields();
+  const receipt = {
+    ...currentProductReceipt,
+    invoiceNumber: receiptDelivery.invoiceNumber,
+    tankerNumber: receiptDelivery.tankerNumber,
+    supplierName: "BPCL",
+  };
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [rate, setRate] = useState({ businessDate: getBusinessDate(), petrolRateRupees: "", dieselRateRupees: "" });
   const [correctionModalOpen, setCorrectionModalOpen] = useState(false);
@@ -216,10 +239,21 @@ const Stock = () => {
   const [meterCorrectionReason, setMeterCorrectionReason] = useState("");
   const [submittingMeterCorrection, setSubmittingMeterCorrection] = useState(false);
 
+  // Form submission loading states
+  const [isSavingDensity, setIsSavingDensity] = useState(false);
+  const [isSavingReceipt, setIsSavingReceipt] = useState(false);
+  const [isSavingRate, setIsSavingRate] = useState(false);
+
   const changeReceipt = (key) => (e) => {
     const val = e.target.value;
-    setReceipt((old) => {
-      const next = { ...old, [key]: val };
+    if (key === "invoiceNumber" || key === "tankerNumber") {
+      setReceiptDelivery((prev) => ({ ...prev, [key]: val }));
+      return;
+    }
+
+    setProductReceipts((prev) => {
+      const current = prev[product] || initialReceiptFields();
+      const next = { ...current, [key]: val };
 
       // Before decantation live derivation
       const bHyd = next.beforeHydrometer === "" ? null : Number(next.beforeHydrometer);
@@ -247,7 +281,7 @@ const Stock = () => {
         next.afterDensity15 = "";
       }
 
-      return next;
+      return { ...prev, [product]: next };
     });
   };
 
@@ -274,6 +308,13 @@ const Stock = () => {
       if (s.data.tanks) mergeTanks(s.data.tanks);
       setDensity(d.data);
       setReceipts(r.data);
+      if (Array.isArray(r.data) && r.data.length > 0) {
+        const first = r.data[0];
+        setReceiptDelivery((prev) => ({
+          invoiceNumber: prev.invoiceNumber || first.invoiceNumber || "",
+          tankerNumber: prev.tankerNumber || first.tankerNumber || "",
+        }));
+      }
       const currentProduct = productRef.current;
       setForm(stockFormFor(s.data.stock.find((item) => item.product === currentProduct)));
       setDensityForm(densityFormFor(d.data, currentProduct));
@@ -310,6 +351,19 @@ const Stock = () => {
         if (s.data.tanks && s.data.tanks.length > 0) mergeTanks(s.data.tanks);
         setDensity(d.data);
         setReceipts(r.data);
+        if (Array.isArray(r.data) && r.data.length > 0) {
+          const first = r.data[0];
+          setReceiptDelivery({
+            invoiceNumber: first.invoiceNumber || "",
+            tankerNumber: first.tankerNumber || "",
+          });
+        } else {
+          setReceiptDelivery({ invoiceNumber: "", tankerNumber: "" });
+        }
+        setProductReceipts({
+          PETROL: initialReceiptFields(),
+          DIESEL: initialReceiptFields(),
+        });
         const currentProduct = productRef.current;
         setForm(stockFormFor(s.data.stock.find((item) => item.product === currentProduct)));
         setDensityForm(densityFormFor(d.data, currentProduct));
@@ -418,6 +472,20 @@ const Stock = () => {
     densityForm.temperatureC === "" ? null : Number(densityForm.temperatureC)
   );
 
+  const isReceiptValid = Boolean(
+    receipt.invoiceNumber &&
+    receipt.invoiceNumber.trim().length > 0 &&
+    receipt.quantityLitres !== "" &&
+    Number(receipt.quantityLitres) > 0
+  );
+
+  const isRateValid = Boolean(
+    rate.petrolRateRupees !== "" &&
+    rate.dieselRateRupees !== "" &&
+    Number(rate.petrolRateRupees) > 0 &&
+    Number(rate.dieselRateRupees) > 0
+  );
+
   const selectProduct = (value) => {
     productRef.current = value;
     setProduct(value);
@@ -426,11 +494,12 @@ const Stock = () => {
     setDensityForm(densityFormFor(density, value));
   };
 
-  const save = async (fn) => {
+  const save = async (fn, afterSuccess) => {
     try {
       await fn();
       setNotice(t("manager.stockLabels.saved"));
       await load();
+      if (afterSuccess) afterSuccess();
     } catch (e) {
       setNotice(e.response?.data?.message || t("manager.stockLabels.saveError"));
     }
@@ -573,6 +642,8 @@ const Stock = () => {
   };
 
   const saveRate = async () => {
+    if (isSavingRate || !isRateValid) return;
+    setIsSavingRate(true);
     const payload = {
       businessDate: rate.businessDate,
       petrolRatePaise: Math.round(Number(rate.petrolRateRupees) * 100),
@@ -581,10 +652,13 @@ const Stock = () => {
     try {
       await createFuelRate(payload);
       setNotice(t("manager.stockLabels.saved"));
+      setRate((prev) => ({ ...prev, petrolRateRupees: "", dieselRateRupees: "" }));
       const h = await getFuelRateHistory();
       if (h?.data) setRates(h.data);
     } catch (e) {
       setNotice(e.response?.data?.message || t("manager.stockLabels.saveError"));
+    } finally {
+      setIsSavingRate(false);
     }
   };
 
@@ -1053,15 +1127,26 @@ const Stock = () => {
                   </div>
                 )}
                 <Button
-                  disabled={!dailyDensityStatus.isValid}
-                  onClick={() => save(() => upsertManagerDensity({
-                    businessDate: date,
-                    product,
-                    hydrometerReading: Number(densityForm.hydrometerReading),
-                    temperatureC: Number(densityForm.temperatureC),
-                  }))}
+                  disabled={!dailyDensityStatus.isValid || isSavingDensity}
+                  onClick={async () => {
+                    if (isSavingDensity || !dailyDensityStatus.isValid) return;
+                    setIsSavingDensity(true);
+                    try {
+                      await save(
+                        () => upsertManagerDensity({
+                          businessDate: date,
+                          product,
+                          hydrometerReading: Number(densityForm.hydrometerReading),
+                          temperatureC: Number(densityForm.temperatureC),
+                        }),
+                        () => setDensityForm({ hydrometerReading: "", temperatureC: "", density15: "" })
+                      );
+                    } finally {
+                      setIsSavingDensity(false);
+                    }
+                  }}
                 >
-                  {t("manager.stockLabels.saveDensity", "Save Density")}
+                  {isSavingDensity ? "Saving..." : t("manager.stockLabels.saveDensity", "Save Density")}
                 </Button>
               </section>
             )}
@@ -1074,8 +1159,8 @@ const Stock = () => {
 
                 <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3">{t("manager.stockLabels.basicDetails", "Basic Details")}</h3>
                 <Input type="text" label={t("manager.stockLabels.invoiceNumber", "Invoice Number")} value={receipt.invoiceNumber} onChange={changeReceipt("invoiceNumber")} required />
-                <Input type="number" step="any" label={t("manager.stockLabels.quantityLitres", "Quantity (L)")} value={receipt.quantityLitres} onChange={changeReceipt("quantityLitres")} required />
                 <Input type="text" label={t("manager.stockLabels.tankerNumber", "Tanker Number")} value={receipt.tankerNumber} onChange={changeReceipt("tankerNumber")} />
+                <Input type="number" step="any" label={t("manager.stockLabels.quantityLitres", "Quantity (L)")} value={receipt.quantityLitres} onChange={changeReceipt("quantityLitres")} required />
 
                 <h3 className="!text-[11px] !font-extrabold !text-emerald-700 !bg-emerald-50 !py-1.5 !px-3 !rounded-lg !mb-3 !mt-4">{t("manager.stockLabels.beforeDecantation", "Before Decantation")}</h3>
                 <Input type="number" step="any" label={t("manager.stockLabels.beforeHydrometer", "Before Hydrometer")} value={receipt.beforeHydrometer} onChange={changeReceipt("beforeHydrometer")} />
@@ -1107,35 +1192,42 @@ const Stock = () => {
                 />
 
                 <div className="!mt-4">
-                  <Button onClick={() => save(async () => {
-                    const payload = {
-                      businessDate: date,
-                      product,
-                      supplierName: receipt.supplierName || "BPCL",
-                    };
-                    Object.keys(receipt).forEach(k => {
-                      if (["invoiceNumber", "supplierName", "tankerNumber"].includes(k)) {
-                        payload[k] = receipt[k];
-                      } else {
-                        payload[k] = receipt[k] === "" ? null : Number(receipt[k]);
+                  <Button
+                    disabled={!isReceiptValid || isSavingReceipt}
+                    onClick={async () => {
+                      if (isSavingReceipt || !isReceiptValid) return;
+                      setIsSavingReceipt(true);
+                      try {
+                        await save(
+                          async () => {
+                            const payload = {
+                              businessDate: date,
+                              product,
+                              supplierName: "BPCL",
+                              invoiceNumber: receipt.invoiceNumber,
+                              tankerNumber: receipt.tankerNumber,
+                            };
+                            Object.keys(currentProductReceipt).forEach(k => {
+                              payload[k] = currentProductReceipt[k] === "" ? null : Number(currentProductReceipt[k]);
+                            });
+                            if (payload.challanDensity15 != null) {
+                              payload.afterChallanDensity15 = payload.challanDensity15;
+                            }
+                            return await createManagerReceipt(payload);
+                          },
+                          () => {
+                            setProductReceipts((prev) => ({
+                              ...prev,
+                              [product]: initialReceiptFields(),
+                            }));
+                          }
+                        );
+                      } finally {
+                        setIsSavingReceipt(false);
                       }
-                    });
-                    if (!payload.supplierName) {
-                      payload.supplierName = "BPCL";
-                    }
-                    if (payload.challanDensity15 != null) {
-                      payload.afterChallanDensity15 = payload.challanDensity15;
-                    }
-                    const res = await createManagerReceipt(payload);
-                    setReceipt({
-                      invoiceNumber: "", quantityLitres: "", supplierName: "BPCL", tankerNumber: "",
-                      beforeHydrometer: "", beforeTemperatureC: "", beforeDensity15: "",
-                      challanDensity15: "", beforeDensityDifference: "",
-                      afterHydrometer: "", afterTemperatureC: "", afterDensity15: ""
-                    });
-                    return res;
-                  })}>
-                    {t("manager.stockLabels.saveReceipt", "Save Receipt")}
+                    }}
+                  >
+                    {isSavingReceipt ? "Saving..." : t("manager.stockLabels.saveReceipt", "Save Receipt")}
                   </Button>
                 </div>
               </section>
@@ -1211,7 +1303,9 @@ const Stock = () => {
                   <Input type="number" label={t("manager.stockLabels.dieselRateRupees", "Diesel Rate (₹)")} value={rate.dieselRateRupees} onChange={change(setRate, "dieselRateRupees")} />
                 </div>
                 <div className="!mt-2">
-                  <Button onClick={saveRate}>{t("manager.stockLabels.saveRate", "Save Rates")}</Button>
+                  <Button disabled={!isRateValid || isSavingRate} onClick={saveRate}>
+                    {isSavingRate ? "Saving..." : t("manager.stockLabels.saveRate", "Save Rates")}
+                  </Button>
                 </div>
               </section>
 

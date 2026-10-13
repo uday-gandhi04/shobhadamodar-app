@@ -325,13 +325,32 @@ export const startShift = async (req, res, next) => {
       });
     }
 
-    const openingReadings = mpd.nozzles
-      .filter((nozzle) => nozzle.isActive !== false)
-      .map((nozzle) => ({
-        nozzleId: nozzle.nozzleId,
-        fuelType: nozzle.fuelType,
-        openingReading: nozzle.currentCumulativeReading,
-      }));
+    const activeNozzles = (mpd.nozzles || []).filter((nozzle) => nozzle.isActive !== false);
+
+    if (activeNozzles.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Selected MPD "${mpd.mpdNumber}" has no active nozzles configured. Please configure nozzles in Manager Settings before starting a shift.`,
+        code: "MPD_NO_ACTIVE_NOZZLES",
+      });
+    }
+
+    const hasInvalidFuelType = activeNozzles.some(
+      (n) => !["PETROL", "DIESEL"].includes(n.fuelType)
+    );
+    if (hasInvalidFuelType) {
+      return res.status(400).json({
+        success: false,
+        message: `Selected MPD "${mpd.mpdNumber}" contains nozzles with unassigned or invalid fuel types.`,
+        code: "MPD_INVALID_NOZZLE_CONFIG",
+      });
+    }
+
+    const openingReadings = activeNozzles.map((nozzle) => ({
+      nozzleId: nozzle.nozzleId,
+      fuelType: nozzle.fuelType,
+      openingReading: nozzle.currentCumulativeReading ?? 0,
+    }));
 
     const shift = await Shift.create({
       businessDate,

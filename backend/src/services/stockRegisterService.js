@@ -90,10 +90,41 @@ export const interpolateVolume = (dipCm, points) => {
   return null;
 };
 
-// Deterministic nozzle mapping: 4 nozzles per product across MPD 1 and MPD 2
-export const getProductRegisterNozzles = (product, mpds) => {
-  const mpd1 = mpds.find((m) => m.mpdNumber === "MPD 1");
-  const mpd2 = mpds.find((m) => m.mpdNumber === "MPD 2");
+// Configuration-driven nozzle mapping across active MPDs with deterministic fallback
+export const getProductRegisterNozzles = (product, mpds = []) => {
+  const activeMpds = (mpds || [])
+    .filter((m) => m && m.isActive !== false)
+    .sort((a, b) => (a.mpdNumber || "").localeCompare(b.mpdNumber || "", undefined, { numeric: true }));
+
+  // Check if any MPD has nozzles configured with fuelType === product
+  const configuredSpecs = [];
+  let regNozzleIndex = 1;
+
+  for (const mpd of activeMpds) {
+    const mpdNozzles = (mpd.nozzles || [])
+      .filter((n) => n && n.isActive !== false && n.fuelType === product)
+      .sort((a, b) => (a.nozzleId || "").localeCompare(b.nozzleId || "", undefined, { numeric: true }));
+
+    for (const n of mpdNozzles) {
+      configuredSpecs.push({
+        registerNozzle: regNozzleIndex,
+        label: n.name || `Nozzle ${regNozzleIndex}`,
+        mpdNumber: mpd.mpdNumber,
+        mpdId: mpd._id?.toString(),
+        nozzleId: n.nozzleId,
+        fuelType: product,
+      });
+      regNozzleIndex += 1;
+    }
+  }
+
+  if (configuredSpecs.length > 0) {
+    return configuredSpecs;
+  }
+
+  // Fallback to default deterministic layout if no nozzles are configured on the MPDs
+  const mpd1 = activeMpds.find((m) => m.mpdNumber === "MPD 1");
+  const mpd2 = activeMpds.find((m) => m.mpdNumber === "MPD 2");
 
   if (product === "PETROL") {
     return [

@@ -32,6 +32,7 @@ import Stock from "../../features/manager/Stock";
 import Udhari from "../../features/manager/Udhari";
 import Employees from "../../features/manager/Employees";
 import Settings from "../../features/manager/Settings";
+import MpdConfig from "../../features/manager/MpdConfig";
 setupIonicReact();
 
 // Wrapper to prevent unauthenticated users from seeing the dashboard
@@ -146,6 +147,15 @@ function App() {
                 element={
                   <ManagerRoute>
                     <Settings />
+                  </ManagerRoute>
+                }
+              />
+
+              <Route
+                path="/manager/settings/mpds"
+                element={
+                  <ManagerRoute>
+                    <MpdConfig />
                   </ManagerRoute>
                 }
               />
