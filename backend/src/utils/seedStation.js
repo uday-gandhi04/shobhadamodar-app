@@ -5,6 +5,8 @@ import Station from '../models/Station.js';
 import Mpd from '../models/Mpd.js';
 import FuelRate from '../models/FuelRate.js';
 import User from '../models/User.js';
+import Tank from '../models/Tank.js';
+import { seedTankCalibrations } from './seedCalibration.js';
 
 dotenv.config();
 
@@ -67,7 +69,23 @@ const seedStationData = async () => {
       setBy: adminUser._id,
     });
 
-    console.log('Physical Station, MPDs, and Fuel Rates Seeded Successfully!');
+    // 6. Create Tanks MS-1 and HSD-1 if they don't already exist
+    const msTank = await Tank.findOneAndUpdate(
+      { stationId: station._id, product: 'PETROL', tankNumber: 'MS-1' },
+      { $setOnInsert: { stationId: station._id, tankNumber: 'MS-1', product: 'PETROL', capacityLitres: 15000, isActive: true } },
+      { upsert: true, returnDocument: 'after' }
+    );
+
+    const hsdTank = await Tank.findOneAndUpdate(
+      { stationId: station._id, product: 'DIESEL', tankNumber: 'HSD-1' },
+      { $setOnInsert: { stationId: station._id, tankNumber: 'HSD-1', product: 'DIESEL', capacityLitres: 20000, isActive: true } },
+      { upsert: true, returnDocument: 'after' }
+    );
+
+    // 7. Seed official calibrations
+    await seedTankCalibrations({ stationId: station._id, actorId: adminUser._id });
+
+    console.log('Physical Station, MPDs, Tanks, and Official Calibrations Seeded Successfully!');
     process.exit();
   } catch (error) {
     console.error(`Seeding Error: ${error.message}`);

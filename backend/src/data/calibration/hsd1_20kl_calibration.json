@@ -1,0 +1,4002 @@
+[
+  {
+    "dipCm": 0.2,
+    "volumeLitres": 1.1326830361647064
+  },
+  {
+    "dipCm": 0.4,
+    "volumeLitres": 3.2027495058250244
+  },
+  {
+    "dipCm": 0.6,
+    "volumeLitres": 5.882058760042527
+  },
+  {
+    "dipCm": 0.8,
+    "volumeLitres": 9.053299228050738
+  },
+  {
+    "dipCm": 1,
+    "volumeLitres": 12.648563910687473
+  },
+  {
+    "dipCm": 1.2,
+    "volumeLitres": 16.621963622166675
+  },
+  {
+    "dipCm": 1.4,
+    "volumeLitres": 20.939758303648322
+  },
+  {
+    "dipCm": 1.6,
+    "volumeLitres": 25.575766079254574
+  },
+  {
+    "dipCm": 1.8,
+    "volumeLitres": 30.508890512735736
+  },
+  {
+    "dipCm": 2,
+    "volumeLitres": 35.72165264019243
+  },
+  {
+    "dipCm": 2.2,
+    "volumeLitres": 41.19925632609034
+  },
+  {
+    "dipCm": 2.4,
+    "volumeLitres": 46.92896079411006
+  },
+  {
+    "dipCm": 2.6,
+    "volumeLitres": 52.89964146879561
+  },
+  {
+    "dipCm": 2.8,
+    "volumeLitres": 59.10147210140926
+  },
+  {
+    "dipCm": 3,
+    "volumeLitres": 65.52568820796107
+  },
+  {
+    "dipCm": 3.2,
+    "volumeLitres": 72.16440686621631
+  },
+  {
+    "dipCm": 3.4,
+    "volumeLitres": 79.01048668903664
+  },
+  {
+    "dipCm": 3.6,
+    "volumeLitres": 86.05741713478503
+  },
+  {
+    "dipCm": 3.8,
+    "volumeLitres": 93.29922969040406
+  },
+  {
+    "dipCm": 4,
+    "volumeLitres": 100.73042566154678
+  },
+  {
+    "dipCm": 4.2,
+    "volumeLitres": 108.34591677589141
+  },
+  {
+    "dipCm": 4.4,
+    "volumeLitres": 116.14097581462049
+  },
+  {
+    "dipCm": 4.6,
+    "volumeLitres": 124.11119519329499
+  },
+  {
+    "dipCm": 4.8,
+    "volumeLitres": 132.25245191716826
+  },
+  {
+    "dipCm": 5,
+    "volumeLitres": 140.56087770151984
+  },
+  {
+    "dipCm": 5.2,
+    "volumeLitres": 149.0328333168529
+  },
+  {
+    "dipCm": 5.4,
+    "volumeLitres": 157.6648864199642
+  },
+  {
+    "dipCm": 5.6,
+    "volumeLitres": 166.45379228405346
+  },
+  {
+    "dipCm": 5.8,
+    "volumeLitres": 175.39647695751856
+  },
+  {
+    "dipCm": 6,
+    "volumeLitres": 184.49002247112676
+  },
+  {
+    "dipCm": 6.2,
+    "volumeLitres": 193.73165378368276
+  },
+  {
+    "dipCm": 6.4,
+    "volumeLitres": 203.1187272117382
+  },
+  {
+    "dipCm": 6.6,
+    "volumeLitres": 212.64872013301547
+  },
+  {
+    "dipCm": 6.8,
+    "volumeLitres": 222.31922178858113
+  },
+  {
+    "dipCm": 7,
+    "volumeLitres": 232.12792503727655
+  },
+  {
+    "dipCm": 7.2,
+    "volumeLitres": 242.0726189391808
+  },
+  {
+    "dipCm": 7.4,
+    "volumeLitres": 252.15118206376297
+  },
+  {
+    "dipCm": 7.6,
+    "volumeLitres": 262.3615764340773
+  },
+  {
+    "dipCm": 7.8,
+    "volumeLitres": 272.7018420311989
+  },
+  {
+    "dipCm": 8,
+    "volumeLitres": 283.1700917939242
+  },
+  {
+    "dipCm": 8.2,
+    "volumeLitres": 293.7645070576858
+  },
+  {
+    "dipCm": 8.4,
+    "volumeLitres": 304.48333338424277
+  },
+  {
+    "dipCm": 8.6,
+    "volumeLitres": 315.3248767400828
+  },
+  {
+    "dipCm": 8.8,
+    "volumeLitres": 326.287499986831
+  },
+  {
+    "dipCm": 9,
+    "volumeLitres": 337.36961965165267
+  },
+  {
+    "dipCm": 9.2,
+    "volumeLitres": 348.56970294950844
+  },
+  {
+    "dipCm": 9.4,
+    "volumeLitres": 359.88626503252453
+  },
+  {
+    "dipCm": 9.6,
+    "volumeLitres": 371.31786644464944
+  },
+  {
+    "dipCm": 9.8,
+    "volumeLitres": 382.8631107622833
+  },
+  {
+    "dipCm": 10,
+    "volumeLitres": 394.52064240372897
+  },
+  {
+    "dipCm": 10.2,
+    "volumeLitres": 406.2891445922297
+  },
+  {
+    "dipCm": 10.4,
+    "volumeLitres": 418.1673374589944
+  },
+  {
+    "dipCm": 10.6,
+    "volumeLitres": 430.15397627405105
+  },
+  {
+    "dipCm": 10.8,
+    "volumeLitres": 442.24784979405604
+  },
+  {
+    "dipCm": 11,
+    "volumeLitres": 454.44777871727854
+  },
+  {
+    "dipCm": 11.2,
+    "volumeLitres": 466.75261423696134
+  },
+  {
+    "dipCm": 11.4,
+    "volumeLitres": 479.1612366851519
+  },
+  {
+    "dipCm": 11.6,
+    "volumeLitres": 491.67255425982364
+  },
+  {
+    "dipCm": 11.8,
+    "volumeLitres": 504.2855018288224
+  },
+  {
+    "dipCm": 12,
+    "volumeLitres": 516.9990398047665
+  },
+  {
+    "dipCm": 12.2,
+    "volumeLitres": 529.8121530855599
+  },
+  {
+    "dipCm": 12.4,
+    "volumeLitres": 542.7238500556808
+  },
+  {
+    "dipCm": 12.6,
+    "volumeLitres": 555.7331616438189
+  },
+  {
+    "dipCm": 12.8,
+    "volumeLitres": 568.8391404328283
+  },
+  {
+    "dipCm": 13,
+    "volumeLitres": 582.0408598183191
+  },
+  {
+    "dipCm": 13.2,
+    "volumeLitres": 595.3374132125138
+  },
+  {
+    "dipCm": 13.4,
+    "volumeLitres": 608.7279132902726
+  },
+  {
+    "dipCm": 13.6,
+    "volumeLitres": 622.2114912744617
+  },
+  {
+    "dipCm": 13.8,
+    "volumeLitres": 635.787296258045
+  },
+  {
+    "dipCm": 14,
+    "volumeLitres": 649.4544945605178
+  },
+  {
+    "dipCm": 14.2,
+    "volumeLitres": 663.2122691164586
+  },
+  {
+    "dipCm": 14.4,
+    "volumeLitres": 677.0598188941746
+  },
+  {
+    "dipCm": 14.6,
+    "volumeLitres": 690.9963583425463
+  },
+  {
+    "dipCm": 14.8,
+    "volumeLitres": 705.0211168643381
+  },
+  {
+    "dipCm": 15,
+    "volumeLitres": 719.1333383143708
+  },
+  {
+    "dipCm": 15.2,
+    "volumeLitres": 733.3322805210469
+  },
+  {
+    "dipCm": 15.4,
+    "volumeLitres": 747.6172148298734
+  },
+  {
+    "dipCm": 15.6,
+    "volumeLitres": 761.9874256676511
+  },
+  {
+    "dipCm": 15.8,
+    "volumeLitres": 776.4422101262045
+  },
+  {
+    "dipCm": 16,
+    "volumeLitres": 790.9808775644549
+  },
+  {
+    "dipCm": 16.2,
+    "volumeLitres": 805.6027492278964
+  },
+  {
+    "dipCm": 16.4,
+    "volumeLitres": 820.3071578844273
+  },
+  {
+    "dipCm": 16.6,
+    "volumeLitres": 835.0934474756945
+  },
+  {
+    "dipCm": 16.8,
+    "volumeLitres": 849.9609727830789
+  },
+  {
+    "dipCm": 17,
+    "volumeLitres": 864.9090991075602
+  },
+  {
+    "dipCm": 17.2,
+    "volumeLitres": 879.9372019627073
+  },
+  {
+    "dipCm": 17.4,
+    "volumeLitres": 895.0446667801157
+  },
+  {
+    "dipCm": 17.6,
+    "volumeLitres": 910.2308886266587
+  },
+  {
+    "dipCm": 17.8,
+    "volumeLitres": 925.495271932927
+  },
+  {
+    "dipCm": 18,
+    "volumeLitres": 940.8372302323125
+  },
+  {
+    "dipCm": 18.2,
+    "volumeLitres": 956.2561859101884
+  },
+  {
+    "dipCm": 18.4,
+    "volumeLitres": 971.7515699627052
+  },
+  {
+    "dipCm": 18.6,
+    "volumeLitres": 987.3228217647022
+  },
+  {
+    "dipCm": 18.8,
+    "volumeLitres": 1002.9693888463393
+  },
+  {
+    "dipCm": 19,
+    "volumeLitres": 1018.6907266779798
+  },
+  {
+    "dipCm": 19.2,
+    "volumeLitres": 1034.4862984629833
+  },
+  {
+    "dipCm": 19.4,
+    "volumeLitres": 1050.355574937996
+  },
+  {
+    "dipCm": 19.6,
+    "volumeLitres": 1066.2980341804205
+  },
+  {
+    "dipCm": 19.8,
+    "volumeLitres": 1082.3131614227252
+  },
+  {
+    "dipCm": 20,
+    "volumeLitres": 1098.4004488732837
+  },
+  {
+    "dipCm": 20.2,
+    "volumeLitres": 1114.559395543448
+  },
+  {
+    "dipCm": 20.4,
+    "volumeLitres": 1130.7895070805769
+  },
+  {
+    "dipCm": 20.6,
+    "volumeLitres": 1147.0902956067714
+  },
+  {
+    "dipCm": 20.8,
+    "volumeLitres": 1163.461279563054
+  },
+  {
+    "dipCm": 21,
+    "volumeLitres": 1179.9019835587521
+  },
+  {
+    "dipCm": 21.2,
+    "volumeLitres": 1196.4119382258837
+  },
+  {
+    "dipCm": 21.4,
+    "volumeLitres": 1212.9906800783147
+  },
+  {
+    "dipCm": 21.6,
+    "volumeLitres": 1229.6377513754983
+  },
+  {
+    "dipCm": 21.8,
+    "volumeLitres": 1246.352699990596
+  },
+  {
+    "dipCm": 22,
+    "volumeLitres": 1263.1350792828089
+  },
+  {
+    "dipCm": 22.2,
+    "volumeLitres": 1279.9844479737471
+  },
+  {
+    "dipCm": 22.4,
+    "volumeLitres": 1296.900370027662
+  },
+  {
+    "dipCm": 22.6,
+    "volumeLitres": 1313.882414535405
+  },
+  {
+    "dipCm": 22.8,
+    "volumeLitres": 1330.9301556019554
+  },
+  {
+    "dipCm": 23,
+    "volumeLitres": 1348.043172237363
+  },
+  {
+    "dipCm": 23.2,
+    "volumeLitres": 1365.2210482509997
+  },
+  {
+    "dipCm": 23.4,
+    "volumeLitres": 1382.4633721489731
+  },
+  {
+    "dipCm": 23.6,
+    "volumeLitres": 1399.7697370345868
+  },
+  {
+    "dipCm": 23.8,
+    "volumeLitres": 1417.1397405117307
+  },
+  {
+    "dipCm": 24,
+    "volumeLitres": 1434.5729845910882
+  },
+  {
+    "dipCm": 24.2,
+    "volumeLitres": 1452.0690755990527
+  },
+  {
+    "dipCm": 24.4,
+    "volumeLitres": 1469.6276240892767
+  },
+  {
+    "dipCm": 24.6,
+    "volumeLitres": 1487.2482447567168
+  },
+  {
+    "dipCm": 24.8,
+    "volumeLitres": 1504.9305563541075
+  },
+  {
+    "dipCm": 25,
+    "volumeLitres": 1522.67418161079
+  },
+  {
+    "dipCm": 25.2,
+    "volumeLitres": 1540.4787471537736
+  },
+  {
+    "dipCm": 25.4,
+    "volumeLitres": 1558.3438834309711
+  },
+  {
+    "dipCm": 25.6,
+    "volumeLitres": 1576.26922463656
+  },
+  {
+    "dipCm": 25.8,
+    "volumeLitres": 1594.2544086383236
+  },
+  {
+    "dipCm": 26,
+    "volumeLitres": 1612.2990769069804
+  },
+  {
+    "dipCm": 26.2,
+    "volumeLitres": 1630.4028744473792
+  },
+  {
+    "dipCm": 26.4,
+    "volumeLitres": 1648.5654497315247
+  },
+  {
+    "dipCm": 26.6,
+    "volumeLitres": 1666.7864546333533
+  },
+  {
+    "dipCm": 26.8,
+    "volumeLitres": 1685.0655443652258
+  },
+  {
+    "dipCm": 27,
+    "volumeLitres": 1703.4023774160337
+  },
+  {
+    "dipCm": 27.2,
+    "volumeLitres": 1721.796615490932
+  },
+  {
+    "dipCm": 27.4,
+    "volumeLitres": 1740.2479234525654
+  },
+  {
+    "dipCm": 27.6,
+    "volumeLitres": 1758.7559692638226
+  },
+  {
+    "dipCm": 27.8,
+    "volumeLitres": 1777.3204239319923
+  },
+  {
+    "dipCm": 28,
+    "volumeLitres": 1795.9409614543335
+  },
+  {
+    "dipCm": 28.2,
+    "volumeLitres": 1814.6172587649814
+  },
+  {
+    "dipCm": 28.4,
+    "volumeLitres": 1833.3489956831581
+  },
+  {
+    "dipCm": 28.6,
+    "volumeLitres": 1852.1358548626542
+  },
+  {
+    "dipCm": 28.8,
+    "volumeLitres": 1870.9775217425167
+  },
+  {
+    "dipCm": 29,
+    "volumeLitres": 1889.8736844989412
+  },
+  {
+    "dipCm": 29.2,
+    "volumeLitres": 1908.824033998295
+  },
+  {
+    "dipCm": 29.4,
+    "volumeLitres": 1927.8282637512673
+  },
+  {
+    "dipCm": 29.6,
+    "volumeLitres": 1946.8860698680837
+  },
+  {
+    "dipCm": 29.8,
+    "volumeLitres": 1965.9971510147866
+  },
+  {
+    "dipCm": 30,
+    "volumeLitres": 1985.1612083705154
+  },
+  {
+    "dipCm": 30.2,
+    "volumeLitres": 2004.377945585766
+  },
+  {
+    "dipCm": 30.4,
+    "volumeLitres": 2023.6470687416324
+  },
+  {
+    "dipCm": 30.6,
+    "volumeLitres": 2042.9682863099392
+  },
+  {
+    "dipCm": 30.8,
+    "volumeLitres": 2062.341309114308
+  },
+  {
+    "dipCm": 31,
+    "volumeLitres": 2081.7658502920754
+  },
+  {
+    "dipCm": 31.2,
+    "volumeLitres": 2101.2416252570683
+  },
+  {
+    "dipCm": 31.4,
+    "volumeLitres": 2120.7683516632073
+  },
+  {
+    "dipCm": 31.6,
+    "volumeLitres": 2140.3457493688875
+  },
+  {
+    "dipCm": 31.8,
+    "volumeLitres": 2159.973540402185
+  },
+  {
+    "dipCm": 32,
+    "volumeLitres": 2179.651448926758
+  },
+  {
+    "dipCm": 32.2,
+    "volumeLitres": 2199.379201208539
+  },
+  {
+    "dipCm": 32.4,
+    "volumeLitres": 2219.156525583105
+  },
+  {
+    "dipCm": 32.6,
+    "volumeLitres": 2238.9831524237543
+  },
+  {
+    "dipCm": 32.8,
+    "volumeLitres": 2258.858814110265
+  },
+  {
+    "dipCm": 33,
+    "volumeLitres": 2278.7832449983007
+  },
+  {
+    "dipCm": 33.2,
+    "volumeLitres": 2298.7561813894586
+  },
+  {
+    "dipCm": 33.4,
+    "volumeLitres": 2318.7773615019423
+  },
+  {
+    "dipCm": 33.6,
+    "volumeLitres": 2338.8465254418415
+  },
+  {
+    "dipCm": 33.8,
+    "volumeLitres": 2358.963415174989
+  },
+  {
+    "dipCm": 34,
+    "volumeLitres": 2379.1277744994045
+  },
+  {
+    "dipCm": 34.2,
+    "volumeLitres": 2399.339349018298
+  },
+  {
+    "dipCm": 34.4,
+    "volumeLitres": 2419.5978861136045
+  },
+  {
+    "dipCm": 34.6,
+    "volumeLitres": 2439.903134920054
+  },
+  {
+    "dipCm": 34.8,
+    "volumeLitres": 2460.2548462997624
+  },
+  {
+    "dipCm": 35,
+    "volumeLitres": 2480.652772817326
+  },
+  {
+    "dipCm": 35.2,
+    "volumeLitres": 2501.0966687153873
+  },
+  {
+    "dipCm": 35.4,
+    "volumeLitres": 2521.5862898907076
+  },
+  {
+    "dipCm": 35.6,
+    "volumeLitres": 2542.121393870682
+  },
+  {
+    "dipCm": 35.8,
+    "volumeLitres": 2562.7017397903137
+  },
+  {
+    "dipCm": 36,
+    "volumeLitres": 2583.3270883696387
+  },
+  {
+    "dipCm": 36.2,
+    "volumeLitres": 2603.997201891569
+  },
+  {
+    "dipCm": 36.4,
+    "volumeLitres": 2624.7118441801654
+  },
+  {
+    "dipCm": 36.6,
+    "volumeLitres": 2645.470780579323
+  },
+  {
+    "dipCm": 36.8,
+    "volumeLitres": 2666.2737779318377
+  },
+  {
+    "dipCm": 37,
+    "volumeLitres": 2687.1206045588942
+  },
+  {
+    "dipCm": 37.2,
+    "volumeLitres": 2708.011030239906
+  },
+  {
+    "dipCm": 37.4,
+    "volumeLitres": 2728.944826192747
+  },
+  {
+    "dipCm": 37.6,
+    "volumeLitres": 2749.9217650543255
+  },
+  {
+    "dipCm": 37.8,
+    "volumeLitres": 2770.9416208615417
+  },
+  {
+    "dipCm": 38,
+    "volumeLitres": 2792.0041690325647
+  },
+  {
+    "dipCm": 38.2,
+    "volumeLitres": 2813.1091863484608
+  },
+  {
+    "dipCm": 38.4,
+    "volumeLitres": 2834.2564509351387
+  },
+  {
+    "dipCm": 38.6,
+    "volumeLitres": 2855.4457422456453
+  },
+  {
+    "dipCm": 38.8,
+    "volumeLitres": 2876.676841042731
+  },
+  {
+    "dipCm": 39,
+    "volumeLitres": 2897.94952938177
+  },
+  {
+    "dipCm": 39.2,
+    "volumeLitres": 2919.263590593953
+  },
+  {
+    "dipCm": 39.4,
+    "volumeLitres": 2940.6188092697653
+  },
+  {
+    "dipCm": 39.6,
+    "volumeLitres": 2962.0149712427883
+  },
+  {
+    "dipCm": 39.8,
+    "volumeLitres": 2983.4518635737445
+  },
+  {
+    "dipCm": 40,
+    "volumeLitres": 3004.92927453483
+  },
+  {
+    "dipCm": 40.2,
+    "volumeLitres": 3026.4469935943266
+  },
+  {
+    "dipCm": 40.4,
+    "volumeLitres": 3048.0048114014494
+  },
+  {
+    "dipCm": 40.6,
+    "volumeLitres": 3069.6025197714794
+  },
+  {
+    "dipCm": 40.8,
+    "volumeLitres": 3091.2399116711226
+  },
+  {
+    "dipCm": 41,
+    "volumeLitres": 3112.9167812041323
+  },
+  {
+    "dipCm": 41.2,
+    "volumeLitres": 3134.632923597155
+  },
+  {
+    "dipCm": 41.4,
+    "volumeLitres": 3156.3881351858245
+  },
+  {
+    "dipCm": 41.6,
+    "volumeLitres": 3178.182213401076
+  },
+  {
+    "dipCm": 41.8,
+    "volumeLitres": 3200.0149567556928
+  },
+  {
+    "dipCm": 42,
+    "volumeLitres": 3221.886164831057
+  },
+  {
+    "dipCm": 42.2,
+    "volumeLitres": 3243.79563826414
+  },
+  {
+    "dipCm": 42.4,
+    "volumeLitres": 3265.7431787346727
+  },
+  {
+    "dipCm": 42.6,
+    "volumeLitres": 3287.728588952553
+  },
+  {
+    "dipCm": 42.8,
+    "volumeLitres": 3309.751672645425
+  },
+  {
+    "dipCm": 43,
+    "volumeLitres": 3331.812234546486
+  },
+  {
+    "dipCm": 43.2,
+    "volumeLitres": 3353.910080382453
+  },
+  {
+    "dipCm": 43.4,
+    "volumeLitres": 3376.04501686175
+  },
+  {
+    "dipCm": 43.6,
+    "volumeLitres": 3398.2168516628576
+  },
+  {
+    "dipCm": 43.8,
+    "volumeLitres": 3420.4253934228595
+  },
+  {
+    "dipCm": 44,
+    "volumeLitres": 3442.6704517261546
+  },
+  {
+    "dipCm": 44.2,
+    "volumeLitres": 3464.951837093352
+  },
+  {
+    "dipCm": 44.4,
+    "volumeLitres": 3487.2693609703338
+  },
+  {
+    "dipCm": 44.6,
+    "volumeLitres": 3509.622835717476
+  },
+  {
+    "dipCm": 44.8,
+    "volumeLitres": 3532.012074599058
+  },
+  {
+    "dipCm": 45,
+    "volumeLitres": 3554.436891772799
+  },
+  {
+    "dipCm": 45.2,
+    "volumeLitres": 3576.8971022795836
+  },
+  {
+    "dipCm": 45.4,
+    "volumeLitres": 3599.392522033312
+  },
+  {
+    "dipCm": 45.6,
+    "volumeLitres": 3621.922967810932
+  },
+  {
+    "dipCm": 45.8,
+    "volumeLitres": 3644.488257242587
+  },
+  {
+    "dipCm": 46,
+    "volumeLitres": 3667.088208801942
+  },
+  {
+    "dipCm": 46.2,
+    "volumeLitres": 3689.7226417966217
+  },
+  {
+    "dipCm": 46.4,
+    "volumeLitres": 3712.391376358812
+  },
+  {
+    "dipCm": 46.6,
+    "volumeLitres": 3735.0942334359797
+  },
+  {
+    "dipCm": 46.8,
+    "volumeLitres": 3757.8310347817405
+  },
+  {
+    "dipCm": 47,
+    "volumeLitres": 3780.6016029468574
+  },
+  {
+    "dipCm": 47.2,
+    "volumeLitres": 3803.405761270356
+  },
+  {
+    "dipCm": 47.4,
+    "volumeLitres": 3826.2433338707765
+  },
+  {
+    "dipCm": 47.6,
+    "volumeLitres": 3849.1141456375526
+  },
+  {
+    "dipCm": 47.8,
+    "volumeLitres": 3872.018022222511
+  },
+  {
+    "dipCm": 48,
+    "volumeLitres": 3894.954790031473
+  },
+  {
+    "dipCm": 48.2,
+    "volumeLitres": 3917.92427621601
+  },
+  {
+    "dipCm": 48.4,
+    "volumeLitres": 3940.9263086652695
+  },
+  {
+    "dipCm": 48.6,
+    "volumeLitres": 3963.9607159979573
+  },
+  {
+    "dipCm": 48.8,
+    "volumeLitres": 3987.0273275544
+  },
+  {
+    "dipCm": 49,
+    "volumeLitres": 4010.1259733887273
+  },
+  {
+    "dipCm": 49.2,
+    "volumeLitres": 4033.256484261164
+  },
+  {
+    "dipCm": 49.4,
+    "volumeLitres": 4056.4186916304297
+  },
+  {
+    "dipCm": 49.6,
+    "volumeLitres": 4079.612427646222
+  },
+  {
+    "dipCm": 49.8,
+    "volumeLitres": 4102.8375251418265
+  },
+  {
+    "dipCm": 50,
+    "volumeLitres": 4126.093817626814
+  },
+  {
+    "dipCm": 50.2,
+    "volumeLitres": 4149.3811392798325
+  },
+  {
+    "dipCm": 50.4,
+    "volumeLitres": 4172.699324941498
+  },
+  {
+    "dipCm": 50.6,
+    "volumeLitres": 4196.048210107387
+  },
+  {
+    "dipCm": 50.8,
+    "volumeLitres": 4219.427630921103
+  },
+  {
+    "dipCm": 51,
+    "volumeLitres": 4242.837424167462
+  },
+  {
+    "dipCm": 51.2,
+    "volumeLitres": 4266.27742726573
+  },
+  {
+    "dipCm": 51.4,
+    "volumeLitres": 4289.747478262988
+  },
+  {
+    "dipCm": 51.6,
+    "volumeLitres": 4313.247415827555
+  },
+  {
+    "dipCm": 51.8,
+    "volumeLitres": 4336.777079242502
+  },
+  {
+    "dipCm": 52,
+    "volumeLitres": 4360.336308399254
+  },
+  {
+    "dipCm": 52.2,
+    "volumeLitres": 4383.924943791281
+  },
+  {
+    "dipCm": 52.4,
+    "volumeLitres": 4407.542826507848
+  },
+  {
+    "dipCm": 52.6,
+    "volumeLitres": 4431.189798227852
+  },
+  {
+    "dipCm": 52.8,
+    "volumeLitres": 4454.865701213756
+  },
+  {
+    "dipCm": 53,
+    "volumeLitres": 4478.570378305572
+  },
+  {
+    "dipCm": 53.2,
+    "volumeLitres": 4502.303672914931
+  },
+  {
+    "dipCm": 53.4,
+    "volumeLitres": 4526.065429019235
+  },
+  {
+    "dipCm": 53.6,
+    "volumeLitres": 4549.855491155855
+  },
+  {
+    "dipCm": 53.8,
+    "volumeLitres": 4573.673704416432
+  },
+  {
+    "dipCm": 54,
+    "volumeLitres": 4597.519914441236
+  },
+  {
+    "dipCm": 54.2,
+    "volumeLitres": 4621.393967413576
+  },
+  {
+    "dipCm": 54.4,
+    "volumeLitres": 4645.295710054309
+  },
+  {
+    "dipCm": 54.6,
+    "volumeLitres": 4669.224989616383
+  },
+  {
+    "dipCm": 54.8,
+    "volumeLitres": 4693.181653879484
+  },
+  {
+    "dipCm": 55,
+    "volumeLitres": 4717.165551144704
+  },
+  {
+    "dipCm": 55.2,
+    "volumeLitres": 4741.176530229298
+  },
+  {
+    "dipCm": 55.4,
+    "volumeLitres": 4765.21444046152
+  },
+  {
+    "dipCm": 55.6,
+    "volumeLitres": 4789.279131675461
+  },
+  {
+    "dipCm": 55.8,
+    "volumeLitres": 4813.370454206027
+  },
+  {
+    "dipCm": 56,
+    "volumeLitres": 4837.488258883896
+  },
+  {
+    "dipCm": 56.2,
+    "volumeLitres": 4861.632397030598
+  },
+  {
+    "dipCm": 56.4,
+    "volumeLitres": 4885.8027204536265
+  },
+  {
+    "dipCm": 56.6,
+    "volumeLitres": 4909.999081441575
+  },
+  {
+    "dipCm": 56.8,
+    "volumeLitres": 4934.221332759406
+  },
+  {
+    "dipCm": 57,
+    "volumeLitres": 4958.469327643695
+  },
+  {
+    "dipCm": 57.2,
+    "volumeLitres": 4982.742919797972
+  },
+  {
+    "dipCm": 57.4,
+    "volumeLitres": 5007.041963388103
+  },
+  {
+    "dipCm": 57.6,
+    "volumeLitres": 5031.366313037735
+  },
+  {
+    "dipCm": 57.8,
+    "volumeLitres": 5055.715823823781
+  },
+  {
+    "dipCm": 58,
+    "volumeLitres": 5080.090351271946
+  },
+  {
+    "dipCm": 58.2,
+    "volumeLitres": 5104.4897513523265
+  },
+  {
+    "dipCm": 58.4,
+    "volumeLitres": 5128.913880475057
+  },
+  {
+    "dipCm": 58.6,
+    "volumeLitres": 5153.362595485956
+  },
+  {
+    "dipCm": 58.8,
+    "volumeLitres": 5177.835753662307
+  },
+  {
+    "dipCm": 59,
+    "volumeLitres": 5202.333212708605
+  },
+  {
+    "dipCm": 59.2,
+    "volumeLitres": 5226.854830752387
+  },
+  {
+    "dipCm": 59.4,
+    "volumeLitres": 5251.400466340111
+  },
+  {
+    "dipCm": 59.6,
+    "volumeLitres": 5275.969978433054
+  },
+  {
+    "dipCm": 59.8,
+    "volumeLitres": 5300.5632264032865
+  },
+  {
+    "dipCm": 60,
+    "volumeLitres": 5325.180070029662
+  },
+  {
+    "dipCm": 60.2,
+    "volumeLitres": 5349.82036949387
+  },
+  {
+    "dipCm": 60.4,
+    "volumeLitres": 5374.483985376503
+  },
+  {
+    "dipCm": 60.6,
+    "volumeLitres": 5399.1707786532
+  },
+  {
+    "dipCm": 60.8,
+    "volumeLitres": 5423.880610690822
+  },
+  {
+    "dipCm": 61,
+    "volumeLitres": 5448.6133432436245
+  },
+  {
+    "dipCm": 61.2,
+    "volumeLitres": 5473.368838449529
+  },
+  {
+    "dipCm": 61.4,
+    "volumeLitres": 5498.146958826415
+  },
+  {
+    "dipCm": 61.6,
+    "volumeLitres": 5522.947567268417
+  },
+  {
+    "dipCm": 61.8,
+    "volumeLitres": 5547.770527042301
+  },
+  {
+    "dipCm": 62,
+    "volumeLitres": 5572.615701783869
+  },
+  {
+    "dipCm": 62.2,
+    "volumeLitres": 5597.482955494369
+  },
+  {
+    "dipCm": 62.4,
+    "volumeLitres": 5622.372152536987
+  },
+  {
+    "dipCm": 62.6,
+    "volumeLitres": 5647.28315763335
+  },
+  {
+    "dipCm": 62.8,
+    "volumeLitres": 5672.215835860047
+  },
+  {
+    "dipCm": 63,
+    "volumeLitres": 5697.170052645233
+  },
+  {
+    "dipCm": 63.2,
+    "volumeLitres": 5722.14567376521
+  },
+  {
+    "dipCm": 63.4,
+    "volumeLitres": 5747.1425653410815
+  },
+  {
+    "dipCm": 63.6,
+    "volumeLitres": 5772.160593835425
+  },
+  {
+    "dipCm": 63.8,
+    "volumeLitres": 5797.199626049002
+  },
+  {
+    "dipCm": 64,
+    "volumeLitres": 5822.259529117494
+  },
+  {
+    "dipCm": 64.2,
+    "volumeLitres": 5847.340170508271
+  },
+  {
+    "dipCm": 64.4,
+    "volumeLitres": 5872.441418017189
+  },
+  {
+    "dipCm": 64.6,
+    "volumeLitres": 5897.563139765437
+  },
+  {
+    "dipCm": 64.8,
+    "volumeLitres": 5922.705204196377
+  },
+  {
+    "dipCm": 65,
+    "volumeLitres": 5947.867480072454
+  },
+  {
+    "dipCm": 65.2,
+    "volumeLitres": 5973.049836472106
+  },
+  {
+    "dipCm": 65.4,
+    "volumeLitres": 5998.252142786711
+  },
+  {
+    "dipCm": 65.6,
+    "volumeLitres": 6023.474268717582
+  },
+  {
+    "dipCm": 65.8,
+    "volumeLitres": 6048.716084272948
+  },
+  {
+    "dipCm": 66,
+    "volumeLitres": 6073.977459765007
+  },
+  {
+    "dipCm": 66.2,
+    "volumeLitres": 6099.258265806971
+  },
+  {
+    "dipCm": 66.4,
+    "volumeLitres": 6124.558373310173
+  },
+  {
+    "dipCm": 66.6,
+    "volumeLitres": 6149.877653481157
+  },
+  {
+    "dipCm": 66.8,
+    "volumeLitres": 6175.215977818828
+  },
+  {
+    "dipCm": 67,
+    "volumeLitres": 6200.573218111626
+  },
+  {
+    "dipCm": 67.2,
+    "volumeLitres": 6225.949246434706
+  },
+  {
+    "dipCm": 67.4,
+    "volumeLitres": 6251.343935147158
+  },
+  {
+    "dipCm": 67.6,
+    "volumeLitres": 6276.757156889231
+  },
+  {
+    "dipCm": 67.8,
+    "volumeLitres": 6302.188784579627
+  },
+  {
+    "dipCm": 68,
+    "volumeLitres": 6327.638691412767
+  },
+  {
+    "dipCm": 68.2,
+    "volumeLitres": 6353.1067508561
+  },
+  {
+    "dipCm": 68.4,
+    "volumeLitres": 6378.592836647465
+  },
+  {
+    "dipCm": 68.6,
+    "volumeLitres": 6404.096822792411
+  },
+  {
+    "dipCm": 68.8,
+    "volumeLitres": 6429.618583561603
+  },
+  {
+    "dipCm": 69,
+    "volumeLitres": 6455.157993488225
+  },
+  {
+    "dipCm": 69.2,
+    "volumeLitres": 6480.71492736538
+  },
+  {
+    "dipCm": 69.4,
+    "volumeLitres": 6506.289260243569
+  },
+  {
+    "dipCm": 69.6,
+    "volumeLitres": 6531.880867428134
+  },
+  {
+    "dipCm": 69.8,
+    "volumeLitres": 6557.489624476757
+  },
+  {
+    "dipCm": 70,
+    "volumeLitres": 6583.115407196961
+  },
+  {
+    "dipCm": 70.2,
+    "volumeLitres": 6608.758091643659
+  },
+  {
+    "dipCm": 70.4,
+    "volumeLitres": 6634.417554116678
+  },
+  {
+    "dipCm": 70.6,
+    "volumeLitres": 6660.09367115834
+  },
+  {
+    "dipCm": 70.8,
+    "volumeLitres": 6685.786319551057
+  },
+  {
+    "dipCm": 71,
+    "volumeLitres": 6711.495376314941
+  },
+  {
+    "dipCm": 71.2,
+    "volumeLitres": 6737.2207187054055
+  },
+  {
+    "dipCm": 71.4,
+    "volumeLitres": 6762.96222421085
+  },
+  {
+    "dipCm": 71.6,
+    "volumeLitres": 6788.719770550296
+  },
+  {
+    "dipCm": 71.8,
+    "volumeLitres": 6814.4932356710815
+  },
+  {
+    "dipCm": 72,
+    "volumeLitres": 6840.282497746565
+  },
+  {
+    "dipCm": 72.2,
+    "volumeLitres": 6866.087435173841
+  },
+  {
+    "dipCm": 72.4,
+    "volumeLitres": 6891.907926571473
+  },
+  {
+    "dipCm": 72.6,
+    "volumeLitres": 6917.743850777239
+  },
+  {
+    "dipCm": 72.8,
+    "volumeLitres": 6943.595086845933
+  },
+  {
+    "dipCm": 73,
+    "volumeLitres": 6969.461514047125
+  },
+  {
+    "dipCm": 73.2,
+    "volumeLitres": 6995.343011862978
+  },
+  {
+    "dipCm": 73.4,
+    "volumeLitres": 7021.239459986053
+  },
+  {
+    "dipCm": 73.6,
+    "volumeLitres": 7047.150738317158
+  },
+  {
+    "dipCm": 73.8,
+    "volumeLitres": 7073.076726963213
+  },
+  {
+    "dipCm": 74,
+    "volumeLitres": 7099.017306235096
+  },
+  {
+    "dipCm": 74.2,
+    "volumeLitres": 7124.9723566455195
+  },
+  {
+    "dipCm": 74.4,
+    "volumeLitres": 7150.941758906978
+  },
+  {
+    "dipCm": 74.6,
+    "volumeLitres": 7176.925393929596
+  },
+  {
+    "dipCm": 74.8,
+    "volumeLitres": 7202.923142819113
+  },
+  {
+    "dipCm": 75,
+    "volumeLitres": 7228.934886874793
+  },
+  {
+    "dipCm": 75.2,
+    "volumeLitres": 7254.960507587389
+  },
+  {
+    "dipCm": 75.4,
+    "volumeLitres": 7280.999886637131
+  },
+  {
+    "dipCm": 75.6,
+    "volumeLitres": 7307.052905891683
+  },
+  {
+    "dipCm": 75.8,
+    "volumeLitres": 7333.119447404177
+  },
+  {
+    "dipCm": 76,
+    "volumeLitres": 7359.199393411196
+  },
+  {
+    "dipCm": 76.2,
+    "volumeLitres": 7385.292626330822
+  },
+  {
+    "dipCm": 76.4,
+    "volumeLitres": 7411.399028760669
+  },
+  {
+    "dipCm": 76.6,
+    "volumeLitres": 7437.518483475931
+  },
+  {
+    "dipCm": 76.8,
+    "volumeLitres": 7463.65087342744
+  },
+  {
+    "dipCm": 77,
+    "volumeLitres": 7489.796081739784
+  },
+  {
+    "dipCm": 77.2,
+    "volumeLitres": 7515.953991709352
+  },
+  {
+    "dipCm": 77.4,
+    "volumeLitres": 7542.124486802457
+  },
+  {
+    "dipCm": 77.6,
+    "volumeLitres": 7568.307450653467
+  },
+  {
+    "dipCm": 77.8,
+    "volumeLitres": 7594.502767062905
+  },
+  {
+    "dipCm": 78,
+    "volumeLitres": 7620.7103199955955
+  },
+  {
+    "dipCm": 78.2,
+    "volumeLitres": 7646.929993578833
+  },
+  {
+    "dipCm": 78.4,
+    "volumeLitres": 7673.161672100534
+  },
+  {
+    "dipCm": 78.6,
+    "volumeLitres": 7699.4052400074015
+  },
+  {
+    "dipCm": 78.8,
+    "volumeLitres": 7725.660581903127
+  },
+  {
+    "dipCm": 79,
+    "volumeLitres": 7751.927582546577
+  },
+  {
+    "dipCm": 79.2,
+    "volumeLitres": 7778.206126849994
+  },
+  {
+    "dipCm": 79.4,
+    "volumeLitres": 7804.496099877233
+  },
+  {
+    "dipCm": 79.6,
+    "volumeLitres": 7830.797386841971
+  },
+  {
+    "dipCm": 79.8,
+    "volumeLitres": 7857.109873105967
+  },
+  {
+    "dipCm": 80,
+    "volumeLitres": 7883.433444177281
+  },
+  {
+    "dipCm": 80.2,
+    "volumeLitres": 7909.767985708561
+  },
+  {
+    "dipCm": 80.4,
+    "volumeLitres": 7936.113383495292
+  },
+  {
+    "dipCm": 80.6,
+    "volumeLitres": 7962.4695234741
+  },
+  {
+    "dipCm": 80.8,
+    "volumeLitres": 7988.83629172101
+  },
+  {
+    "dipCm": 81,
+    "volumeLitres": 8015.213574449761
+  },
+  {
+    "dipCm": 81.2,
+    "volumeLitres": 8041.601258010105
+  },
+  {
+    "dipCm": 81.4,
+    "volumeLitres": 8067.99922888615
+  },
+  {
+    "dipCm": 81.6,
+    "volumeLitres": 8094.407373694636
+  },
+  {
+    "dipCm": 81.8,
+    "volumeLitres": 8120.8255791833235
+  },
+  {
+    "dipCm": 82,
+    "volumeLitres": 8147.253732229301
+  },
+  {
+    "dipCm": 82.2,
+    "volumeLitres": 8173.691719837352
+  },
+  {
+    "dipCm": 82.4,
+    "volumeLitres": 8200.139429138293
+  },
+  {
+    "dipCm": 82.6,
+    "volumeLitres": 8226.596747387392
+  },
+  {
+    "dipCm": 82.8,
+    "volumeLitres": 8253.0635619627
+  },
+  {
+    "dipCm": 83,
+    "volumeLitres": 8279.539760363445
+  },
+  {
+    "dipCm": 83.2,
+    "volumeLitres": 8306.025230208443
+  },
+  {
+    "dipCm": 83.4,
+    "volumeLitres": 8332.519859234488
+  },
+  {
+    "dipCm": 83.6,
+    "volumeLitres": 8359.023535294753
+  },
+  {
+    "dipCm": 83.8,
+    "volumeLitres": 8385.536146357232
+  },
+  {
+    "dipCm": 84,
+    "volumeLitres": 8412.05758050314
+  },
+  {
+    "dipCm": 84.2,
+    "volumeLitres": 8438.587725925347
+  },
+  {
+    "dipCm": 84.4,
+    "volumeLitres": 8465.126470926843
+  },
+  {
+    "dipCm": 84.6,
+    "volumeLitres": 8491.673703919145
+  },
+  {
+    "dipCm": 84.8,
+    "volumeLitres": 8518.229313420794
+  },
+  {
+    "dipCm": 85,
+    "volumeLitres": 8544.793188055763
+  },
+  {
+    "dipCm": 85.2,
+    "volumeLitres": 8571.36521655199
+  },
+  {
+    "dipCm": 85.4,
+    "volumeLitres": 8597.945287739789
+  },
+  {
+    "dipCm": 85.6,
+    "volumeLitres": 8624.533290550366
+  },
+  {
+    "dipCm": 85.8,
+    "volumeLitres": 8651.129114014311
+  },
+  {
+    "dipCm": 86,
+    "volumeLitres": 8677.73264726006
+  },
+  {
+    "dipCm": 86.2,
+    "volumeLitres": 8704.343779512434
+  },
+  {
+    "dipCm": 86.4,
+    "volumeLitres": 8730.962400091103
+  },
+  {
+    "dipCm": 86.6,
+    "volumeLitres": 8757.58839840913
+  },
+  {
+    "dipCm": 86.8,
+    "volumeLitres": 8784.2216639715
+  },
+  {
+    "dipCm": 87,
+    "volumeLitres": 8810.862086373589
+  },
+  {
+    "dipCm": 87.2,
+    "volumeLitres": 8837.509555299757
+  },
+  {
+    "dipCm": 87.4,
+    "volumeLitres": 8864.163960521844
+  },
+  {
+    "dipCm": 87.6,
+    "volumeLitres": 8890.825191897717
+  },
+  {
+    "dipCm": 87.8,
+    "volumeLitres": 8917.493139369826
+  },
+  {
+    "dipCm": 88,
+    "volumeLitres": 8944.167692963772
+  },
+  {
+    "dipCm": 88.2,
+    "volumeLitres": 8970.848742786804
+  },
+  {
+    "dipCm": 88.4,
+    "volumeLitres": 8997.536179026445
+  },
+  {
+    "dipCm": 88.6,
+    "volumeLitres": 9024.229891949048
+  },
+  {
+    "dipCm": 88.8,
+    "volumeLitres": 9050.929771898333
+  },
+  {
+    "dipCm": 89,
+    "volumeLitres": 9077.635709293989
+  },
+  {
+    "dipCm": 89.2,
+    "volumeLitres": 9104.347594630255
+  },
+  {
+    "dipCm": 89.4,
+    "volumeLitres": 9131.065318474517
+  },
+  {
+    "dipCm": 89.6,
+    "volumeLitres": 9157.788771465886
+  },
+  {
+    "dipCm": 89.8,
+    "volumeLitres": 9184.517844313767
+  },
+  {
+    "dipCm": 90,
+    "volumeLitres": 9211.252427796531
+  },
+  {
+    "dipCm": 90.2,
+    "volumeLitres": 9237.992412760033
+  },
+  {
+    "dipCm": 90.4,
+    "volumeLitres": 9264.737690116293
+  },
+  {
+    "dipCm": 90.6,
+    "volumeLitres": 9291.488150842059
+  },
+  {
+    "dipCm": 90.8,
+    "volumeLitres": 9318.243685977459
+  },
+  {
+    "dipCm": 91,
+    "volumeLitres": 9345.004186624581
+  },
+  {
+    "dipCm": 91.2,
+    "volumeLitres": 9371.769543946137
+  },
+  {
+    "dipCm": 91.4,
+    "volumeLitres": 9398.539649164097
+  },
+  {
+    "dipCm": 91.6,
+    "volumeLitres": 9425.314393558245
+  },
+  {
+    "dipCm": 91.8,
+    "volumeLitres": 9452.093668464928
+  },
+  {
+    "dipCm": 92,
+    "volumeLitres": 9478.877365275592
+  },
+  {
+    "dipCm": 92.2,
+    "volumeLitres": 9505.665375435487
+  },
+  {
+    "dipCm": 92.4,
+    "volumeLitres": 9532.457590442273
+  },
+  {
+    "dipCm": 92.6,
+    "volumeLitres": 9559.253901844724
+  },
+  {
+    "dipCm": 92.8,
+    "volumeLitres": 9586.054201241304
+  },
+  {
+    "dipCm": 93,
+    "volumeLitres": 9612.858380278894
+  },
+  {
+    "dipCm": 93.2,
+    "volumeLitres": 9639.6663306514
+  },
+  {
+    "dipCm": 93.4,
+    "volumeLitres": 9666.477944098446
+  },
+  {
+    "dipCm": 93.6,
+    "volumeLitres": 9693.293112403977
+  },
+  {
+    "dipCm": 93.8,
+    "volumeLitres": 9720.11172739506
+  },
+  {
+    "dipCm": 94,
+    "volumeLitres": 9746.933680940367
+  },
+  {
+    "dipCm": 94.2,
+    "volumeLitres": 9773.758864948997
+  },
+  {
+    "dipCm": 94.4,
+    "volumeLitres": 9800.587171369094
+  },
+  {
+    "dipCm": 94.6,
+    "volumeLitres": 9827.418492186496
+  },
+  {
+    "dipCm": 94.8,
+    "volumeLitres": 9854.252719423477
+  },
+  {
+    "dipCm": 95,
+    "volumeLitres": 9881.08974513737
+  },
+  {
+    "dipCm": 95.2,
+    "volumeLitres": 9907.929461419268
+  },
+  {
+    "dipCm": 95.4,
+    "volumeLitres": 9934.771760392756
+  },
+  {
+    "dipCm": 95.6,
+    "volumeLitres": 9961.616534212471
+  },
+  {
+    "dipCm": 95.8,
+    "volumeLitres": 9988.463675062963
+  },
+  {
+    "dipCm": 96,
+    "volumeLitres": 10015.313075157273
+  },
+  {
+    "dipCm": 96.2,
+    "volumeLitres": 10042.164626735608
+  },
+  {
+    "dipCm": 96.4,
+    "volumeLitres": 10069.018222064113
+  },
+  {
+    "dipCm": 96.6,
+    "volumeLitres": 10095.873753433523
+  },
+  {
+    "dipCm": 96.8,
+    "volumeLitres": 10122.73111315784
+  },
+  {
+    "dipCm": 97,
+    "volumeLitres": 10149.590193573096
+  },
+  {
+    "dipCm": 97.2,
+    "volumeLitres": 10176.450887036051
+  },
+  {
+    "dipCm": 97.4,
+    "volumeLitres": 10203.313085922697
+  },
+  {
+    "dipCm": 97.6,
+    "volumeLitres": 10230.176682627281
+  },
+  {
+    "dipCm": 97.8,
+    "volumeLitres": 10257.041569560868
+  },
+  {
+    "dipCm": 98,
+    "volumeLitres": 10283.907639149818
+  },
+  {
+    "dipCm": 98.2,
+    "volumeLitres": 10310.774783834882
+  },
+  {
+    "dipCm": 98.4,
+    "volumeLitres": 10337.642896069667
+  },
+  {
+    "dipCm": 98.6,
+    "volumeLitres": 10364.51186831943
+  },
+  {
+    "dipCm": 98.8,
+    "volumeLitres": 10391.381593059697
+  },
+  {
+    "dipCm": 99,
+    "volumeLitres": 10418.25196277505
+  },
+  {
+    "dipCm": 99.2,
+    "volumeLitres": 10445.122869957817
+  },
+  {
+    "dipCm": 99.4,
+    "volumeLitres": 10471.994207106836
+  },
+  {
+    "dipCm": 99.6,
+    "volumeLitres": 10498.865866725719
+  },
+  {
+    "dipCm": 99.8,
+    "volumeLitres": 10525.737741322757
+  },
+  {
+    "dipCm": 100,
+    "volumeLitres": 10552.609723408115
+  },
+  {
+    "dipCm": 100.2,
+    "volumeLitres": 10579.481705493468
+  },
+  {
+    "dipCm": 100.4,
+    "volumeLitres": 10606.35358009051
+  },
+  {
+    "dipCm": 100.6,
+    "volumeLitres": 10633.225239709394
+  },
+  {
+    "dipCm": 100.8,
+    "volumeLitres": 10660.096576858412
+  },
+  {
+    "dipCm": 101,
+    "volumeLitres": 10686.967484041183
+  },
+  {
+    "dipCm": 101.2,
+    "volumeLitres": 10713.83785375653
+  },
+  {
+    "dipCm": 101.4,
+    "volumeLitres": 10740.707578496795
+  },
+  {
+    "dipCm": 101.6,
+    "volumeLitres": 10767.576550746564
+  },
+  {
+    "dipCm": 101.8,
+    "volumeLitres": 10794.444662981346
+  },
+  {
+    "dipCm": 102,
+    "volumeLitres": 10821.311807666409
+  },
+  {
+    "dipCm": 102.2,
+    "volumeLitres": 10848.177877255363
+  },
+  {
+    "dipCm": 102.4,
+    "volumeLitres": 10875.04276418895
+  },
+  {
+    "dipCm": 102.6,
+    "volumeLitres": 10901.906360893534
+  },
+  {
+    "dipCm": 102.8,
+    "volumeLitres": 10928.76855978018
+  },
+  {
+    "dipCm": 103,
+    "volumeLitres": 10955.62925324313
+  },
+  {
+    "dipCm": 103.2,
+    "volumeLitres": 10982.488333658386
+  },
+  {
+    "dipCm": 103.4,
+    "volumeLitres": 11009.345693382704
+  },
+  {
+    "dipCm": 103.6,
+    "volumeLitres": 11036.201224752116
+  },
+  {
+    "dipCm": 103.8,
+    "volumeLitres": 11063.054820080619
+  },
+  {
+    "dipCm": 104,
+    "volumeLitres": 11089.906371658955
+  },
+  {
+    "dipCm": 104.2,
+    "volumeLitres": 11116.75577175326
+  },
+  {
+    "dipCm": 104.4,
+    "volumeLitres": 11143.602912603757
+  },
+  {
+    "dipCm": 104.6,
+    "volumeLitres": 11170.447686423475
+  },
+  {
+    "dipCm": 104.8,
+    "volumeLitres": 11197.289985396961
+  },
+  {
+    "dipCm": 105,
+    "volumeLitres": 11224.12970167886
+  },
+  {
+    "dipCm": 105.2,
+    "volumeLitres": 11250.966727392753
+  },
+  {
+    "dipCm": 105.4,
+    "volumeLitres": 11277.800954629733
+  },
+  {
+    "dipCm": 105.6,
+    "volumeLitres": 11304.632275447135
+  },
+  {
+    "dipCm": 105.8,
+    "volumeLitres": 11331.460581867232
+  },
+  {
+    "dipCm": 106,
+    "volumeLitres": 11358.285765875862
+  },
+  {
+    "dipCm": 106.2,
+    "volumeLitres": 11385.10771942117
+  },
+  {
+    "dipCm": 106.4,
+    "volumeLitres": 11411.926334412248
+  },
+  {
+    "dipCm": 106.6,
+    "volumeLitres": 11438.741502717781
+  },
+  {
+    "dipCm": 106.8,
+    "volumeLitres": 11465.553116164825
+  },
+  {
+    "dipCm": 107,
+    "volumeLitres": 11492.361066537336
+  },
+  {
+    "dipCm": 107.2,
+    "volumeLitres": 11519.165245574923
+  },
+  {
+    "dipCm": 107.4,
+    "volumeLitres": 11545.965544971503
+  },
+  {
+    "dipCm": 107.6,
+    "volumeLitres": 11572.76185637396
+  },
+  {
+    "dipCm": 107.8,
+    "volumeLitres": 11599.554071380744
+  },
+  {
+    "dipCm": 108,
+    "volumeLitres": 11626.342081540639
+  },
+  {
+    "dipCm": 108.2,
+    "volumeLitres": 11653.1257783513
+  },
+  {
+    "dipCm": 108.4,
+    "volumeLitres": 11679.905053257984
+  },
+  {
+    "dipCm": 108.6,
+    "volumeLitres": 11706.67979765213
+  },
+  {
+    "dipCm": 108.8,
+    "volumeLitres": 11733.449902870087
+  },
+  {
+    "dipCm": 109,
+    "volumeLitres": 11760.21526019165
+  },
+  {
+    "dipCm": 109.2,
+    "volumeLitres": 11786.97576083877
+  },
+  {
+    "dipCm": 109.4,
+    "volumeLitres": 11813.731295974167
+  },
+  {
+    "dipCm": 109.6,
+    "volumeLitres": 11840.481756699937
+  },
+  {
+    "dipCm": 109.8,
+    "volumeLitres": 11867.227034056192
+  },
+  {
+    "dipCm": 110,
+    "volumeLitres": 11893.9670190197
+  },
+  {
+    "dipCm": 110.2,
+    "volumeLitres": 11920.701602502464
+  },
+  {
+    "dipCm": 110.4,
+    "volumeLitres": 11947.430675350342
+  },
+  {
+    "dipCm": 110.6,
+    "volumeLitres": 11974.15412834171
+  },
+  {
+    "dipCm": 110.8,
+    "volumeLitres": 12000.871852185972
+  },
+  {
+    "dipCm": 111,
+    "volumeLitres": 12027.583737522238
+  },
+  {
+    "dipCm": 111.2,
+    "volumeLitres": 12054.289674917902
+  },
+  {
+    "dipCm": 111.4,
+    "volumeLitres": 12080.989554867181
+  },
+  {
+    "dipCm": 111.6,
+    "volumeLitres": 12107.683267789786
+  },
+  {
+    "dipCm": 111.8,
+    "volumeLitres": 12134.370704029425
+  },
+  {
+    "dipCm": 112,
+    "volumeLitres": 12161.051753852458
+  },
+  {
+    "dipCm": 112.2,
+    "volumeLitres": 12187.726307446399
+  },
+  {
+    "dipCm": 112.4,
+    "volumeLitres": 12214.39425491851
+  },
+  {
+    "dipCm": 112.6,
+    "volumeLitres": 12241.055486294383
+  },
+  {
+    "dipCm": 112.8,
+    "volumeLitres": 12267.709891516472
+  },
+  {
+    "dipCm": 113,
+    "volumeLitres": 12294.357360442638
+  },
+  {
+    "dipCm": 113.2,
+    "volumeLitres": 12320.99778284473
+  },
+  {
+    "dipCm": 113.4,
+    "volumeLitres": 12347.631048407098
+  },
+  {
+    "dipCm": 113.6,
+    "volumeLitres": 12374.257046725126
+  },
+  {
+    "dipCm": 113.8,
+    "volumeLitres": 12400.875667303795
+  },
+  {
+    "dipCm": 114,
+    "volumeLitres": 12427.486799556167
+  },
+  {
+    "dipCm": 114.2,
+    "volumeLitres": 12454.09033280192
+  },
+  {
+    "dipCm": 114.4,
+    "volumeLitres": 12480.68615626586
+  },
+  {
+    "dipCm": 114.6,
+    "volumeLitres": 12507.27415907644
+  },
+  {
+    "dipCm": 114.8,
+    "volumeLitres": 12533.854230264236
+  },
+  {
+    "dipCm": 115,
+    "volumeLitres": 12560.426258760464
+  },
+  {
+    "dipCm": 115.2,
+    "volumeLitres": 12586.990133395437
+  },
+  {
+    "dipCm": 115.4,
+    "volumeLitres": 12613.545742897086
+  },
+  {
+    "dipCm": 115.6,
+    "volumeLitres": 12640.092975889387
+  },
+  {
+    "dipCm": 115.8,
+    "volumeLitres": 12666.631720890884
+  },
+  {
+    "dipCm": 116,
+    "volumeLitres": 12693.16186631309
+  },
+  {
+    "dipCm": 116.2,
+    "volumeLitres": 12719.683300458997
+  },
+  {
+    "dipCm": 116.4,
+    "volumeLitres": 12746.195911521472
+  },
+  {
+    "dipCm": 116.6,
+    "volumeLitres": 12772.69958758174
+  },
+  {
+    "dipCm": 116.8,
+    "volumeLitres": 12799.194216607786
+  },
+  {
+    "dipCm": 117,
+    "volumeLitres": 12825.679686452786
+  },
+  {
+    "dipCm": 117.2,
+    "volumeLitres": 12852.15588485353
+  },
+  {
+    "dipCm": 117.4,
+    "volumeLitres": 12878.622699428834
+  },
+  {
+    "dipCm": 117.6,
+    "volumeLitres": 12905.080017677938
+  },
+  {
+    "dipCm": 117.8,
+    "volumeLitres": 12931.527726978873
+  },
+  {
+    "dipCm": 118,
+    "volumeLitres": 12957.965714586926
+  },
+  {
+    "dipCm": 118.2,
+    "volumeLitres": 12984.393867632907
+  },
+  {
+    "dipCm": 118.4,
+    "volumeLitres": 13010.812073121591
+  },
+  {
+    "dipCm": 118.6,
+    "volumeLitres": 13037.220217930082
+  },
+  {
+    "dipCm": 118.8,
+    "volumeLitres": 13063.618188806124
+  },
+  {
+    "dipCm": 119,
+    "volumeLitres": 13090.005872366466
+  },
+  {
+    "dipCm": 119.2,
+    "volumeLitres": 13116.383155095218
+  },
+  {
+    "dipCm": 119.4,
+    "volumeLitres": 13142.749923342131
+  },
+  {
+    "dipCm": 119.6,
+    "volumeLitres": 13169.106063320938
+  },
+  {
+    "dipCm": 119.8,
+    "volumeLitres": 13195.451461107668
+  },
+  {
+    "dipCm": 120,
+    "volumeLitres": 13221.786002638948
+  },
+  {
+    "dipCm": 120.2,
+    "volumeLitres": 13248.10957371026
+  },
+  {
+    "dipCm": 120.4,
+    "volumeLitres": 13274.422059974258
+  },
+  {
+    "dipCm": 120.6,
+    "volumeLitres": 13300.723346938996
+  },
+  {
+    "dipCm": 120.8,
+    "volumeLitres": 13327.013319966236
+  },
+  {
+    "dipCm": 121,
+    "volumeLitres": 13353.291864269655
+  },
+  {
+    "dipCm": 121.2,
+    "volumeLitres": 13379.558864913099
+  },
+  {
+    "dipCm": 121.4,
+    "volumeLitres": 13405.81420680883
+  },
+  {
+    "dipCm": 121.6,
+    "volumeLitres": 13432.057774715691
+  },
+  {
+    "dipCm": 121.8,
+    "volumeLitres": 13458.289453237396
+  },
+  {
+    "dipCm": 122,
+    "volumeLitres": 13484.509126820634
+  },
+  {
+    "dipCm": 122.2,
+    "volumeLitres": 13510.716679753325
+  },
+  {
+    "dipCm": 122.4,
+    "volumeLitres": 13536.911996162762
+  },
+  {
+    "dipCm": 122.6,
+    "volumeLitres": 13563.09496001377
+  },
+  {
+    "dipCm": 122.8,
+    "volumeLitres": 13589.265455106879
+  },
+  {
+    "dipCm": 123,
+    "volumeLitres": 13615.423365076445
+  },
+  {
+    "dipCm": 123.2,
+    "volumeLitres": 13641.568573388788
+  },
+  {
+    "dipCm": 123.4,
+    "volumeLitres": 13667.700963340298
+  },
+  {
+    "dipCm": 123.6,
+    "volumeLitres": 13693.820418055559
+  },
+  {
+    "dipCm": 123.8,
+    "volumeLitres": 13719.926820485407
+  },
+  {
+    "dipCm": 124,
+    "volumeLitres": 13746.020053405033
+  },
+  {
+    "dipCm": 124.2,
+    "volumeLitres": 13772.099999412054
+  },
+  {
+    "dipCm": 124.4,
+    "volumeLitres": 13798.166540924547
+  },
+  {
+    "dipCm": 124.6,
+    "volumeLitres": 13824.219560179097
+  },
+  {
+    "dipCm": 124.8,
+    "volumeLitres": 13850.25893922884
+  },
+  {
+    "dipCm": 125,
+    "volumeLitres": 13876.284559941438
+  },
+  {
+    "dipCm": 125.2,
+    "volumeLitres": 13902.296303997116
+  },
+  {
+    "dipCm": 125.4,
+    "volumeLitres": 13928.294052886631
+  },
+  {
+    "dipCm": 125.6,
+    "volumeLitres": 13954.27768790925
+  },
+  {
+    "dipCm": 125.8,
+    "volumeLitres": 13980.247090170707
+  },
+  {
+    "dipCm": 126,
+    "volumeLitres": 14006.202140581136
+  },
+  {
+    "dipCm": 126.2,
+    "volumeLitres": 14032.142719853016
+  },
+  {
+    "dipCm": 126.4,
+    "volumeLitres": 14058.068708499071
+  },
+  {
+    "dipCm": 126.6,
+    "volumeLitres": 14083.979986830176
+  },
+  {
+    "dipCm": 126.8,
+    "volumeLitres": 14109.876434953254
+  },
+  {
+    "dipCm": 127,
+    "volumeLitres": 14135.757932769106
+  },
+  {
+    "dipCm": 127.2,
+    "volumeLitres": 14161.624359970294
+  },
+  {
+    "dipCm": 127.4,
+    "volumeLitres": 14187.475596038988
+  },
+  {
+    "dipCm": 127.6,
+    "volumeLitres": 14213.311520244757
+  },
+  {
+    "dipCm": 127.8,
+    "volumeLitres": 14239.132011642387
+  },
+  {
+    "dipCm": 128,
+    "volumeLitres": 14264.936949069663
+  },
+  {
+    "dipCm": 128.2,
+    "volumeLitres": 14290.72621114515
+  },
+  {
+    "dipCm": 128.4,
+    "volumeLitres": 14316.499676265934
+  },
+  {
+    "dipCm": 128.6,
+    "volumeLitres": 14342.257222605378
+  },
+  {
+    "dipCm": 128.8,
+    "volumeLitres": 14367.998728110824
+  },
+  {
+    "dipCm": 129,
+    "volumeLitres": 14393.72407050129
+  },
+  {
+    "dipCm": 129.2,
+    "volumeLitres": 14419.433127265173
+  },
+  {
+    "dipCm": 129.4,
+    "volumeLitres": 14445.125775657889
+  },
+  {
+    "dipCm": 129.6,
+    "volumeLitres": 14470.801892699552
+  },
+  {
+    "dipCm": 129.8,
+    "volumeLitres": 14496.461355172569
+  },
+  {
+    "dipCm": 130,
+    "volumeLitres": 14522.10403961927
+  },
+  {
+    "dipCm": 130.2,
+    "volumeLitres": 14547.729822339472
+  },
+  {
+    "dipCm": 130.4,
+    "volumeLitres": 14573.338579388097
+  },
+  {
+    "dipCm": 130.6,
+    "volumeLitres": 14598.930186572661
+  },
+  {
+    "dipCm": 130.8,
+    "volumeLitres": 14624.504519450848
+  },
+  {
+    "dipCm": 131,
+    "volumeLitres": 14650.061453328004
+  },
+  {
+    "dipCm": 131.2,
+    "volumeLitres": 14675.600863254625
+  },
+  {
+    "dipCm": 131.4,
+    "volumeLitres": 14701.122624023816
+  },
+  {
+    "dipCm": 131.6,
+    "volumeLitres": 14726.626610168765
+  },
+  {
+    "dipCm": 131.8,
+    "volumeLitres": 14752.112695960128
+  },
+  {
+    "dipCm": 132,
+    "volumeLitres": 14777.580755403462
+  },
+  {
+    "dipCm": 132.2,
+    "volumeLitres": 14803.030662236604
+  },
+  {
+    "dipCm": 132.4,
+    "volumeLitres": 14828.462289926998
+  },
+  {
+    "dipCm": 132.6,
+    "volumeLitres": 14853.875511669072
+  },
+  {
+    "dipCm": 132.8,
+    "volumeLitres": 14879.27020038152
+  },
+  {
+    "dipCm": 133,
+    "volumeLitres": 14904.646228704603
+  },
+  {
+    "dipCm": 133.2,
+    "volumeLitres": 14930.003468997402
+  },
+  {
+    "dipCm": 133.4,
+    "volumeLitres": 14955.341793335072
+  },
+  {
+    "dipCm": 133.6,
+    "volumeLitres": 14980.661073506055
+  },
+  {
+    "dipCm": 133.8,
+    "volumeLitres": 15005.961181009257
+  },
+  {
+    "dipCm": 134,
+    "volumeLitres": 15031.24198705122
+  },
+  {
+    "dipCm": 134.2,
+    "volumeLitres": 15056.50336254328
+  },
+  {
+    "dipCm": 134.4,
+    "volumeLitres": 15081.745178098647
+  },
+  {
+    "dipCm": 134.6,
+    "volumeLitres": 15106.967304029518
+  },
+  {
+    "dipCm": 134.8,
+    "volumeLitres": 15132.169610344123
+  },
+  {
+    "dipCm": 135,
+    "volumeLitres": 15157.351966743776
+  },
+  {
+    "dipCm": 135.2,
+    "volumeLitres": 15182.51424261985
+  },
+  {
+    "dipCm": 135.4,
+    "volumeLitres": 15207.656307050793
+  },
+  {
+    "dipCm": 135.6,
+    "volumeLitres": 15232.778028799043
+  },
+  {
+    "dipCm": 135.8,
+    "volumeLitres": 15257.879276307956
+  },
+  {
+    "dipCm": 136,
+    "volumeLitres": 15282.959917698734
+  },
+  {
+    "dipCm": 136.2,
+    "volumeLitres": 15308.019820767227
+  },
+  {
+    "dipCm": 136.4,
+    "volumeLitres": 15333.058852980803
+  },
+  {
+    "dipCm": 136.6,
+    "volumeLitres": 15358.076881475148
+  },
+  {
+    "dipCm": 136.8,
+    "volumeLitres": 15383.073773051019
+  },
+  {
+    "dipCm": 137,
+    "volumeLitres": 15408.049394170996
+  },
+  {
+    "dipCm": 137.2,
+    "volumeLitres": 15433.00361095618
+  },
+  {
+    "dipCm": 137.4,
+    "volumeLitres": 15457.936289182877
+  },
+  {
+    "dipCm": 137.6,
+    "volumeLitres": 15482.847294279241
+  },
+  {
+    "dipCm": 137.8,
+    "volumeLitres": 15507.736491321863
+  },
+  {
+    "dipCm": 138,
+    "volumeLitres": 15532.60374503236
+  },
+  {
+    "dipCm": 138.2,
+    "volumeLitres": 15557.44891977393
+  },
+  {
+    "dipCm": 138.4,
+    "volumeLitres": 15582.271879547812
+  },
+  {
+    "dipCm": 138.6,
+    "volumeLitres": 15607.072487989815
+  },
+  {
+    "dipCm": 138.8,
+    "volumeLitres": 15631.8506083667
+  },
+  {
+    "dipCm": 139,
+    "volumeLitres": 15656.606103572605
+  },
+  {
+    "dipCm": 139.2,
+    "volumeLitres": 15681.338836125407
+  },
+  {
+    "dipCm": 139.4,
+    "volumeLitres": 15706.048668163028
+  },
+  {
+    "dipCm": 139.6,
+    "volumeLitres": 15730.735461439725
+  },
+  {
+    "dipCm": 139.8,
+    "volumeLitres": 15755.399077322356
+  },
+  {
+    "dipCm": 140,
+    "volumeLitres": 15780.039376786568
+  },
+  {
+    "dipCm": 140.2,
+    "volumeLitres": 15804.656220412942
+  },
+  {
+    "dipCm": 140.4,
+    "volumeLitres": 15829.249468383174
+  },
+  {
+    "dipCm": 140.6,
+    "volumeLitres": 15853.818980476117
+  },
+  {
+    "dipCm": 140.8,
+    "volumeLitres": 15878.36461606384
+  },
+  {
+    "dipCm": 141,
+    "volumeLitres": 15902.886234107626
+  },
+  {
+    "dipCm": 141.2,
+    "volumeLitres": 15927.38369315392
+  },
+  {
+    "dipCm": 141.4,
+    "volumeLitres": 15951.856851330273
+  },
+  {
+    "dipCm": 141.6,
+    "volumeLitres": 15976.30556634117
+  },
+  {
+    "dipCm": 141.8,
+    "volumeLitres": 16000.729695463897
+  },
+  {
+    "dipCm": 142,
+    "volumeLitres": 16025.129095544282
+  },
+  {
+    "dipCm": 142.2,
+    "volumeLitres": 16049.503622992448
+  },
+  {
+    "dipCm": 142.4,
+    "volumeLitres": 16073.853133778493
+  },
+  {
+    "dipCm": 142.6,
+    "volumeLitres": 16098.177483428124
+  },
+  {
+    "dipCm": 142.8,
+    "volumeLitres": 16122.47652701826
+  },
+  {
+    "dipCm": 143,
+    "volumeLitres": 16146.75011917253
+  },
+  {
+    "dipCm": 143.2,
+    "volumeLitres": 16170.998114056827
+  },
+  {
+    "dipCm": 143.4,
+    "volumeLitres": 16195.220365374655
+  },
+  {
+    "dipCm": 143.6,
+    "volumeLitres": 16219.416726362602
+  },
+  {
+    "dipCm": 143.8,
+    "volumeLitres": 16243.587049785627
+  },
+  {
+    "dipCm": 144,
+    "volumeLitres": 16267.731187932337
+  },
+  {
+    "dipCm": 144.2,
+    "volumeLitres": 16291.848992610203
+  },
+  {
+    "dipCm": 144.4,
+    "volumeLitres": 16315.94031514077
+  },
+  {
+    "dipCm": 144.6,
+    "volumeLitres": 16340.00500635471
+  },
+  {
+    "dipCm": 144.8,
+    "volumeLitres": 16364.042916586928
+  },
+  {
+    "dipCm": 145,
+    "volumeLitres": 16388.053895671528
+  },
+  {
+    "dipCm": 145.2,
+    "volumeLitres": 16412.037792936746
+  },
+  {
+    "dipCm": 145.4,
+    "volumeLitres": 16435.994457199846
+  },
+  {
+    "dipCm": 145.6,
+    "volumeLitres": 16459.92373676192
+  },
+  {
+    "dipCm": 145.8,
+    "volumeLitres": 16483.82547940265
+  },
+  {
+    "dipCm": 146,
+    "volumeLitres": 16507.699532374994
+  },
+  {
+    "dipCm": 146.2,
+    "volumeLitres": 16531.545742399798
+  },
+  {
+    "dipCm": 146.4,
+    "volumeLitres": 16555.363955660374
+  },
+  {
+    "dipCm": 146.6,
+    "volumeLitres": 16579.15401779699
+  },
+  {
+    "dipCm": 146.8,
+    "volumeLitres": 16602.915773901295
+  },
+  {
+    "dipCm": 147,
+    "volumeLitres": 16626.64906851066
+  },
+  {
+    "dipCm": 147.2,
+    "volumeLitres": 16650.35374560247
+  },
+  {
+    "dipCm": 147.4,
+    "volumeLitres": 16674.029648588377
+  },
+  {
+    "dipCm": 147.6,
+    "volumeLitres": 16697.67662030838
+  },
+  {
+    "dipCm": 147.8,
+    "volumeLitres": 16721.294503024947
+  },
+  {
+    "dipCm": 148,
+    "volumeLitres": 16744.883138416975
+  },
+  {
+    "dipCm": 148.2,
+    "volumeLitres": 16768.44236757373
+  },
+  {
+    "dipCm": 148.4,
+    "volumeLitres": 16791.972030988672
+  },
+  {
+    "dipCm": 148.6,
+    "volumeLitres": 16815.47196855324
+  },
+  {
+    "dipCm": 148.8,
+    "volumeLitres": 16838.9420195505
+  },
+  {
+    "dipCm": 149,
+    "volumeLitres": 16862.382022648766
+  },
+  {
+    "dipCm": 149.2,
+    "volumeLitres": 16885.791815895125
+  },
+  {
+    "dipCm": 149.4,
+    "volumeLitres": 16909.171236708844
+  },
+  {
+    "dipCm": 149.6,
+    "volumeLitres": 16932.520121874728
+  },
+  {
+    "dipCm": 149.8,
+    "volumeLitres": 16955.838307536396
+  },
+  {
+    "dipCm": 150,
+    "volumeLitres": 16979.125629189417
+  },
+  {
+    "dipCm": 150.2,
+    "volumeLitres": 17002.3819216744
+  },
+  {
+    "dipCm": 150.4,
+    "volumeLitres": 17025.607019170006
+  },
+  {
+    "dipCm": 150.6,
+    "volumeLitres": 17048.800755185803
+  },
+  {
+    "dipCm": 150.8,
+    "volumeLitres": 17071.962962555062
+  },
+  {
+    "dipCm": 151,
+    "volumeLitres": 17095.093473427503
+  },
+  {
+    "dipCm": 151.2,
+    "volumeLitres": 17118.192119261832
+  },
+  {
+    "dipCm": 151.4,
+    "volumeLitres": 17141.25873081827
+  },
+  {
+    "dipCm": 151.6,
+    "volumeLitres": 17164.293138150955
+  },
+  {
+    "dipCm": 151.8,
+    "volumeLitres": 17187.29517060022
+  },
+  {
+    "dipCm": 152,
+    "volumeLitres": 17210.264656784755
+  },
+  {
+    "dipCm": 152.2,
+    "volumeLitres": 17233.20142459372
+  },
+  {
+    "dipCm": 152.4,
+    "volumeLitres": 17256.105301178675
+  },
+  {
+    "dipCm": 152.6,
+    "volumeLitres": 17278.976112945453
+  },
+  {
+    "dipCm": 152.8,
+    "volumeLitres": 17301.813685545876
+  },
+  {
+    "dipCm": 153,
+    "volumeLitres": 17324.61784386937
+  },
+  {
+    "dipCm": 153.2,
+    "volumeLitres": 17347.38841203449
+  },
+  {
+    "dipCm": 153.4,
+    "volumeLitres": 17370.12521338025
+  },
+  {
+    "dipCm": 153.6,
+    "volumeLitres": 17392.828070457417
+  },
+  {
+    "dipCm": 153.8,
+    "volumeLitres": 17415.496805019608
+  },
+  {
+    "dipCm": 154,
+    "volumeLitres": 17438.131238014288
+  },
+  {
+    "dipCm": 154.2,
+    "volumeLitres": 17460.73118957364
+  },
+  {
+    "dipCm": 154.4,
+    "volumeLitres": 17483.2964790053
+  },
+  {
+    "dipCm": 154.6,
+    "volumeLitres": 17505.826924782916
+  },
+  {
+    "dipCm": 154.8,
+    "volumeLitres": 17528.322344536646
+  },
+  {
+    "dipCm": 155,
+    "volumeLitres": 17550.782555043425
+  },
+  {
+    "dipCm": 155.2,
+    "volumeLitres": 17573.20737221717
+  },
+  {
+    "dipCm": 155.4,
+    "volumeLitres": 17595.59661109875
+  },
+  {
+    "dipCm": 155.6,
+    "volumeLitres": 17617.9500858459
+  },
+  {
+    "dipCm": 155.8,
+    "volumeLitres": 17640.26760972288
+  },
+  {
+    "dipCm": 156,
+    "volumeLitres": 17662.54899509007
+  },
+  {
+    "dipCm": 156.2,
+    "volumeLitres": 17684.79405339337
+  },
+  {
+    "dipCm": 156.4,
+    "volumeLitres": 17707.002595153368
+  },
+  {
+    "dipCm": 156.6,
+    "volumeLitres": 17729.17442995448
+  },
+  {
+    "dipCm": 156.8,
+    "volumeLitres": 17751.309366433776
+  },
+  {
+    "dipCm": 157,
+    "volumeLitres": 17773.407212269747
+  },
+  {
+    "dipCm": 157.2,
+    "volumeLitres": 17795.467774170804
+  },
+  {
+    "dipCm": 157.4,
+    "volumeLitres": 17817.490857863675
+  },
+  {
+    "dipCm": 157.6,
+    "volumeLitres": 17839.476268081555
+  },
+  {
+    "dipCm": 157.8,
+    "volumeLitres": 17861.42380855209
+  },
+  {
+    "dipCm": 158,
+    "volumeLitres": 17883.33328198517
+  },
+  {
+    "dipCm": 158.2,
+    "volumeLitres": 17905.204490060536
+  },
+  {
+    "dipCm": 158.4,
+    "volumeLitres": 17927.03723341515
+  },
+  {
+    "dipCm": 158.6,
+    "volumeLitres": 17948.8313116304
+  },
+  {
+    "dipCm": 158.8,
+    "volumeLitres": 17970.586523219074
+  },
+  {
+    "dipCm": 159,
+    "volumeLitres": 17992.302665612096
+  },
+  {
+    "dipCm": 159.2,
+    "volumeLitres": 18013.979535145107
+  },
+  {
+    "dipCm": 159.4,
+    "volumeLitres": 18035.61692704475
+  },
+  {
+    "dipCm": 159.6,
+    "volumeLitres": 18057.21463541478
+  },
+  {
+    "dipCm": 159.8,
+    "volumeLitres": 18078.772453221907
+  },
+  {
+    "dipCm": 160,
+    "volumeLitres": 18100.2901722814
+  },
+  {
+    "dipCm": 160.2,
+    "volumeLitres": 18121.767583242483
+  },
+  {
+    "dipCm": 160.4,
+    "volumeLitres": 18143.20447557344
+  },
+  {
+    "dipCm": 160.6,
+    "volumeLitres": 18164.600637546464
+  },
+  {
+    "dipCm": 160.8,
+    "volumeLitres": 18185.955856222277
+  },
+  {
+    "dipCm": 161,
+    "volumeLitres": 18207.26991743446
+  },
+  {
+    "dipCm": 161.2,
+    "volumeLitres": 18228.5426057735
+  },
+  {
+    "dipCm": 161.4,
+    "volumeLitres": 18249.773704570584
+  },
+  {
+    "dipCm": 161.6,
+    "volumeLitres": 18270.962995881087
+  },
+  {
+    "dipCm": 161.8,
+    "volumeLitres": 18292.110260467765
+  },
+  {
+    "dipCm": 162,
+    "volumeLitres": 18313.215277783667
+  },
+  {
+    "dipCm": 162.2,
+    "volumeLitres": 18334.27782595469
+  },
+  {
+    "dipCm": 162.4,
+    "volumeLitres": 18355.297681761906
+  },
+  {
+    "dipCm": 162.6,
+    "volumeLitres": 18376.274620623484
+  },
+  {
+    "dipCm": 162.8,
+    "volumeLitres": 18397.208416576323
+  },
+  {
+    "dipCm": 163,
+    "volumeLitres": 18418.098842257332
+  },
+  {
+    "dipCm": 163.2,
+    "volumeLitres": 18438.945668884393
+  },
+  {
+    "dipCm": 163.4,
+    "volumeLitres": 18459.74866623691
+  },
+  {
+    "dipCm": 163.6,
+    "volumeLitres": 18480.507602636062
+  },
+  {
+    "dipCm": 163.8,
+    "volumeLitres": 18501.222244924666
+  },
+  {
+    "dipCm": 164,
+    "volumeLitres": 18521.892358446592
+  },
+  {
+    "dipCm": 164.2,
+    "volumeLitres": 18542.51770702592
+  },
+  {
+    "dipCm": 164.4,
+    "volumeLitres": 18563.09805294555
+  },
+  {
+    "dipCm": 164.6,
+    "volumeLitres": 18583.633156925524
+  },
+  {
+    "dipCm": 164.8,
+    "volumeLitres": 18604.122778100842
+  },
+  {
+    "dipCm": 165,
+    "volumeLitres": 18624.566673998903
+  },
+  {
+    "dipCm": 165.2,
+    "volumeLitres": 18644.964600516465
+  },
+  {
+    "dipCm": 165.4,
+    "volumeLitres": 18665.316311896175
+  },
+  {
+    "dipCm": 165.6,
+    "volumeLitres": 18685.621560702624
+  },
+  {
+    "dipCm": 165.8,
+    "volumeLitres": 18705.880097797926
+  },
+  {
+    "dipCm": 166,
+    "volumeLitres": 18726.091672316823
+  },
+  {
+    "dipCm": 166.2,
+    "volumeLitres": 18746.256031641242
+  },
+  {
+    "dipCm": 166.4,
+    "volumeLitres": 18766.372921374386
+  },
+  {
+    "dipCm": 166.6,
+    "volumeLitres": 18786.442085314287
+  },
+  {
+    "dipCm": 166.8,
+    "volumeLitres": 18806.46326542677
+  },
+  {
+    "dipCm": 167,
+    "volumeLitres": 18826.43620181793
+  },
+  {
+    "dipCm": 167.2,
+    "volumeLitres": 18846.360632705964
+  },
+  {
+    "dipCm": 167.4,
+    "volumeLitres": 18866.236294392475
+  },
+  {
+    "dipCm": 167.6,
+    "volumeLitres": 18886.062921233122
+  },
+  {
+    "dipCm": 167.8,
+    "volumeLitres": 18905.840245607687
+  },
+  {
+    "dipCm": 168,
+    "volumeLitres": 18925.56799788947
+  },
+  {
+    "dipCm": 168.2,
+    "volumeLitres": 18945.245906414046
+  },
+  {
+    "dipCm": 168.4,
+    "volumeLitres": 18964.873697447336
+  },
+  {
+    "dipCm": 168.6,
+    "volumeLitres": 18984.45109515302
+  },
+  {
+    "dipCm": 168.8,
+    "volumeLitres": 19003.97782155916
+  },
+  {
+    "dipCm": 169,
+    "volumeLitres": 19023.453596524152
+  },
+  {
+    "dipCm": 169.2,
+    "volumeLitres": 19042.878137701922
+  },
+  {
+    "dipCm": 169.4,
+    "volumeLitres": 19062.25116050629
+  },
+  {
+    "dipCm": 169.6,
+    "volumeLitres": 19081.572378074598
+  },
+  {
+    "dipCm": 169.8,
+    "volumeLitres": 19100.84150123046
+  },
+  {
+    "dipCm": 170,
+    "volumeLitres": 19120.05823844572
+  },
+  {
+    "dipCm": 170.2,
+    "volumeLitres": 19139.222295801446
+  },
+  {
+    "dipCm": 170.4,
+    "volumeLitres": 19158.333376948147
+  },
+  {
+    "dipCm": 170.6,
+    "volumeLitres": 19177.391183064963
+  },
+  {
+    "dipCm": 170.8,
+    "volumeLitres": 19196.395412817932
+  },
+  {
+    "dipCm": 171,
+    "volumeLitres": 19215.345762317287
+  },
+  {
+    "dipCm": 171.2,
+    "volumeLitres": 19234.241925073708
+  },
+  {
+    "dipCm": 171.4,
+    "volumeLitres": 19253.083591953575
+  },
+  {
+    "dipCm": 171.6,
+    "volumeLitres": 19271.87045113307
+  },
+  {
+    "dipCm": 171.8,
+    "volumeLitres": 19290.602188051245
+  },
+  {
+    "dipCm": 172,
+    "volumeLitres": 19309.278485361898
+  },
+  {
+    "dipCm": 172.2,
+    "volumeLitres": 19327.899022884238
+  },
+  {
+    "dipCm": 172.4,
+    "volumeLitres": 19346.463477552414
+  },
+  {
+    "dipCm": 172.6,
+    "volumeLitres": 19364.97152336366
+  },
+  {
+    "dipCm": 172.8,
+    "volumeLitres": 19383.422831325297
+  },
+  {
+    "dipCm": 173,
+    "volumeLitres": 19401.817069400193
+  },
+  {
+    "dipCm": 173.2,
+    "volumeLitres": 19420.153902451002
+  },
+  {
+    "dipCm": 173.4,
+    "volumeLitres": 19438.432992182872
+  },
+  {
+    "dipCm": 173.6,
+    "volumeLitres": 19456.65399708471
+  },
+  {
+    "dipCm": 173.8,
+    "volumeLitres": 19474.81657236885
+  },
+  {
+    "dipCm": 174,
+    "volumeLitres": 19492.92036990925
+  },
+  {
+    "dipCm": 174.2,
+    "volumeLitres": 19510.965038177903
+  },
+  {
+    "dipCm": 174.4,
+    "volumeLitres": 19528.95022217967
+  },
+  {
+    "dipCm": 174.6,
+    "volumeLitres": 19546.87556338526
+  },
+  {
+    "dipCm": 174.8,
+    "volumeLitres": 19564.740699662463
+  },
+  {
+    "dipCm": 175,
+    "volumeLitres": 19582.545265205434
+  },
+  {
+    "dipCm": 175.2,
+    "volumeLitres": 19600.288890462118
+  },
+  {
+    "dipCm": 175.4,
+    "volumeLitres": 19617.97120205951
+  },
+  {
+    "dipCm": 175.6,
+    "volumeLitres": 19635.591822726947
+  },
+  {
+    "dipCm": 175.8,
+    "volumeLitres": 19653.15037121717
+  },
+  {
+    "dipCm": 176,
+    "volumeLitres": 19670.646462225144
+  },
+  {
+    "dipCm": 176.2,
+    "volumeLitres": 19688.0797063045
+  },
+  {
+    "dipCm": 176.4,
+    "volumeLitres": 19705.44970978164
+  },
+  {
+    "dipCm": 176.6,
+    "volumeLitres": 19722.75607466726
+  },
+  {
+    "dipCm": 176.8,
+    "volumeLitres": 19739.998398565232
+  },
+  {
+    "dipCm": 177,
+    "volumeLitres": 19757.17627457887
+  },
+  {
+    "dipCm": 177.2,
+    "volumeLitres": 19774.289291214278
+  },
+  {
+    "dipCm": 177.4,
+    "volumeLitres": 19791.337032280822
+  },
+  {
+    "dipCm": 177.6,
+    "volumeLitres": 19808.319076788568
+  },
+  {
+    "dipCm": 177.8,
+    "volumeLitres": 19825.234998842487
+  },
+  {
+    "dipCm": 178,
+    "volumeLitres": 19842.084367533418
+  },
+  {
+    "dipCm": 178.2,
+    "volumeLitres": 19858.866746825635
+  },
+  {
+    "dipCm": 178.4,
+    "volumeLitres": 19875.581695440735
+  },
+  {
+    "dipCm": 178.6,
+    "volumeLitres": 19892.22876673792
+  },
+  {
+    "dipCm": 178.8,
+    "volumeLitres": 19908.807508590344
+  },
+  {
+    "dipCm": 179,
+    "volumeLitres": 19925.317463257477
+  },
+  {
+    "dipCm": 179.2,
+    "volumeLitres": 19941.758167253174
+  },
+  {
+    "dipCm": 179.4,
+    "volumeLitres": 19958.129151209458
+  },
+  {
+    "dipCm": 179.6,
+    "volumeLitres": 19974.429939735655
+  },
+  {
+    "dipCm": 179.8,
+    "volumeLitres": 19990.66005127278
+  },
+  {
+    "dipCm": 180,
+    "volumeLitres": 20006.818997942948
+  },
+  {
+    "dipCm": 180.2,
+    "volumeLitres": 20022.906285393507
+  },
+  {
+    "dipCm": 180.4,
+    "volumeLitres": 20038.921412635806
+  },
+  {
+    "dipCm": 180.6,
+    "volumeLitres": 20054.86387187823
+  },
+  {
+    "dipCm": 180.8,
+    "volumeLitres": 20070.733148353243
+  },
+  {
+    "dipCm": 181,
+    "volumeLitres": 20086.52872013825
+  },
+  {
+    "dipCm": 181.2,
+    "volumeLitres": 20102.25005796989
+  },
+  {
+    "dipCm": 181.4,
+    "volumeLitres": 20117.896625051526
+  },
+  {
+    "dipCm": 181.6,
+    "volumeLitres": 20133.467876853523
+  },
+  {
+    "dipCm": 181.8,
+    "volumeLitres": 20148.96326090604
+  },
+  {
+    "dipCm": 182,
+    "volumeLitres": 20164.38221658392
+  },
+  {
+    "dipCm": 182.2,
+    "volumeLitres": 20179.724174883304
+  },
+  {
+    "dipCm": 182.4,
+    "volumeLitres": 20194.988558189572
+  },
+  {
+    "dipCm": 182.6,
+    "volumeLitres": 20210.174780036115
+  },
+  {
+    "dipCm": 182.8,
+    "volumeLitres": 20225.28224485352
+  },
+  {
+    "dipCm": 183,
+    "volumeLitres": 20240.310347708677
+  },
+  {
+    "dipCm": 183.2,
+    "volumeLitres": 20255.25847403315
+  },
+  {
+    "dipCm": 183.4,
+    "volumeLitres": 20270.125999340533
+  },
+  {
+    "dipCm": 183.6,
+    "volumeLitres": 20284.912288931802
+  },
+  {
+    "dipCm": 183.8,
+    "volumeLitres": 20299.61669758833
+  },
+  {
+    "dipCm": 184,
+    "volumeLitres": 20314.23856925177
+  },
+  {
+    "dipCm": 184.2,
+    "volumeLitres": 20328.777236690024
+  },
+  {
+    "dipCm": 184.4,
+    "volumeLitres": 20343.232021148575
+  },
+  {
+    "dipCm": 184.6,
+    "volumeLitres": 20357.602231986355
+  },
+  {
+    "dipCm": 184.8,
+    "volumeLitres": 20371.887166295182
+  },
+  {
+    "dipCm": 185,
+    "volumeLitres": 20386.086108501855
+  },
+  {
+    "dipCm": 185.2,
+    "volumeLitres": 20400.198329951894
+  },
+  {
+    "dipCm": 185.4,
+    "volumeLitres": 20414.223088473682
+  },
+  {
+    "dipCm": 185.6,
+    "volumeLitres": 20428.15962792205
+  },
+  {
+    "dipCm": 185.8,
+    "volumeLitres": 20442.00717769977
+  },
+  {
+    "dipCm": 186,
+    "volumeLitres": 20455.76495225571
+  },
+  {
+    "dipCm": 186.2,
+    "volumeLitres": 20469.432150558187
+  },
+  {
+    "dipCm": 186.4,
+    "volumeLitres": 20483.00795554177
+  },
+  {
+    "dipCm": 186.6,
+    "volumeLitres": 20496.491533525957
+  },
+  {
+    "dipCm": 186.8,
+    "volumeLitres": 20509.88203360371
+  },
+  {
+    "dipCm": 187,
+    "volumeLitres": 20523.17858699791
+  },
+  {
+    "dipCm": 187.2,
+    "volumeLitres": 20536.380306383402
+  },
+  {
+    "dipCm": 187.4,
+    "volumeLitres": 20549.48628517241
+  },
+  {
+    "dipCm": 187.6,
+    "volumeLitres": 20562.495596760553
+  },
+  {
+    "dipCm": 187.8,
+    "volumeLitres": 20575.407293730674
+  },
+  {
+    "dipCm": 188,
+    "volumeLitres": 20588.220407011464
+  },
+  {
+    "dipCm": 188.2,
+    "volumeLitres": 20600.933944987406
+  },
+  {
+    "dipCm": 188.4,
+    "volumeLitres": 20613.546892556402
+  },
+  {
+    "dipCm": 188.6,
+    "volumeLitres": 20626.058210131076
+  },
+  {
+    "dipCm": 188.8,
+    "volumeLitres": 20638.46683257927
+  },
+  {
+    "dipCm": 189,
+    "volumeLitres": 20650.77166809895
+  },
+  {
+    "dipCm": 189.2,
+    "volumeLitres": 20662.971597022173
+  },
+  {
+    "dipCm": 189.4,
+    "volumeLitres": 20675.065470542177
+  },
+  {
+    "dipCm": 189.6,
+    "volumeLitres": 20687.052109357235
+  },
+  {
+    "dipCm": 189.8,
+    "volumeLitres": 20698.930302224
+  },
+  {
+    "dipCm": 190,
+    "volumeLitres": 20710.6988044125
+  },
+  {
+    "dipCm": 190.2,
+    "volumeLitres": 20722.356336053945
+  },
+  {
+    "dipCm": 190.4,
+    "volumeLitres": 20733.90158037158
+  },
+  {
+    "dipCm": 190.6,
+    "volumeLitres": 20745.333181783706
+  },
+  {
+    "dipCm": 190.8,
+    "volumeLitres": 20756.649743866725
+  },
+  {
+    "dipCm": 191,
+    "volumeLitres": 20767.84982716458
+  },
+  {
+    "dipCm": 191.2,
+    "volumeLitres": 20778.9319468294
+  },
+  {
+    "dipCm": 191.4,
+    "volumeLitres": 20789.894570076143
+  },
+  {
+    "dipCm": 191.6,
+    "volumeLitres": 20800.736113431984
+  },
+  {
+    "dipCm": 191.8,
+    "volumeLitres": 20811.454939758547
+  },
+  {
+    "dipCm": 192,
+    "volumeLitres": 20822.049355022304
+  },
+  {
+    "dipCm": 192.2,
+    "volumeLitres": 20832.51760478503
+  },
+  {
+    "dipCm": 192.4,
+    "volumeLitres": 20842.85787038215
+  },
+  {
+    "dipCm": 192.6,
+    "volumeLitres": 20853.06826475247
+  },
+  {
+    "dipCm": 192.8,
+    "volumeLitres": 20863.146827877048
+  },
+  {
+    "dipCm": 193,
+    "volumeLitres": 20873.09152177895
+  },
+  {
+    "dipCm": 193.2,
+    "volumeLitres": 20882.90022502765
+  },
+  {
+    "dipCm": 193.4,
+    "volumeLitres": 20892.57072668321
+  },
+  {
+    "dipCm": 193.6,
+    "volumeLitres": 20902.100719604492
+  },
+  {
+    "dipCm": 193.8,
+    "volumeLitres": 20911.487793032546
+  },
+  {
+    "dipCm": 194,
+    "volumeLitres": 20920.729424345103
+  },
+  {
+    "dipCm": 194.2,
+    "volumeLitres": 20929.822969858706
+  },
+  {
+    "dipCm": 194.4,
+    "volumeLitres": 20938.765654532177
+  },
+  {
+    "dipCm": 194.6,
+    "volumeLitres": 20947.554560396264
+  },
+  {
+    "dipCm": 194.8,
+    "volumeLitres": 20956.186613499376
+  },
+  {
+    "dipCm": 195,
+    "volumeLitres": 20964.658569114712
+  },
+  {
+    "dipCm": 195.2,
+    "volumeLitres": 20972.96699489906
+  },
+  {
+    "dipCm": 195.4,
+    "volumeLitres": 20981.10825162293
+  },
+  {
+    "dipCm": 195.6,
+    "volumeLitres": 20989.078471001605
+  },
+  {
+    "dipCm": 195.8,
+    "volumeLitres": 20996.873530040335
+  },
+  {
+    "dipCm": 196,
+    "volumeLitres": 21004.489021154684
+  },
+  {
+    "dipCm": 196.2,
+    "volumeLitres": 21011.920217125826
+  },
+  {
+    "dipCm": 196.4,
+    "volumeLitres": 21019.162029681436
+  },
+  {
+    "dipCm": 196.6,
+    "volumeLitres": 21026.20896012719
+  },
+  {
+    "dipCm": 196.8,
+    "volumeLitres": 21033.055039950013
+  },
+  {
+    "dipCm": 197,
+    "volumeLitres": 21039.69375860827
+  },
+  {
+    "dipCm": 197.2,
+    "volumeLitres": 21046.117974714816
+  },
+  {
+    "dipCm": 197.4,
+    "volumeLitres": 21052.319805347433
+  },
+  {
+    "dipCm": 197.6,
+    "volumeLitres": 21058.29048602212
+  },
+  {
+    "dipCm": 197.8,
+    "volumeLitres": 21064.020190490137
+  },
+  {
+    "dipCm": 198,
+    "volumeLitres": 21069.497794176037
+  },
+  {
+    "dipCm": 198.2,
+    "volumeLitres": 21074.710556303497
+  },
+  {
+    "dipCm": 198.4,
+    "volumeLitres": 21079.643680736976
+  },
+  {
+    "dipCm": 198.6,
+    "volumeLitres": 21084.279688512583
+  },
+  {
+    "dipCm": 198.8,
+    "volumeLitres": 21088.597483194066
+  },
+  {
+    "dipCm": 199,
+    "volumeLitres": 21092.570882905544
+  },
+  {
+    "dipCm": 199.2,
+    "volumeLitres": 21096.16614758818
+  },
+  {
+    "dipCm": 199.4,
+    "volumeLitres": 21099.337388056185
+  },
+  {
+    "dipCm": 199.6,
+    "volumeLitres": 21102.016697310406
+  },
+  {
+    "dipCm": 199.8,
+    "volumeLitres": 21104.086763780062
+  },
+  {
+    "dipCm": 200,
+    "volumeLitres": 21105.21944681623
+  }
+]

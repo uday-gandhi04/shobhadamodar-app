@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon --watch .env --watch . server.js",
-    "test": "node --test src/**/*.test.js"
+    "test": "node --test src/**/*.test.js",
+    "seed:calibration": "node src/utils/seedCalibration.js"
   },
   "keywords": [],
   "author": "",

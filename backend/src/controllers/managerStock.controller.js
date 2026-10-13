@@ -66,7 +66,7 @@ export const upsertManagerStock = async (req, res, next) => {
         const tank = activeTanks[0];
         const calibration = await TankCalibration.findOne({ tankId: tank._id }).lean();
         if (calibration && calibration.points && calibration.points.length > 0) {
-          const converted = interpolateVolume(values.productDip, calibration.points, tank.capacityLitres);
+          const converted = interpolateVolume(values.productDip, calibration.points);
           if (converted != null) {
             values.actualDipStockLitres = converted;
           } else {

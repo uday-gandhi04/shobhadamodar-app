@@ -233,7 +233,7 @@ export const getMonthlyRegisterReportData = async (stationId, monthStr) => {
 
       let variationLitres = null;
       if (actualDipStockLitres != null && calculatedClosingStockLitres != null) {
-        variationLitres = Number((actualDipStockLitres - calculatedClosingStockLitres).toFixed(2));
+        variationLitres = Number((calculatedClosingStockLitres - actualDipStockLitres).toFixed(2));
       }
 
       // Update stock carry-forward for next day

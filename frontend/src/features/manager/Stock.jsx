@@ -23,44 +23,63 @@ import {
 
 const n = (value) => Number(value || 0);
 
-const interpolateVolumeClient = (dipCm, points, maxCapacityLitres = null) => {
-  if (dipCm == null || isNaN(dipCm) || dipCm < 0) return null;
+const interpolateVolumeClient = (dipCm, points) => {
+  const dip = Number(dipCm);
+  if (dipCm == null || isNaN(dip) || dip < 0) return null;
   if (!points || !Array.isArray(points) || points.length === 0) return null;
+
   const validPoints = points
-    .filter((p) => typeof p.dipCm === "number" && typeof p.volumeLitres === "number" && p.volumeLitres >= 0)
+    .filter((p) => p && typeof p.dipCm === "number" && typeof p.volumeLitres === "number" && p.volumeLitres >= 0 && !isNaN(p.dipCm) && !isNaN(p.volumeLitres))
     .sort((a, b) => a.dipCm - b.dipCm);
+
   if (validPoints.length === 0) return null;
+
   const minDip = validPoints[0].dipCm;
   const maxDip = validPoints[validPoints.length - 1].dipCm;
-  if (dipCm < minDip || dipCm > maxDip) return null;
-  const clamp = (vol) => {
-    let result = vol;
-    if (maxCapacityLitres != null && result > maxCapacityLitres) {
-      result = maxCapacityLitres;
-    }
-    if (result < 0) result = 0;
-    return Number(result.toFixed(2));
-  };
+  const EPS = 1e-6;
 
-  if (dipCm === minDip) {
-    return clamp(validPoints[0].volumeLitres);
+  if (dip < minDip - EPS || dip > maxDip + EPS) return null;
+
+  if (Math.abs(dip - minDip) <= EPS) {
+    return Number(validPoints[0].volumeLitres.toFixed(2));
   }
-  if (dipCm === maxDip) {
-    return clamp(validPoints[validPoints.length - 1].volumeLitres);
+  if (Math.abs(dip - maxDip) <= EPS) {
+    return Number(validPoints[validPoints.length - 1].volumeLitres.toFixed(2));
   }
-  for (let i = 0; i < validPoints.length - 1; i++) {
-    const p1 = validPoints[i];
-    const p2 = validPoints[i + 1];
-    if (dipCm === p1.dipCm) return clamp(p1.volumeLitres);
-    if (dipCm === p2.dipCm) return clamp(p2.volumeLitres);
-    if (dipCm > p1.dipCm && dipCm < p2.dipCm) {
-      const deltaDip = p2.dipCm - p1.dipCm;
-      if (deltaDip === 0) return clamp(p1.volumeLitres);
-      const ratio = (dipCm - p1.dipCm) / deltaDip;
-      const interpolated = p1.volumeLitres + ratio * (p2.volumeLitres - p1.volumeLitres);
-      return clamp(interpolated);
+
+  let low = 0;
+  let high = validPoints.length - 1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const midDip = validPoints[mid].dipCm;
+
+    if (Math.abs(dip - midDip) <= EPS) {
+      return Number(validPoints[mid].volumeLitres.toFixed(2));
+    }
+
+    if (dip < midDip) {
+      high = mid - 1;
+    } else {
+      low = mid + 1;
     }
   }
+
+  if (high >= 0 && high < validPoints.length - 1) {
+    const p1 = validPoints[high];
+    const p2 = validPoints[high + 1];
+
+    if (Math.abs(dip - p1.dipCm) <= EPS) return Number(p1.volumeLitres.toFixed(2));
+    if (Math.abs(dip - p2.dipCm) <= EPS) return Number(p2.volumeLitres.toFixed(2));
+
+    const deltaDip = p2.dipCm - p1.dipCm;
+    if (deltaDip === 0) return Number(p1.volumeLitres.toFixed(2));
+
+    const ratio = (dip - p1.dipCm) / deltaDip;
+    const interpolated = p1.volumeLitres + ratio * (p2.volumeLitres - p1.volumeLitres);
+    return Number(interpolated.toFixed(2));
+  }
+
   return null;
 };
 
@@ -333,7 +352,7 @@ const Stock = () => {
         : null;
     } else {
       currentCalStatus = "VALID";
-      computedActualDipStock = interpolateVolumeClient(enteredDip, calPoints, selectedTank.capacityLitres);
+      computedActualDipStock = interpolateVolumeClient(enteredDip, calPoints);
     }
   }
 
