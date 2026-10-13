@@ -198,11 +198,27 @@ const Stock = () => {
     });
   };
 
+  const mergeTanks = (incomingTanks) => {
+    if (!incomingTanks || !Array.isArray(incomingTanks)) return;
+    setTanks((prev) => {
+      if (!prev || prev.length === 0) {
+        return incomingTanks.map((t) => ({ ...t, isActive: t.isActive !== false }));
+      }
+      return prev.map((existing) => {
+        const match = incomingTanks.find((inc) => inc._id === existing._id);
+        if (match && match.calibrationPoints?.length > 0) {
+          return { ...existing, calibrationPoints: match.calibrationPoints };
+        }
+        return existing;
+      });
+    });
+  };
+
   const load = async () => {
     try {
       const [s, d, r] = await fetchStockDateData(date);
       setStock(s.data.stock);
-      if (s.data.tanks) setTanks(s.data.tanks);
+      if (s.data.tanks) mergeTanks(s.data.tanks);
       setDensity(d.data);
       setReceipts(r.data);
       const currentProduct = productRef.current;
@@ -215,11 +231,16 @@ const Stock = () => {
 
   useEffect(() => {
     let current = true;
-    getFuelRateHistory()
-      .then((h) => {
-        if (current && h?.data) setRates(h.data);
+    Promise.all([
+      getFuelRateHistory(),
+      getManagerTanks(),
+    ])
+      .then(([h, configuredTanks]) => {
+        if (!current) return;
+        if (h?.data) setRates(h.data);
+        if (configuredTanks?.data) setTanks(configuredTanks.data);
       })
-      .catch((err) => console.error("Failed to load fuel rate history", err));
+      .catch((err) => console.error("Failed to load initial rates and tanks", err));
     return () => { current = false; };
   }, []);
 
@@ -230,7 +251,7 @@ const Stock = () => {
         const [s, d, r] = await fetchStockDateData(date);
         if (!current) return;
         setStock(s.data.stock);
-        if (s.data.tanks) setTanks(s.data.tanks);
+        if (s.data.tanks && s.data.tanks.length > 0) mergeTanks(s.data.tanks);
         setDensity(d.data);
         setReceipts(r.data);
         const currentProduct = productRef.current;
@@ -253,7 +274,7 @@ const Stock = () => {
   }, [notice]);
 
   const row = stock.find((x) => x.product === product) || {};
-  const activeTanks = tanks.filter((tank) => tank.product === product && tank.isActive);
+  const activeTanks = tanks.filter((tank) => tank.product === product && tank.isActive !== false);
   const selectedTank = activeTanks.find((tank) => tank._id === selectedTankId) || activeTanks[0];
 
   // Fetch calibration points on-demand for active tank if not yet available
@@ -718,10 +739,10 @@ const Stock = () => {
                 </div>
                 <div>
                   <h3 className="!text-[14px] !font-bold !text-slate-900">
-                    {activeTanks.length > 0 ? (selectedTank?.tankNumber || "Unknown Tank") : "No Active Tanks"}
+                    {activeTanks.length > 0 ? (selectedTank?.tankNumber || "Unknown Tank") : (row.tankNumber || "No Active Tanks")}
                   </h3>
                   <p className="!text-[10px] !font-medium !text-slate-500">
-                    {t("manager.stockLabels.capacity", "Capacity")}: {activeTanks.length > 0 ? formatLitres(selectedTank?.capacityLitres) : "-- L"}
+                    {t("manager.stockLabels.capacity", "Capacity")}: {activeTanks.length > 0 ? formatLitres(selectedTank?.capacityLitres) : (row.capacityLitres ? formatLitres(row.capacityLitres) : "-- L")}
                   </p>
                 </div>
               </div>
