@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Shobhadamodar</string>
-    <string name="title_activity_main">Shobhadamodar</string>
+    <string name="app_name">SDP</string>
+    <string name="title_activity_main">SDP</string>
+    <string name="app_full_name">ShobhaDamodarPetroleum</string>
     <string name="package_name">com.shobhadamodar.app</string>
     <string name="custom_url_scheme">com.shobhadamodar.app</string>
 </resources>

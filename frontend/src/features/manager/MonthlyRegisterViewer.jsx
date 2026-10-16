@@ -144,10 +144,10 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="!flex !items-center !gap-2.5">
             {/* Month Picker */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl shadow-sm">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-slate-400">
+            <div className="!flex !items-center !gap-2 !px-3.5 !py-2 !bg-white !border !border-slate-200 !rounded-[12px] !shadow-sm hover:!border-slate-300 !transition-all">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!w-4 !h-4 !text-slate-400">
                 <rect x="3" y="4" width="18" height="18" rx="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
                 <line x1="8" y1="2" x2="8" y2="6" />
@@ -157,7 +157,7 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                 type="month"
                 value={month}
                 onChange={(e) => setMonth(e.target.value)}
-                className="text-xs font-bold text-slate-800 bg-transparent border-none focus:outline-none cursor-pointer"
+                className="!text-xs !font-bold !text-slate-800 !bg-transparent !border-none focus:!outline-none !cursor-pointer"
               />
             </div>
 
@@ -166,12 +166,12 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
               type="button"
               onClick={handleDownloadExcel}
               disabled={downloading || loading}
-              className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-xl shadow-sm transition"
+              className="!flex !items-center !gap-2 !px-4 !py-2 !text-xs !font-bold !text-white !bg-emerald-700 hover:!bg-emerald-800 active:!scale-95 disabled:!opacity-50 disabled:!pointer-events-none !rounded-[12px] !shadow-[0_4px_12px_rgba(5,150,105,0.25)] !transition-all"
             >
               {downloading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="!w-4 !h-4 !border-2 !border-white/30 !border-t-white !rounded-full !animate-spin" />
               ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!w-4 !h-4">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
@@ -184,10 +184,10 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              className="!grid !h-9 !w-9 !place-items-center !text-slate-400 hover:!text-slate-700 hover:!bg-slate-100 !rounded-[12px] !transition-all active:!scale-95"
               aria-label="Close"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="!w-4 !h-4">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -195,13 +195,13 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
           </div>
         </div>
 
-        {/* 4 SHEET TABS NAVIGATION */}
-        <div className="flex border-b border-slate-200 bg-slate-100/70 px-4 pt-2 gap-1.5 overflow-x-auto">
+        {/* 4 SHEET TABS NAVIGATION (BUTTONS OF METER & STOCK) */}
+        <div className="!flex !items-center !gap-2 !p-3 !bg-slate-100/70 !border-b !border-slate-200 !overflow-x-auto !scrollbar-hide">
           {[
-            { id: "MS_METER", label: t("manager.stockLabels.msMeterRegister", "MS Meter"), type: "MS Meter" },
-            { id: "MS_STOCK", label: t("manager.stockLabels.msStockRegister", "MS Stock"), type: "MS Stock" },
-            { id: "HSD_METER", label: t("manager.stockLabels.hsdMeterRegister", "HSD Meter"), type: "HSD Meter" },
-            { id: "HSD_STOCK", label: t("manager.stockLabels.hsdStockRegister", "HSD Stock"), type: "HSD Stock" },
+            { id: "MS_METER", label: t("manager.stockLabels.msMeterRegister", "MS Meter"), fuel: "MS", isPetrol: true },
+            { id: "MS_STOCK", label: t("manager.stockLabels.msStockRegister", "MS Stock"), fuel: "MS", isPetrol: true },
+            { id: "HSD_METER", label: t("manager.stockLabels.hsdMeterRegister", "HSD Meter"), fuel: "HSD", isPetrol: false },
+            { id: "HSD_STOCK", label: t("manager.stockLabels.hsdStockRegister", "HSD Stock"), fuel: "HSD", isPetrol: false },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -209,12 +209,23 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap ${
+                className={`!flex !items-center !gap-2.5 !rounded-[12px] !px-4 !py-2.5 !text-xs !font-extrabold !transition-all !whitespace-nowrap active:!scale-98 ${
                   isActive
-                    ? "bg-white text-emerald-800 border-t-2 border-emerald-600 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                    ? "!bg-emerald-800 !text-white !shadow-[0_4px_14px_rgba(4,120,87,0.25)]"
+                    : "!bg-white hover:!bg-slate-50 !border !border-slate-200/80 !text-slate-700 !shadow-sm"
                 }`}
               >
+                <span
+                  className={`!px-1.5 !py-0.5 !rounded-[6px] !text-[10px] !font-black ${
+                    isActive
+                      ? "!bg-white/20 !text-white"
+                      : tab.isPetrol
+                        ? "!bg-rose-100 !text-rose-700"
+                        : "!bg-sky-100 !text-sky-700"
+                  }`}
+                >
+                  {tab.fuel}
+                </span>
                 <span>{tab.label}</span>
               </button>
             );
@@ -240,23 +251,23 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="overflow-x-auto">
                 {currentSheet.type === "METER" ? (
-                  /* METER REGISTER SPREADSHEET */
+                  /* METER REGISTER SPREADSHEET (OPEN & SALE ONLY) */
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-slate-100 text-slate-700 border-b border-slate-200 font-bold">
                         <th rowSpan={2} className="sticky left-0 z-20 bg-slate-100 px-3 py-2.5 border-r border-slate-200 shadow-[1px_0_3px_rgba(0,0,0,0.05)] min-w-[95px]">
                           {t("manager.stockLabels.date", "Date")}
                         </th>
-                        <th colSpan={3} className="text-center px-3 py-2 border-r border-slate-200 bg-emerald-50/50 text-emerald-900">
+                        <th colSpan={2} className="text-center px-3 py-2 border-r border-slate-200 bg-emerald-50/50 text-emerald-900">
                           {t("manager.stockLabels.nozzle1", "Nozzle 1")}
                         </th>
-                        <th colSpan={3} className="text-center px-3 py-2 border-r border-slate-200 bg-sky-50/50 text-sky-900">
+                        <th colSpan={2} className="text-center px-3 py-2 border-r border-slate-200 bg-sky-50/50 text-sky-900">
                           {t("manager.stockLabels.nozzle2", "Nozzle 2")}
                         </th>
-                        <th colSpan={3} className="text-center px-3 py-2 border-r border-slate-200 bg-emerald-50/50 text-emerald-900">
+                        <th colSpan={2} className="text-center px-3 py-2 border-r border-slate-200 bg-emerald-50/50 text-emerald-900">
                           {t("manager.stockLabels.nozzle3", "Nozzle 3")}
                         </th>
-                        <th colSpan={3} className="text-center px-3 py-2 border-r border-slate-200 bg-sky-50/50 text-sky-900">
+                        <th colSpan={2} className="text-center px-3 py-2 border-r border-slate-200 bg-sky-50/50 text-sky-900">
                           {t("manager.stockLabels.nozzle4", "Nozzle 4")}
                         </th>
                         <th rowSpan={2} className="text-right px-3 py-2.5 border-r border-slate-200 min-w-[110px] bg-amber-50/60 text-amber-900 font-extrabold">
@@ -272,13 +283,10 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                       <tr className="bg-slate-50 text-[11px] text-slate-600 border-b border-slate-200 font-semibold">
                         {[1, 2, 3, 4].map((nz) => (
                           <React.Fragment key={nz}>
-                            <th className="text-right px-2 py-1.5 border-r border-slate-200 min-w-[75px]">
+                            <th className="text-right px-3 py-1.5 border-r border-slate-200 min-w-[90px]">
                               {t("manager.stockLabels.opening", "Open")}
                             </th>
-                            <th className="text-right px-2 py-1.5 border-r border-slate-200 min-w-[75px]">
-                              {t("manager.stockLabels.closing", "Close")}
-                            </th>
-                            <th className="text-right px-2 py-1.5 border-r border-slate-200 min-w-[70px] bg-slate-100/50 font-bold text-slate-800">
+                            <th className="text-right px-3 py-1.5 border-r border-slate-200 min-w-[80px] bg-slate-100/60 font-bold text-slate-800">
                               {t("manager.stockLabels.sale", "Sale")}
                             </th>
                           </React.Fragment>
@@ -295,13 +303,10 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                             const nz = row.nozzles?.[nzIdx] || {};
                             return (
                               <React.Fragment key={nzIdx}>
-                                <td className="text-right px-2 py-2 text-slate-600 border-r border-slate-200">
+                                <td className="text-right px-3 py-2 text-slate-700 border-r border-slate-200">
                                   {formatNumber(nz.openingReading)}
                                 </td>
-                                <td className="text-right px-2 py-2 text-slate-600 border-r border-slate-200">
-                                  {formatNumber(nz.closingReading)}
-                                </td>
-                                <td className="text-right px-2 py-2 font-bold text-slate-900 border-r border-slate-200 bg-slate-50/30">
+                                <td className="text-right px-3 py-2 font-bold text-slate-900 border-r border-slate-200 bg-slate-50/40">
                                   {formatNumber(nz.sale)}
                                 </td>
                               </React.Fragment>
@@ -327,9 +332,8 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                           </td>
                           {[0, 1, 2, 3].map((nzIdx) => (
                             <React.Fragment key={nzIdx}>
-                              <td className="text-right px-2 py-2.5 border-r border-slate-200 font-mono text-slate-400">—</td>
-                              <td className="text-right px-2 py-2.5 border-r border-slate-200 font-mono text-slate-400">—</td>
-                              <td className="text-right px-2 py-2.5 border-r border-slate-200 font-mono text-slate-900">
+                              <td className="text-right px-3 py-2.5 border-r border-slate-200 font-mono text-slate-400">—</td>
+                              <td className="text-right px-3 py-2.5 border-r border-slate-200 font-mono text-slate-900">
                                 {formatNumber(meterTotals.nozzleSales[nzIdx])}
                               </td>
                             </React.Fragment>

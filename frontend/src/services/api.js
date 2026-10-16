@@ -1,8 +1,14 @@
 // src/services/api.js
 import axios from 'axios';
 
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? 'http://localhost:5000/api'
+    : 'https://shobhadamodar-api.onrender.com/api');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://shobhadamodar-api.onrender.com/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -58,7 +64,7 @@ api.interceptors.response.use(
           if (!refreshPromise) {
             refreshPromise = axios
               .post(
-                `${import.meta.env.VITE_API_URL || 'https://shobhadamodar-api.onrender.com/api'}/auth/refresh`,
+                `${API_BASE_URL}/auth/refresh`,
                 { refreshToken },
                 { headers: { 'Content-Type': 'application/json' } },
               )

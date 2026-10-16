@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Debug-only manifest: permits cleartext HTTP traffic strictly during debug development
+         (e.g., local emulator at 10.0.2.2 or local LAN development servers).
+         Android Gradle Plugin merges this manifest ONLY for debug builds (assembleDebug).
+         It is NEVER included in release builds (assembleRelease / bundleRelease), ensuring
+         production builds strictly require secure HTTPS connections. -->
+    <application
+        android:usesCleartextTraffic="true">
+    </application>
+</manifest>

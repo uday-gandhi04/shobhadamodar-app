@@ -355,7 +355,7 @@ export const generateMonthlyExcel = async (stationId, monthStr) => {
   for (const sheetData of sheets) {
     if (sheetData.type === "METER") {
       const meterSheet = workbook.addWorksheet(sheetData.sheetName);
-      meterSheet.mergeCells("A1:P1");
+      meterSheet.mergeCells("A1:L1");
       meterSheet.getCell("A1").value = `Shobhadamodar Petroleum - ${sheetData.sheetName} - ${monthStr}`;
       meterSheet.getCell("A1").font = { bold: true, size: 14 };
       meterSheet.getCell("A1").alignment = { horizontal: "center" };
@@ -363,26 +363,26 @@ export const generateMonthlyExcel = async (stationId, monthStr) => {
       // Header Row 1 (Nozzle Groups)
       const meterHeaders1 = [
         "Date",
-        "Nozzle 1", "", "",
-        "Nozzle 2", "", "",
-        "Nozzle 3", "", "",
-        "Nozzle 4", "", "",
+        "Nozzle 1", "",
+        "Nozzle 2", "",
+        "Nozzle 3", "",
+        "Nozzle 4", "",
         "Total Meter Sale",
         "Pump Testing",
         "Remarks",
       ];
       meterSheet.addRow(meterHeaders1);
-      meterSheet.mergeCells("B2:D2"); // Nozzle 1
-      meterSheet.mergeCells("E2:G2"); // Nozzle 2
-      meterSheet.mergeCells("H2:J2"); // Nozzle 3
-      meterSheet.mergeCells("K2:M2"); // Nozzle 4
+      meterSheet.mergeCells("B2:C2"); // Nozzle 1
+      meterSheet.mergeCells("D2:E2"); // Nozzle 2
+      meterSheet.mergeCells("F2:G2"); // Nozzle 3
+      meterSheet.mergeCells("H2:I2"); // Nozzle 4
 
       const meterHeaders2 = [
         "",
-        "Opening", "Closing", "Sale",
-        "Opening", "Closing", "Sale",
-        "Opening", "Closing", "Sale",
-        "Opening", "Closing", "Sale",
+        "Opening", "Sale",
+        "Opening", "Sale",
+        "Opening", "Sale",
+        "Opening", "Sale",
         "", "", "",
       ];
       meterSheet.addRow(meterHeaders2);
@@ -397,17 +397,16 @@ export const generateMonthlyExcel = async (stationId, monthStr) => {
       });
 
       meterSheet.getColumn(1).width = 12; // Date
-      for (let i = 2; i <= 13; i++) meterSheet.getColumn(i).width = 10; // Open/Close/Sale
-      meterSheet.getColumn(14).width = 15; // Total
-      meterSheet.getColumn(15).width = 15; // Testing
-      meterSheet.getColumn(16).width = 20; // Remarks
+      for (let i = 2; i <= 9; i++) meterSheet.getColumn(i).width = 12; // Open/Sale
+      meterSheet.getColumn(10).width = 16; // Total
+      meterSheet.getColumn(11).width = 15; // Testing
+      meterSheet.getColumn(12).width = 20; // Remarks
 
       for (const mRow of sheetData.rows) {
         const row = [mRow.date];
         for (let i = 0; i < 4; i++) {
           const n = mRow.nozzles[i] || {};
           row.push(n.openingReading ?? "");
-          row.push(n.closingReading ?? "");
           row.push(n.sale ?? "");
         }
         row.push(mRow.totalMeterSale ?? "");

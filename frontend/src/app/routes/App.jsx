@@ -1,8 +1,10 @@
 // src/App.jsx
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import { Route, Navigate } from "react-router-dom";
-import { useContext } from "react";
+import { Route, Navigate, useNavigate } from "react-router-dom";
+import { useContext, useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
+import { App as CapApp } from "@capacitor/app";
 
 /* Core CSS */
 import "@ionic/react/css/core.css";
@@ -58,12 +60,70 @@ const ManagerRoute = ({ children }) => {
   return children;
 };
 
+const NativeBackButtonHandler = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let handle = null;
+
+    const register = async () => {
+      handle = await CapApp.addListener("backButton", ({ canGoBack }) => {
+        // 1. Dispatch Escape for open dropdowns and menus
+        document.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "Escape",
+            code: "Escape",
+            bubbles: true,
+            cancelable: true,
+          })
+        );
+
+        // 2. Dismiss open HTML dialog if present
+        const openDialog = document.querySelector("dialog[open]");
+        if (openDialog) {
+          openDialog.close();
+          return;
+        }
+
+        // 3. For root destinations, exit/minimize app cleanly rather than popping session
+        const currentPath = window.location.pathname;
+        const rootPaths = ["/login", "/dashboard", "/select-mpd", "/manager"];
+
+        if (rootPaths.includes(currentPath)) {
+          CapApp.exitApp();
+          return;
+        }
+
+        // 4. Safely navigate back in inner workflow
+        if (canGoBack || window.history.length > 1) {
+          navigate(-1);
+        } else {
+          CapApp.exitApp();
+        }
+      });
+    };
+
+    register();
+
+    return () => {
+      if (handle) {
+        handle.remove();
+      }
+    };
+  }, [navigate]);
+
+  return null;
+};
+
 function App() {
   return (
     <IonApp>
       <AuthProvider>
         <SyncProvider>
           <IonReactRouter>
+            <NativeBackButtonHandler />
             <IonRouterOutlet>
               {/* Authentication */}
               <Route path="/login" element={<Login />} />
