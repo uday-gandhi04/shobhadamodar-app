@@ -7,6 +7,7 @@ import Tank from "../models/Tank.js";
 import TankCalibration from "../models/TankCalibration.js";
 import Mpd from "../models/Mpd.js";
 import DailyMeterRegister from "../models/DailyMeterRegister.js";
+import FuelTesting from "../models/FuelTesting.js";
 import { getDailyRegister, interpolateVolume, deriveOpeningStock, getProductRegisterNozzles } from "../services/stockRegisterService.js";
 import { generateMonthlyExcel, getMonthlyRegisterReportData } from "../services/exportRegisterService.js";
 import { recordAuditLog } from "../utils/auditLog.js";
@@ -446,3 +447,185 @@ export const correctManagerMeterOpening = async (req, res, next) => {
     res.json({ success: true, data: reg });
   } catch (error) { next(error); }
 };
+
+export const getManagerFuelTesting = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { date: businessDate, month, product } = req.query;
+
+    const query = { stationId: station._id };
+    if (businessDate) {
+      query.businessDate = businessDate;
+    } else if (month) {
+      query.businessDate = { $regex: `^${month}` };
+    }
+    if (product) {
+      query.product = product === "MS" ? "PETROL" : product === "HSD" ? "DIESEL" : product;
+    }
+
+    const testings = await FuelTesting.find(query)
+      .populate("createdBy", "name employeeId")
+      .populate("updatedBy", "name employeeId")
+      .sort({ businessDate: -1, createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, data: testings });
+  } catch (error) { next(error); }
+};
+
+export const createManagerFuelTesting = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { businessDate, product: rawProduct, testingQuantityLitres, remarks } = req.body;
+    const product = rawProduct === "MS" ? "PETROL" : rawProduct === "HSD" ? "DIESEL" : rawProduct;
+
+    const qty = Number(testingQuantityLitres);
+    if (!qty || qty <= 0 || isNaN(qty)) {
+      return res.status(400).json({
+        success: false,
+        message: "Testing quantity must be a positive number greater than zero.",
+      });
+    }
+
+    // Check that testing does not exceed gross metered sale when register/shifts are finalized
+    const { stock, meterRegisters } = await getDailyRegister(station._id, businessDate);
+    const productStock = stock.find((s) => s.product === product);
+    const meterReg = Array.isArray(meterRegisters)
+      ? meterRegisters.find((m) => m.product === product)
+      : meterRegisters?.[product];
+    const grossMeterSale = productStock?.grossSalesLitres ?? meterReg?.totalMeterSale;
+    const existingTesting = productStock?.testingLitres ?? meterReg?.pumpTestingLitres ?? 0;
+
+    if (grossMeterSale != null && grossMeterSale > 0 && (existingTesting + qty) > grossMeterSale) {
+      return res.status(400).json({
+        success: false,
+        message: `Testing quantity (${(existingTesting + qty).toFixed(2)} L) exceeds gross metered sale (${grossMeterSale.toFixed(2)} L) for this date. Testing cannot result in negative net sales.`,
+        code: "TESTING_EXCEEDS_METERED_SALE",
+      });
+    }
+
+    const testingDoc = await FuelTesting.create({
+      stationId: station._id,
+      businessDate,
+      product,
+      testingQuantityLitres: Number(qty.toFixed(2)),
+      remarks: remarks?.trim() || "",
+      createdBy: req.user._id,
+    });
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "FUEL_TESTING_CREATED",
+      entityType: "FUEL_TESTING",
+      entityId: testingDoc._id,
+      metadata: {
+        testingId: testingDoc._id,
+        businessDate,
+        product,
+        testingQuantityLitres: testingDoc.testingQuantityLitres,
+        remarks: testingDoc.remarks,
+      },
+    });
+
+    res.status(201).json({ success: true, data: testingDoc });
+  } catch (error) { next(error); }
+};
+
+export const updateManagerFuelTesting = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { id } = req.params;
+    const { testingQuantityLitres, remarks, reason } = req.body;
+
+    const testingDoc = await FuelTesting.findOne({ _id: id, stationId: station._id });
+    if (!testingDoc) {
+      return res.status(404).json({ success: false, message: "Fuel testing record not found." });
+    }
+
+    const previousQuantity = testingDoc.testingQuantityLitres;
+    let newQty = previousQuantity;
+
+    if (testingQuantityLitres !== undefined) {
+      newQty = Number(testingQuantityLitres);
+      if (!newQty || newQty <= 0 || isNaN(newQty)) {
+        return res.status(400).json({
+          success: false,
+          message: "Testing quantity must be a positive number greater than zero.",
+        });
+      }
+      testingDoc.testingQuantityLitres = Number(newQty.toFixed(2));
+    }
+
+    if (remarks !== undefined) {
+      testingDoc.remarks = remarks.trim();
+    }
+
+    // Negative net sales check with updated quantity
+    const { stock, meterRegisters } = await getDailyRegister(station._id, testingDoc.businessDate);
+    const productStock = stock.find((s) => s.product === testingDoc.product);
+    const meterReg = Array.isArray(meterRegisters)
+      ? meterRegisters.find((m) => m.product === testingDoc.product)
+      : meterRegisters?.[testingDoc.product];
+    const grossMeterSale = productStock?.grossSalesLitres ?? meterReg?.totalMeterSale;
+    const currentTotalTesting = productStock?.testingLitres ?? meterReg?.pumpTestingLitres ?? 0;
+    const projectedTotalTesting = currentTotalTesting - previousQuantity + newQty;
+
+    if (grossMeterSale != null && grossMeterSale > 0 && projectedTotalTesting > grossMeterSale) {
+      return res.status(400).json({
+        success: false,
+        message: `Updated testing quantity (${projectedTotalTesting.toFixed(2)} L) exceeds gross metered sale (${grossMeterSale.toFixed(2)} L). Testing cannot result in negative net sales.`,
+        code: "TESTING_EXCEEDS_METERED_SALE",
+      });
+    }
+
+    testingDoc.updatedBy = req.user._id;
+    testingDoc.isCorrection = true;
+    testingDoc.correctionReason = reason?.trim() || "Manager correction";
+    await testingDoc.save();
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "FUEL_TESTING_UPDATED",
+      entityType: "FUEL_TESTING",
+      entityId: testingDoc._id,
+      metadata: {
+        testingId: testingDoc._id,
+        businessDate: testingDoc.businessDate,
+        product: testingDoc.product,
+        previousQuantity,
+        updatedQuantity: testingDoc.testingQuantityLitres,
+        reason: testingDoc.correctionReason,
+      },
+    });
+
+    res.json({ success: true, data: testingDoc });
+  } catch (error) { next(error); }
+};
+
+export const deleteManagerFuelTesting = async (req, res, next) => {
+  try {
+    const station = await activeStation();
+    const { id } = req.params;
+
+    const testingDoc = await FuelTesting.findOneAndDelete({ _id: id, stationId: station._id });
+    if (!testingDoc) {
+      return res.status(404).json({ success: false, message: "Fuel testing record not found." });
+    }
+
+    await recordAuditLog({
+      actor: req.user,
+      action: "FUEL_TESTING_DELETED",
+      entityType: "FUEL_TESTING",
+      entityId: testingDoc._id,
+      metadata: {
+        testingId: testingDoc._id,
+        businessDate: testingDoc.businessDate,
+        product: testingDoc.product,
+        deletedQuantity: testingDoc.testingQuantityLitres,
+      },
+    });
+
+    res.json({ success: true, message: "Fuel testing record deleted successfully." });
+  } catch (error) { next(error); }
+};
+

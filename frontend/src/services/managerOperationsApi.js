@@ -31,3 +31,10 @@ export const getManagerMpdShifts = async (mpdId, page = 1, limit = 10) => {
   return response.data;
 };
 
+export const forceEndManagerShift = async (shiftId, readings) => {
+  const response = await api.post(`/manager/shifts/${shiftId}/force-end`, {
+    readings,
+  });
+  return response.data;
+};
+

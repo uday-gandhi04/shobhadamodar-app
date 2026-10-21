@@ -21,3 +21,8 @@ export const getDensityConversionPreview = async (hydrometer, temperature) => (a
 
 export const getManagerStockExport = async (month) => (await api.get("/manager/stock/export", { params: { month }, responseType: 'blob', timeout: 120000 })).data;
 export const getManagerStockPreview = async (month) => (await api.get("/manager/stock/preview", { params: { month }, timeout: 60000 })).data;
+
+export const getManagerFuelTesting = async (params) => (await api.get("/manager/stock/testing", { params })).data;
+export const createManagerFuelTesting = async (payload) => (await api.post("/manager/stock/testing", payload)).data;
+export const updateManagerFuelTesting = async (id, payload) => (await api.patch(`/manager/stock/testing/${id}`, payload)).data;
+export const deleteManagerFuelTesting = async (id) => (await api.delete(`/manager/stock/testing/${id}`)).data;

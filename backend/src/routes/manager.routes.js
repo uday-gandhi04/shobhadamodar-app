@@ -5,9 +5,13 @@ import {
   getManagerOperations,
   getManagerShiftDetail,
   getManagerMpdShifts,
+  forceEndShift,
 } from "../controllers/manager.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
-import { getManagerAccountingSchema } from "../validations/manager.validation.js";
+import {
+  getManagerAccountingSchema,
+  forceEndShiftSchema,
+} from "../validations/manager.validation.js";
 import {
   getManagerEmployeeDetail,
   getManagerEmployees,
@@ -26,8 +30,8 @@ import {
   protect,
   authorize,
 } from "../middlewares/auth.middleware.js";
-import { getManagerStock, upsertManagerStock, correctManagerOpeningStock, correctManagerMeterOpening, getManagerDensity, upsertManagerDensity, getDensityConversionPreview, getManagerReceipts, createManagerReceipt, getManagerStockExport, getManagerStockPreview } from "../controllers/managerStock.controller.js";
-import { stockDateSchema, stockMonthSchema, stockSchema, openingCorrectionSchema, meterOpeningCorrectionSchema, densitySchema, receiptSchema } from "../validations/managerStock.validation.js";
+import { getManagerStock, upsertManagerStock, correctManagerOpeningStock, correctManagerMeterOpening, getManagerDensity, upsertManagerDensity, getDensityConversionPreview, getManagerReceipts, createManagerReceipt, getManagerStockExport, getManagerStockPreview, getManagerFuelTesting, createManagerFuelTesting, updateManagerFuelTesting, deleteManagerFuelTesting } from "../controllers/managerStock.controller.js";
+import { stockDateSchema, stockMonthSchema, stockSchema, openingCorrectionSchema, meterOpeningCorrectionSchema, densitySchema, receiptSchema, fuelTestingCreateSchema, fuelTestingUpdateSchema, fuelTestingQuerySchema } from "../validations/managerStock.validation.js";
 import { getManagerTanks, createManagerTank, updateManagerTank, getManagerTankCalibration, upsertManagerTankCalibration } from "../controllers/managerTanks.controller.js";
 import { createTankSchema, updateTankSchema, tankCalibrationSchema } from "../validations/managerTanks.validation.js";
 import {
@@ -61,6 +65,10 @@ router.get("/stock/density/convert", protect, authorize("MANAGER"), getDensityCo
 router.post("/stock/density", protect, authorize("MANAGER"), validate(densitySchema), upsertManagerDensity);
 router.get("/stock/receipts", protect, authorize("MANAGER"), validate(stockDateSchema), getManagerReceipts);
 router.post("/stock/receipts", protect, authorize("MANAGER"), validate(receiptSchema), createManagerReceipt);
+router.get("/stock/testing", protect, authorize("MANAGER"), validate(fuelTestingQuerySchema), getManagerFuelTesting);
+router.post("/stock/testing", protect, authorize("MANAGER"), validate(fuelTestingCreateSchema), createManagerFuelTesting);
+router.patch("/stock/testing/:id", protect, authorize("MANAGER"), validate(fuelTestingUpdateSchema), updateManagerFuelTesting);
+router.delete("/stock/testing/:id", protect, authorize("MANAGER"), deleteManagerFuelTesting);
 router.get("/tanks", protect, authorize("MANAGER"), getManagerTanks);
 router.post("/tanks", protect, authorize("MANAGER"), validate(createTankSchema), createManagerTank);
 router.patch("/tanks/:id", protect, authorize("MANAGER"), validate(updateTankSchema), updateManagerTank);
@@ -141,6 +149,14 @@ router.get(
   protect,
   authorize("MANAGER"),
   getManagerShiftDetail,
+);
+
+router.post(
+  "/shifts/:shiftId/force-end",
+  protect,
+  authorize("MANAGER"),
+  validate(forceEndShiftSchema),
+  forceEndShift,
 );
 
 export default router;

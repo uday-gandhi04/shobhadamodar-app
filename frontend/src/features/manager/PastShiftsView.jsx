@@ -132,7 +132,12 @@ const PastShiftsView = ({ mpds, onOpenShift }) => {
                   </div>
                 </div>
 
-                <div className="flex-1 text-right">
+                <div className="flex-1 text-right flex items-center justify-end gap-1.5">
+                  {(shift.status === "FORCE_CLOSED" || shift.isForceEnded) && (
+                    <span className="rounded-full bg-amber-50 border border-amber-200/80 px-2 py-0.5 text-[9px] font-extrabold text-amber-700 tracking-wide">
+                      Forced End
+                    </span>
+                  )}
                   <p className="text-[11px] font-bold text-slate-400 whitespace-nowrap">
                     {formatDate(shift.businessDate)}
                   </p>

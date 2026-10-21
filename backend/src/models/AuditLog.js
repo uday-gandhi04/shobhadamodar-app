@@ -41,12 +41,16 @@ const auditLogSchema = new mongoose.Schema(
         "NOZZLE_FUEL_REASSIGNED",
         "NOZZLE_STATUS_CHANGED",
         "NOZZLE_DELETED",
+        "SHIFT_FORCE_ENDED",
+        "FUEL_TESTING_CREATED",
+        "FUEL_TESTING_UPDATED",
+        "FUEL_TESTING_DELETED",
       ],
       required: true,
     },
     entityType: {
       type: String,
-      enum: ["EMPLOYEE", "CUSTOMER", "STOCK", "METER_REGISTER", "TANK", "DENSITY", "FUEL_RECEIPT", "FUEL_RATE", "MPD"],
+      enum: ["EMPLOYEE", "CUSTOMER", "STOCK", "METER_REGISTER", "TANK", "DENSITY", "FUEL_RECEIPT", "FUEL_RATE", "MPD", "SHIFT", "FUEL_TESTING"],
       required: true,
     },
     entityId: {

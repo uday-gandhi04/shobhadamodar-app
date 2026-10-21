@@ -51,6 +51,14 @@ const shiftSchema = new mongoose.Schema(
     startedAt: { type: Date, required: true },
     endedAt: { type: Date, default: null },
 
+    isForceEnded: { type: Boolean, default: false },
+    forceEndedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    forceEndedAt: { type: Date, default: null },
+
     readings: { type: [shiftReadingSchema], default: [] },
     cashCollections: { type: [cashCollectionSchema], default: [] },
     coinsPaise: { type: Number, default: 0, min: 0 },

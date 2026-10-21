@@ -19,6 +19,9 @@ import {
   correctManagerMeterOpening,
   upsertManagerDensity,
   upsertManagerStock,
+  getManagerFuelTesting,
+  createManagerFuelTesting,
+  updateManagerFuelTesting,
 } from "../../services/managerStockApi";
 import { getDensityValidationStatus } from "../../utils/densityCalculation";
 
@@ -113,9 +116,9 @@ const Input = ({ label, value, onChange, type = "number", required = false, read
   </label>
 );
 
-const Button = ({ children, onClick, disabled = false, secondary = false, tone = "emerald" }) => (
+const Button = ({ children, onClick, disabled = false, secondary = false, tone = "emerald", type = "button" }) => (
   <button
-    type="button"
+    type={type}
     onClick={onClick}
     disabled={disabled}
     className={`!min-h-[48px] !w-full !rounded-[14px] !px-4 !text-[13px] !font-bold !transition-all disabled:!opacity-50 disabled:!cursor-not-allowed flex items-center justify-center gap-2 ${
@@ -145,6 +148,7 @@ const fetchStockDateData = (date) => Promise.all([
   getManagerStock(date),
   getManagerDensity(date),
   getManagerReceipts(date),
+  getManagerFuelTesting({ date }),
 ]);
 
 const stockFormFor = (row = {}) => ({
@@ -243,6 +247,22 @@ const Stock = () => {
   const [isSavingDensity, setIsSavingDensity] = useState(false);
   const [isSavingReceipt, setIsSavingReceipt] = useState(false);
   const [isSavingRate, setIsSavingRate] = useState(false);
+  const [isSavingTesting, setIsSavingTesting] = useState(false);
+
+  // Fuel Testing state
+  const [testingForm, setTestingForm] = useState({
+    businessDate: getBusinessDate(),
+    product: "PETROL",
+    testingQuantityLitres: "",
+    remarks: "",
+  });
+  const [testingRecords, setTestingRecords] = useState([]);
+  const [testingCorrectionModalOpen, setTestingCorrectionModalOpen] = useState(false);
+  const [editingTestingRecord, setEditingTestingRecord] = useState(null);
+  const [testingCorrectionValue, setTestingCorrectionValue] = useState("");
+  const [testingCorrectionRemarks, setTestingCorrectionRemarks] = useState("");
+  const [testingCorrectionReason, setTestingCorrectionReason] = useState("");
+  const [submittingTestingCorrection, setSubmittingTestingCorrection] = useState(false);
 
   const changeReceipt = (key) => (e) => {
     const val = e.target.value;
@@ -303,11 +323,12 @@ const Stock = () => {
 
   const load = async () => {
     try {
-      const [s, d, r] = await fetchStockDateData(date);
+      const [s, d, r, tst] = await fetchStockDateData(date);
       setStock(s.data.stock);
       if (s.data.tanks) mergeTanks(s.data.tanks);
       setDensity(d.data);
       setReceipts(r.data);
+      if (tst?.data) setTestingRecords(tst.data);
       if (Array.isArray(r.data) && r.data.length > 0) {
         const first = r.data[0];
         setReceiptDelivery((prev) => ({
@@ -345,12 +366,14 @@ const Stock = () => {
     let current = true;
     const fetchData = async () => {
       try {
-        const [s, d, r] = await fetchStockDateData(date);
+        const [s, d, r, tst] = await fetchStockDateData(date);
         if (!current) return;
         setStock(s.data.stock);
         if (s.data.tanks && s.data.tanks.length > 0) mergeTanks(s.data.tanks);
         setDensity(d.data);
         setReceipts(r.data);
+        if (tst?.data) setTestingRecords(tst.data);
+        setTestingForm((prev) => ({ ...prev, businessDate: date, product: productRef.current }));
         if (Array.isArray(r.data) && r.data.length > 0) {
           const first = r.data[0];
           setReceiptDelivery({
@@ -492,6 +515,7 @@ const Stock = () => {
     setSelectedTankId("");
     setForm(stockFormFor(stock.find((item) => item.product === value)));
     setDensityForm(densityFormFor(density, value));
+    setTestingForm((prev) => ({ ...prev, product: value }));
   };
 
   const save = async (fn, afterSuccess) => {
@@ -581,6 +605,73 @@ const Stock = () => {
       setNotice(err.response?.data?.message || t("manager.stockLabels.saveError", "Failed to correct meter opening reading."));
     } finally {
       setSubmittingMeterCorrection(false);
+    }
+  };
+
+  const handleSaveTesting = async (e) => {
+    e?.preventDefault();
+    const qty = Number(testingForm.testingQuantityLitres);
+    if (!testingForm.testingQuantityLitres || isNaN(qty) || qty <= 0) {
+      setNotice(t("manager.stockLabels.validTestingQuantity", "Please enter a valid testing quantity greater than 0."));
+      return;
+    }
+    setIsSavingTesting(true);
+    try {
+      await createManagerFuelTesting({
+        businessDate: testingForm.businessDate || date,
+        product: testingForm.product || product,
+        testingQuantityLitres: qty,
+        remarks: testingForm.remarks?.trim() || undefined,
+      });
+      setNotice(t("manager.stockLabels.testingSaved", "Fuel testing record saved successfully."));
+      setTestingForm((prev) => ({
+        ...prev,
+        testingQuantityLitres: "",
+        remarks: "",
+      }));
+      await load();
+    } catch (err) {
+      setNotice(err.response?.data?.message || t("manager.stockLabels.saveError", "Failed to save fuel testing record."));
+    } finally {
+      setIsSavingTesting(false);
+    }
+  };
+
+  const openTestingCorrectionModal = (record) => {
+    setEditingTestingRecord(record);
+    setTestingCorrectionValue(String(record.testingQuantityLitres));
+    setTestingCorrectionRemarks(record.remarks || "");
+    setTestingCorrectionReason("");
+    setTestingCorrectionModalOpen(true);
+  };
+
+  const handleSaveTestingCorrection = async (e) => {
+    e?.preventDefault();
+    if (!editingTestingRecord) return;
+    const qty = Number(testingCorrectionValue);
+    if (testingCorrectionValue === "" || isNaN(qty) || qty <= 0) {
+      setNotice(t("manager.stockLabels.validTestingQuantity", "Please enter a valid testing quantity greater than 0."));
+      return;
+    }
+    if (!testingCorrectionReason || testingCorrectionReason.trim().length < 3) {
+      setNotice(t("manager.stockLabels.reasonRequired", "Reason must be at least 3 characters."));
+      return;
+    }
+    setSubmittingTestingCorrection(true);
+    try {
+      await updateManagerFuelTesting(editingTestingRecord._id, {
+        testingQuantityLitres: qty,
+        remarks: testingCorrectionRemarks?.trim() || undefined,
+        reason: testingCorrectionReason.trim(),
+      });
+      setNotice(t("manager.stockLabels.testingCorrected", "Fuel testing record updated successfully."));
+      setTestingCorrectionModalOpen(false);
+      setEditingTestingRecord(null);
+      await load();
+    } catch (err) {
+      setNotice(err.response?.data?.message || t("manager.stockLabels.saveError", "Failed to update fuel testing record."));
+    } finally {
+      setSubmittingTestingCorrection(false);
     }
   };
 
@@ -974,7 +1065,15 @@ const Stock = () => {
               <div className="!space-y-1 !mt-2">
                 <ReadRow label={t("manager.stockLabels.receiptStock", "+ Receipt Stock")} value={row.receiptStockLitres} />
                 <ReadRow label={t("manager.stockLabels.totalAvailable", "Total Available")} value={row.totalAvailableLitres} isHighlighted />
-                <ReadRow label={t("manager.stockLabels.actualSales", "- Actual Sales")} value={row.actualSalesLitres} />
+                {row.testingLitres > 0 ? (
+                  <>
+                    <ReadRow label={t("manager.stockLabels.grossMeterSales", "Gross Meter Sales")} value={row.grossSalesLitres} />
+                    <ReadRow label={t("manager.stockLabels.testingCredit", "− Testing Return")} value={row.testingLitres} />
+                    <ReadRow label={t("manager.stockLabels.netActualSales", "- Net Sales")} value={row.actualSalesLitres} />
+                  </>
+                ) : (
+                  <ReadRow label={t("manager.stockLabels.actualSales", "- Actual Sales")} value={row.actualSalesLitres} />
+                )}
                 <ReadRow label={t("manager.stockLabels.calculatedClosing", "Closing Stock")} value={row.calculatedClosingStockLitres} />
               </div>
             </section>
@@ -1079,7 +1178,7 @@ const Stock = () => {
         {/* TAB 2: RECORDS */}
         {tab === "records" && (
           <>
-            <div className="!grid !grid-cols-2 !rounded-[12px] !bg-slate-100/60 !p-1 !mb-2">
+            <div className="!grid !grid-cols-3 !rounded-[12px] !bg-slate-100/60 !p-1 !mb-2">
               <button
                 onClick={() => setRecordsSubTab("density")}
                 className={`!min-h-[36px] !rounded-[10px] !text-[11px] !font-bold !transition-all ${recordsSubTab === "density" ? "!bg-emerald-800 !text-white" : "!text-slate-500"}`}
@@ -1091,6 +1190,12 @@ const Stock = () => {
                 className={`!min-h-[36px] !rounded-[10px] !text-[11px] !font-bold !transition-all ${recordsSubTab === "receipts" ? "!bg-emerald-800 !text-white" : "!text-slate-500"}`}
               >
                 {t("manager.stockLabels.fuelReceipts", "Fuel Receipts")}
+              </button>
+              <button
+                onClick={() => setRecordsSubTab("testing")}
+                className={`!min-h-[36px] !rounded-[10px] !text-[11px] !font-bold !transition-all ${recordsSubTab === "testing" ? "!bg-emerald-800 !text-white" : "!text-slate-500"}`}
+              >
+                {t("manager.stockLabels.fuelTesting", "Fuel Testing")}
               </button>
             </div>
 
@@ -1262,6 +1367,155 @@ const Stock = () => {
                   </button>
                 ))}
               </div>
+            )}
+
+            {/* Fuel Testing Section */}
+            {recordsSubTab === "testing" && (
+              <>
+                <section className="!rounded-[16px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100">
+                  <h2 className="!text-[14px] !font-bold !text-slate-900 !mb-1">
+                    {t("manager.stockLabels.recordFuelTesting", "Fuel Testing")}
+                  </h2>
+                  <p className="!text-[11px] !text-slate-500 !mb-4">
+                    {t("manager.stockLabels.fuelTestingDesc", "Fuel dispensed through nozzles for test/calibration and returned to the tank. This quantity is credited back in stock consumption.")}
+                  </p>
+
+                  <form onSubmit={handleSaveTesting} className="space-y-3">
+                    <Input
+                      type="date"
+                      label={t("manager.stockLabels.businessDate", "Business Date")}
+                      value={testingForm.businessDate}
+                      onChange={(e) => setTestingForm((prev) => ({ ...prev, businessDate: e.target.value }))}
+                      required
+                    />
+
+                    <div className="block !text-[11px] !font-bold !text-slate-600 !mb-3">
+                      <span>{t("manager.stockLabels.fuelType", "Fuel Type")}</span>
+                      <div className="!grid !grid-cols-2 !gap-2 !mt-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setTestingForm((prev) => ({ ...prev, product: "PETROL" }))}
+                          className={`!py-2 !rounded-[10px] !text-[12px] !font-bold !border !transition ${
+                            testingForm.product === "PETROL"
+                              ? "!bg-rose-50 !border-rose-200 !text-rose-700"
+                              : "!bg-slate-50 !border-slate-200 !text-slate-600"
+                          }`}
+                        >
+                          Petrol (MS)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTestingForm((prev) => ({ ...prev, product: "DIESEL" }))}
+                          className={`!py-2 !rounded-[10px] !text-[12px] !font-bold !border !transition ${
+                            testingForm.product === "DIESEL"
+                              ? "!bg-sky-50 !border-sky-200 !text-sky-700"
+                              : "!bg-slate-50 !border-slate-200 !text-slate-600"
+                          }`}
+                        >
+                          Diesel (HSD)
+                        </button>
+                      </div>
+                    </div>
+
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0.01"
+                      label={t("manager.stockLabels.testingQuantityLitres", "Testing Quantity (Litres)")}
+                      value={testingForm.testingQuantityLitres}
+                      onChange={(e) => setTestingForm((prev) => ({ ...prev, testingQuantityLitres: e.target.value }))}
+                      required
+                    />
+
+                    <Input
+                      type="text"
+                      label={t("manager.stockLabels.remarks", "Remarks (Optional)")}
+                      value={testingForm.remarks}
+                      onChange={(e) => setTestingForm((prev) => ({ ...prev, remarks: e.target.value }))}
+                      placeholder="e.g. Morning 5L measure testing"
+                    />
+
+                    <div className="!pt-2">
+                      <Button
+                        type="submit"
+                        onClick={handleSaveTesting}
+                        disabled={!testingForm.testingQuantityLitres || Number(testingForm.testingQuantityLitres) <= 0 || isSavingTesting}
+                      >
+                        {isSavingTesting ? "Saving..." : t("manager.stockLabels.saveTesting", "Save Fuel Testing")}
+                      </Button>
+                    </div>
+                  </form>
+                </section>
+
+                <div className="!mt-4 !space-y-3">
+                  <div className="flex items-center justify-between !px-1">
+                    <h3 className="!text-[13px] !font-bold !text-slate-800">
+                      {t("manager.stockLabels.testingRecordsForDate", "Testing Records for {{date}}", { date })}
+                    </h3>
+                    <span className="!text-[11px] !font-bold !text-emerald-700 !bg-emerald-50 !px-2 !py-0.5 !rounded-full">
+                      Total: {formatLitres(testingRecords.reduce((acc, r) => acc + (Number(r.testingQuantityLitres) || 0), 0))}
+                    </span>
+                  </div>
+
+                  {testingRecords.length === 0 ? (
+                    <p className="!text-[11px] !font-medium !text-slate-500 !px-1">
+                      {t("manager.stockLabels.noTestingRecords", "No fuel testing records recorded for this date.")}
+                    </p>
+                  ) : (
+                    testingRecords.map((item) => (
+                      <div
+                        key={item._id}
+                        className="!w-full !flex !items-center !justify-between !rounded-[14px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100"
+                      >
+                        <div className="!flex !items-center !gap-3">
+                          <div className={`!h-10 !w-10 !rounded-[10px] !flex !items-center !justify-center ${item.product === "PETROL" ? "!bg-rose-50 !text-rose-600" : "!bg-sky-50 !text-sky-600"}`}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-5 !w-5">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                              <line x1="16" y1="13" x2="8" y2="13"></line>
+                              <line x1="16" y1="17" x2="8" y2="17"></line>
+                              <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`!text-[10px] !font-extrabold !px-1.5 !py-0.5 !rounded ${item.product === "PETROL" ? "!bg-rose-100 !text-rose-800" : "!bg-sky-100 !text-sky-800"}`}>
+                                {item.product === "PETROL" ? "MS" : "HSD"}
+                              </span>
+                              {item.isCorrection && (
+                                <span className="!text-[9px] !font-bold !text-amber-800 !bg-amber-100 !px-1.5 !py-0.2 !rounded">
+                                  Corrected
+                                </span>
+                              )}
+                            </div>
+                            <p className="!text-[11px] !text-slate-500 !mt-0.5">
+                              {item.remarks ? item.remarks : "No remarks recorded"}
+                            </p>
+                            {item.correctionReason && (
+                              <p className="!text-[9px] !text-amber-700 italic !mt-0.5" title={item.correctionReason}>
+                                Reason: {item.correctionReason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="!text-right !flex !flex-col !items-end !gap-1">
+                          <p className="!text-[14px] !font-extrabold !text-slate-900">
+                            {formatLitres(item.testingQuantityLitres)}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => openTestingCorrectionModal(item)}
+                            className="!text-[11px] !font-bold !text-emerald-700 hover:!text-emerald-800 !bg-emerald-50 hover:!bg-emerald-100 !px-2.5 !py-1 !rounded-md !transition"
+                          >
+                            {t("manager.stockLabels.correct", "Correct")}
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
             )}
           </>
         )}
@@ -1593,6 +1847,82 @@ const Stock = () => {
                 </Button>
                 <Button onClick={handleMeterCorrectionSubmit} disabled={submittingMeterCorrection}>
                   {submittingMeterCorrection ? "Saving..." : t("manager.stockLabels.save", "Save Correction")}
+                </Button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
+      {/* FUEL TESTING CORRECTION MODAL */}
+      {testingCorrectionModalOpen && editingTestingRecord && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+          <section role="dialog" aria-modal="true" className="w-full max-w-sm space-y-4 rounded-[20px] bg-white p-5 shadow-xl">
+            <div className="flex items-center justify-between !mb-2">
+              <h2 className="!text-[15px] !font-bold !text-slate-900">
+                {t("manager.stockLabels.correctFuelTestingTitle", "Correct Fuel Testing Record")}
+              </h2>
+              <button
+                type="button"
+                onClick={() => { setTestingCorrectionModalOpen(false); setEditingTestingRecord(null); }}
+                className="!h-8 !w-8 !rounded-full !bg-slate-100 !flex !items-center !justify-center !text-slate-500 hover:!bg-slate-200"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="!h-4 !w-4">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <div className="!rounded-[12px] !bg-slate-50 !p-3 !border !border-slate-100">
+              <p className="!text-[12px] !font-extrabold !text-slate-900">
+                {editingTestingRecord.product === "PETROL" ? "MS (Petrol)" : "HSD (Diesel)"} — {editingTestingRecord.businessDate}
+              </p>
+              <p className="!text-[11px] !text-slate-500 !mt-0.5">
+                Current Quantity: <span className="!font-bold !text-slate-700">{formatLitres(editingTestingRecord.testingQuantityLitres)}</span>
+              </p>
+            </div>
+
+            <p className="!text-[11px] !text-slate-500">
+              {t("manager.stockLabels.correctFuelTestingDesc", "Correct testing quantity. Requires a valid reason which will be preserved in the audit log.")}
+            </p>
+
+            <form onSubmit={handleSaveTestingCorrection} className="space-y-3">
+              <Input
+                type="number"
+                step="any"
+                min="0.01"
+                label={t("manager.stockLabels.correctedQuantityLitres", "Corrected Testing Quantity (L)")}
+                value={testingCorrectionValue}
+                onChange={(e) => setTestingCorrectionValue(e.target.value)}
+                required
+              />
+
+              <Input
+                type="text"
+                label={t("manager.stockLabels.remarks", "Remarks")}
+                value={testingCorrectionRemarks}
+                onChange={(e) => setTestingCorrectionRemarks(e.target.value)}
+              />
+
+              <label className="block !text-[11px] !font-bold !text-slate-600 !mb-3">
+                {t("manager.stockLabels.correctionReason", "Correction Reason")}
+                <textarea
+                  required
+                  rows={3}
+                  value={testingCorrectionReason}
+                  onChange={(e) => setTestingCorrectionReason(e.target.value)}
+                  placeholder="e.g. Entered 50L instead of 5L due to keypad typo"
+                  className="!mt-1.5 !w-full !rounded-[12px] !border !border-slate-200/60 !bg-slate-50 !p-3 !text-[13px] !font-medium !text-slate-900 focus:!border-emerald-500 focus:!bg-white focus:!outline-none focus:!ring-4 focus:!ring-emerald-500/10 !transition-all resize-none"
+                />
+              </label>
+
+              <div className="!grid !grid-cols-2 !gap-3 !pt-2">
+                <Button secondary onClick={() => { setTestingCorrectionModalOpen(false); setEditingTestingRecord(null); }}>
+                  {t("manager.stockLabels.cancel", "Cancel")}
+                </Button>
+                <Button onClick={handleSaveTestingCorrection} disabled={submittingTestingCorrection}>
+                  {submittingTestingCorrection ? "Saving..." : t("manager.stockLabels.save", "Save Correction")}
                 </Button>
               </div>
             </form>

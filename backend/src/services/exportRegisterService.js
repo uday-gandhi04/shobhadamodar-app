@@ -6,6 +6,7 @@ import DailyStock from "../models/DailyStock.js";
 import DailyMeterRegister from "../models/DailyMeterRegister.js";
 import FuelReceipt from "../models/FuelReceipt.js";
 import Shift from "../models/Shift.js";
+import FuelTesting from "../models/FuelTesting.js";
 import {
   getProductRegisterNozzles,
   deriveNozzleOpeningReading,
@@ -39,6 +40,7 @@ export const getMonthlyRegisterReportData = async (stationId, monthStr) => {
     monthMeterDocs,
     monthReceipts,
     monthFinalizedShifts,
+    monthFuelTestings,
   ] = await Promise.all([
     Mpd.find({ stationId, isActive: true }).sort({ mpdNumber: 1 }).lean(),
     Tank.find({ stationId, isActive: true }).sort({ product: 1, tankNumber: 1 }).lean(),
@@ -47,6 +49,7 @@ export const getMonthlyRegisterReportData = async (stationId, monthStr) => {
     DailyMeterRegister.find({ stationId, businessDate: { $gte: firstDay, $lte: lastDay } }).lean(),
     FuelReceipt.find({ stationId, businessDate: { $gte: firstDay, $lte: lastDay } }).lean(),
     Shift.find({ businessDate: { $gte: firstDay, $lte: lastDay }, status: { $in: ["ENDED", "FORCE_CLOSED"] } }).sort({ startedAt: 1 }).lean(),
+    FuelTesting.find({ stationId, businessDate: { $gte: firstDay, $lte: lastDay } }).lean(),
   ]);
 
   const calibrationMap = new Map(calibrations.map((c) => [c.tankId.toString(), c.points]));
@@ -68,6 +71,12 @@ export const getMonthlyRegisterReportData = async (stationId, monthStr) => {
   monthFinalizedShifts.forEach((s) => {
     if (!shiftsByDate.has(s.businessDate)) shiftsByDate.set(s.businessDate, []);
     shiftsByDate.get(s.businessDate).push(s);
+  });
+
+  const testingByDateProduct = new Map();
+  (monthFuelTestings || []).forEach((t) => {
+    const key = `${t.businessDate}_${t.product}`;
+    testingByDateProduct.set(key, (testingByDateProduct.get(key) || 0) + (t.testingQuantityLitres || 0));
   });
 
   // Track carry-forward state across days for each product and nozzle
@@ -214,9 +223,20 @@ export const getMonthlyRegisterReportData = async (stationId, monthStr) => {
         ? Number(((openingStockLitres || 0) + (receiptStockLitres || 0)).toFixed(2))
         : null;
 
-      const actualSalesLitres = totalMeterSale != null
+      const key = `${day}_${product}`;
+      const testingLitres = testingByDateProduct.has(key)
+        ? testingByDateProduct.get(key)
+        : (meterDoc?.pumpTestingLitres ?? 0);
+
+      const grossSalesLitres = totalMeterSale != null
         ? totalMeterSale
         : (totalValidSale > 0 ? Number(totalValidSale.toFixed(2)) : null);
+
+      const netSalesLitres = grossSalesLitres != null
+        ? Number(Math.max(0, grossSalesLitres - (testingLitres || 0)).toFixed(2))
+        : null;
+
+      const actualSalesLitres = netSalesLitres;
 
       const calculatedClosingStockLitres = (totalAvailableLitres != null && actualSalesLitres != null)
         ? Number((totalAvailableLitres - actualSalesLitres).toFixed(2))
@@ -262,13 +282,15 @@ export const getMonthlyRegisterReportData = async (stationId, monthStr) => {
         meter: {
           nozzles: nozzleRows,
           totalMeterSale,
-          pumpTesting: meterDoc?.pumpTestingLitres ?? null,
+          pumpTesting: Number((testingLitres || 0).toFixed(2)),
           remarks: meterDoc?.remarks || "",
         },
         stock: {
           openingStockLitres,
           receiptStockLitres,
           totalAvailableLitres,
+          grossSalesLitres,
+          testingLitres,
           actualSalesLitres,
           calculatedClosingStockLitres,
           productDip,
@@ -368,7 +390,7 @@ export const generateMonthlyExcel = async (stationId, monthStr) => {
         "Nozzle 3", "",
         "Nozzle 4", "",
         "Total Meter Sale",
-        "Pump Testing",
+        "Testing (L)",
         "Remarks",
       ];
       meterSheet.addRow(meterHeaders1);
@@ -410,7 +432,7 @@ export const generateMonthlyExcel = async (stationId, monthStr) => {
           row.push(n.sale ?? "");
         }
         row.push(mRow.totalMeterSale ?? "");
-        row.push(mRow.pumpTesting ?? "");
+        row.push(mRow.pumpTesting != null ? Number(mRow.pumpTesting).toFixed(2) : "0.00");
         row.push(mRow.remarks ?? "");
 
         const addedRow = meterSheet.addRow(row);

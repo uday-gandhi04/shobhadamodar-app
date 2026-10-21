@@ -9,6 +9,7 @@ import Tank from "../models/Tank.js";
 import Mpd from "../models/Mpd.js";
 import DailyMeterRegister from "../models/DailyMeterRegister.js";
 import TankCalibration from "../models/TankCalibration.js";
+import FuelTesting from "../models/FuelTesting.js";
 import { getManagerStock } from "./managerStock.controller.js";
 
 const originals = {
@@ -22,6 +23,7 @@ const originals = {
   mpdFind: Mpd.find,
   tankFind: Tank.find,
   calibrationFind: TankCalibration.find,
+  testingFind: FuelTesting.find,
 };
 const stationId = "aaaaaaaaaaaaaaaaaaaaaaaa";
 
@@ -102,6 +104,11 @@ const stubQueries = ({ stockRows = [], receipts = [], sales = [], configuredTank
     lean: async () => [],
   });
 
+  FuelTesting.find = () => ({
+    sort() { return this; },
+    lean: async () => [],
+  });
+
   return () => shiftQuery;
 };
 
@@ -116,6 +123,7 @@ const restore = () => {
   Mpd.find = originals.mpdFind;
   Tank.find = originals.tankFind;
   TankCalibration.find = originals.calibrationFind;
+  FuelTesting.find = originals.testingFind;
 };
 
 test("stock API returns configured tank context and preserves stock formulas/finalized sales", async () => {

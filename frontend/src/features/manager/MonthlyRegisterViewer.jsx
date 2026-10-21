@@ -81,11 +81,15 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
   // Calculate totals for footer
   const calculateMeterTotals = (rows = []) => {
     let grandTotalSale = 0;
+    let totalTesting = 0;
     const nozzleSales = [0, 0, 0, 0];
 
     rows.forEach((row) => {
       if (row.totalMeterSale != null) {
         grandTotalSale += Number(row.totalMeterSale);
+      }
+      if (row.pumpTesting != null) {
+        totalTesting += Number(row.pumpTesting);
       }
       row.nozzles?.forEach((nz, idx) => {
         if (nz.sale != null) {
@@ -94,7 +98,7 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
       });
     });
 
-    return { grandTotalSale, nozzleSales };
+    return { grandTotalSale, totalTesting, nozzleSales };
   };
 
   const calculateStockTotals = (rows = []) => {
@@ -273,10 +277,10 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                         <th rowSpan={2} className="text-right px-3 py-2.5 border-r border-slate-200 min-w-[110px] bg-amber-50/60 text-amber-900 font-extrabold">
                           {t("manager.stockLabels.totalMeterSale", "Total Sale (L)")}
                         </th>
-                        <th rowSpan={2} className="text-right px-3 py-2.5 border-r border-slate-200 min-w-[90px]">
-                          {t("manager.stockLabels.pumpTesting", "Testing")}
+                        <th rowSpan={2} className="text-right px-3 py-2.5 border-r border-slate-200 min-w-[95px] bg-slate-50/80">
+                          {t("manager.stockLabels.testingLitresHeader", "Testing (L)")}
                         </th>
-                        <th rowSpan={2} className="px-3 py-2.5 min-w-[120px]">
+                        <th rowSpan={2} className="px-3 py-2.5 min-w-[130px]">
                           {t("manager.stockLabels.remarks", "Remarks")}
                         </th>
                       </tr>
@@ -315,8 +319,8 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                           <td className="text-right px-3 py-2 font-extrabold text-emerald-800 border-r border-slate-200 bg-amber-50/30">
                             {formatNumber(row.totalMeterSale)}
                           </td>
-                          <td className="text-right px-3 py-2 text-slate-500 border-r border-slate-200">
-                            {formatNumber(row.pumpTesting)}
+                          <td className="text-right px-3 py-2 text-slate-700 font-semibold border-r border-slate-200 bg-slate-50/20">
+                            {formatNumber(row.pumpTesting ?? 0, 2)}
                           </td>
                           <td className="px-3 py-2 font-sans text-slate-600 truncate max-w-[150px]">
                             {row.remarks || "—"}
@@ -341,7 +345,9 @@ const MonthlyRegisterViewer = ({ isOpen, onClose, initialMonth }) => {
                           <td className="text-right px-3 py-2.5 font-mono text-emerald-900 font-black border-r border-slate-200 bg-amber-100/50">
                             {formatNumber(meterTotals.grandTotalSale)}
                           </td>
-                          <td className="border-r border-slate-200"></td>
+                          <td className="text-right px-3 py-2.5 border-r border-slate-200 font-mono text-slate-700 font-bold">
+                            {formatNumber(meterTotals.totalTesting ?? 0, 2)}
+                          </td>
                           <td></td>
                         </tr>
                       </tfoot>

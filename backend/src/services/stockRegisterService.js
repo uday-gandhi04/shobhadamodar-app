@@ -5,6 +5,7 @@ import Tank from "../models/Tank.js";
 import TankCalibration from "../models/TankCalibration.js";
 import Mpd from "../models/Mpd.js";
 import DailyMeterRegister from "../models/DailyMeterRegister.js";
+import FuelTesting from "../models/FuelTesting.js";
 
 // Safe query execution helper that supports chaining in real Mongoose as well as simple mock stubs in tests
 const execQuery = (q, { sort, limit, select } = {}) => {
@@ -346,7 +347,7 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
   }
 
   // 3 & 4. Parallel fetch for intervening receipts and sales
-  const [receiptAgg, interveningShifts, interveningMeterRegs] = await Promise.all([
+  const [receiptAgg, interveningShifts, interveningMeterRegs, interveningTestings] = await Promise.all([
     FuelReceipt.aggregate([
       {
         $match: {
@@ -365,7 +366,12 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
       stationId,
       product,
       businessDate: { $gt: dCp, $lt: businessDate },
-    }), { select: "businessDate recordedTotalMeterSale nozzles.recordedSale nozzles.openingReading nozzles.closingReading" }),
+    }), { select: "businessDate pumpTestingLitres recordedTotalMeterSale nozzles.recordedSale nozzles.openingReading nozzles.closingReading" }),
+    execQuery(FuelTesting.find({
+      stationId,
+      product,
+      businessDate: { $gt: dCp, $lt: businessDate },
+    }), { select: "businessDate product testingQuantityLitres" }),
   ]);
 
   const interveningReceipts = receiptAgg.length > 0 ? Number(receiptAgg[0].total.toFixed(2)) : 0;
@@ -394,7 +400,22 @@ export const deriveOpeningStock = async (stationId, product, businessDate, row =
       }
     }
   });
-  interveningSales = Number(interveningSales.toFixed(2));
+
+  // Credit back intervening fuel testing returned to tank
+  const testingByDate = new Map();
+  (interveningTestings || []).forEach((t) => {
+    testingByDate.set(t.businessDate, (testingByDate.get(t.businessDate) || 0) + (t.testingQuantityLitres || 0));
+  });
+  interveningMeterRegs.forEach((mr) => {
+    if (!testingByDate.has(mr.businessDate) && mr.pumpTestingLitres != null) {
+      testingByDate.set(mr.businessDate, mr.pumpTestingLitres);
+    }
+  });
+  let totalInterveningTesting = 0;
+  for (const qty of testingByDate.values()) {
+    totalInterveningTesting += qty;
+  }
+  interveningSales = Number(Math.max(0, interveningSales - totalInterveningTesting).toFixed(2));
 
   // 5. If no intervening movements occurred, carry forward unchanged
   if (interveningReceipts === 0 && interveningSales === 0) {
@@ -440,7 +461,8 @@ export const getDailyRegister = async (stationId, businessDate) => {
     calibrations,
     prevRegs,
     prevShifts,
-    prevCheckpoints
+    prevCheckpoints,
+    testingDocs
   ] = await Promise.all([
     execQuery(DailyStock.find({ stationId, businessDate })),
     FuelReceipt.aggregate([
@@ -466,7 +488,8 @@ export const getDailyRegister = async (stationId, businessDate) => {
     execQuery(DailyStock.find({ stationId, businessDate: { $lt: businessDate }, actualDipStockLitres: { $ne: null, $gt: 0 } }), {
       sort: { businessDate: -1 },
       limit: 10
-    })
+    }),
+    execQuery(FuelTesting.find({ stationId, businessDate })),
   ]);
 
   const calibrationMap = new Map(calibrations.map(c => [c.tankId.toString(), c.points]));
@@ -694,6 +717,14 @@ export const getDailyRegister = async (stationId, businessDate) => {
           registerStatus = "NO_RECORD";
         }
 
+        const productTestings = (testingDocs || []).filter((d) => d.product === product);
+        let pumpTestingLitres = 0;
+        if (productTestings.length > 0) {
+          pumpTestingLitres = Number(productTestings.reduce((sum, d) => sum + (d.testingQuantityLitres || 0), 0).toFixed(2));
+        } else if (meterDoc?.pumpTestingLitres != null) {
+          pumpTestingLitres = meterDoc.pumpTestingLitres;
+        }
+
         return [
           product,
           {
@@ -706,7 +737,8 @@ export const getDailyRegister = async (stationId, businessDate) => {
             hasDiscrepancy: hasRegisterDiscrepancy,
             discrepancyLitres: registerDiscrepancyLitres,
             status: registerStatus,
-            pumpTestingLitres: meterDoc?.pumpTestingLitres ?? null,
+            pumpTestingLitres,
+            testingRecords: productTestings,
             remarks: meterDoc?.remarks || "",
           },
         ];
@@ -733,10 +765,15 @@ export const getDailyRegister = async (stationId, businessDate) => {
     const openingStockLitres = derivedOpening.openingStockLitres;
 
     const receiptStockLitres = receipts.get(product) || 0;
-    const actualSalesLitres = meterRegisters[product].totalMeterSale;
+    const grossMeterSaleLitres = meterRegisters[product].totalMeterSale;
+    const testingLitres = meterRegisters[product].pumpTestingLitres || 0;
+    const netSalesLitres = grossMeterSaleLitres != null
+      ? Number(Math.max(0, grossMeterSaleLitres - testingLitres).toFixed(2))
+      : null;
+    const actualSalesLitres = netSalesLitres;
     const totalAvailableLitres = openingStockLitres != null ? Number((openingStockLitres + receiptStockLitres).toFixed(2)) : null;
     const calculatedClosingStockLitres = totalAvailableLitres != null
-      ? (actualSalesLitres != null ? Number((totalAvailableLitres - actualSalesLitres).toFixed(2)) : totalAvailableLitres)
+      ? (netSalesLitres != null ? Number((totalAvailableLitres - netSalesLitres).toFixed(2)) : totalAvailableLitres)
       : null;
 
     const productTanks = configuredTanks.filter((tank) => tank.product === product);
@@ -802,7 +839,10 @@ export const getDailyRegister = async (stationId, businessDate) => {
       waterDipVolumeLitres: row?.waterDipVolumeLitres ?? null,
       receiptStockLitres,
       totalAvailableLitres,
+      grossSalesLitres: grossMeterSaleLitres,
+      testingLitres,
       actualSalesLitres,
+      netSalesLitres,
       calculatedClosingStockLitres,
       variationLitres,
       tankNumber: tank?.tankNumber ?? null,

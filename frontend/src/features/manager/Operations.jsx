@@ -11,6 +11,7 @@ import { getBusinessDate } from "../../utils/businessDate";
 import PastShiftsView from "./PastShiftsView";
 import CollectionCard from "../../components/business/accounting/CollectionCard";
 import { CashBreakdownModal, CardBreakdownModal, UpiBreakdownModal, UdhariBreakdownModal } from "../../components/business/accounting/CollectionModals";
+import ForceEndShiftModal from "./ForceEndShiftModal";
 
 const formatMoney = (paise) => {
   const amount = Number(paise || 0) / 100;
@@ -81,6 +82,8 @@ const Operations = () => {
   const [selectedShift, setSelectedShift] = useState(null);
   const [shiftDetailLoading, setShiftDetailLoading] = useState(false);
   const [shiftDetailError, setShiftDetailError] = useState("");
+  const [fuelRates, setFuelRates] = useState({ PETROL: 0, DIESEL: 0 });
+  const [forceEndTarget, setForceEndTarget] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const requestInFlight = useRef(false);
   const hasLoaded = useRef(false);
@@ -102,6 +105,12 @@ const Operations = () => {
         setBusinessDate(data.businessDate || date);
         setMpds(data.mpds || []);
         setShifts(data.shifts || []);
+        if (data.rate) {
+          setFuelRates({
+            PETROL: Number(data.rate.petrolRatePaise || 0),
+            DIESEL: Number(data.rate.dieselRatePaise || 0),
+          });
+        }
       }
     } catch (err) {
       console.error("[Manager Operations]", err);
@@ -184,6 +193,30 @@ const Operations = () => {
     setHistoryMpdId(mpdId);
   };
 
+  const handleOpenForceEnd = useCallback(async (targetShift, targetMpd) => {
+    try {
+      const shiftId = targetShift?._id || targetShift;
+      const detail = await getManagerShiftDetail(shiftId);
+      setForceEndTarget({
+        shift: detail?.data || targetShift,
+        mpd: targetMpd,
+      });
+    } catch (err) {
+      console.error("[Manager Force-End] Failed to fetch shift detail:", err);
+      setForceEndTarget({
+        shift: targetShift,
+        mpd: targetMpd,
+      });
+    }
+  }, []);
+
+  const handleForceEndSuccess = useCallback(() => {
+    setForceEndTarget(null);
+    setSelectedShiftId(null);
+    setSelectedShift(null);
+    loadOperations();
+  }, [loadOperations]);
+
   const openShiftDetail = useCallback(async (shiftId) => {
     setSelectedShiftId(shiftId);
     setSelectedShift(null);
@@ -244,6 +277,7 @@ const Operations = () => {
           loading={shiftDetailLoading}
           error={shiftDetailError}
           onBack={closeShiftDetail}
+          onForceEndShift={(s, m) => handleOpenForceEnd(s, m)}
           t={t}
         />
       ) : (
@@ -349,6 +383,7 @@ const Operations = () => {
                   )}
                   t={t}
                   onViewTodayHistory={() => openMpdHistory(mpd._id)}
+                  onForceEndShift={(shift, mpdObj) => handleOpenForceEnd(shift, mpdObj)}
                 />
               ))}
             </div>
@@ -370,6 +405,16 @@ const Operations = () => {
             />
           )}
         </div>
+      )}
+
+      {forceEndTarget && (
+        <ForceEndShiftModal
+          shift={forceEndTarget.shift}
+          mpd={forceEndTarget.mpd}
+          fuelRates={fuelRates}
+          onClose={() => setForceEndTarget(null)}
+          onSuccess={handleForceEndSuccess}
+        />
       )}
     </ManagerLayout>
   );
@@ -395,7 +440,7 @@ const MpdShiftList = ({ shifts, t, onOpenShift }) => (
 
 
 
-const MpdCard = ({ mpd, onViewTodayHistory }) => (
+const MpdCard = ({ mpd, onViewTodayHistory, onForceEndShift, t }) => (
   <section className="!rounded-[24px] !border !border-slate-100/60 !bg-white !p-4 !shadow-[0_4px_20px_rgba(15,23,42,0.04)] !mb-4">
     {/* TOP ROW: MPD NAME + ACTIVE BADGE */}
     <div className="flex items-center justify-between">
@@ -428,30 +473,37 @@ const MpdCard = ({ mpd, onViewTodayHistory }) => (
 
     {/* SECOND ROW: EMPLOYEE INFO */}
     {mpd.activeShift ? (
-      <div className="mt-4 flex items-center justify-between pr-2">
-        <div>
+      <div className="!mt-4 !flex !items-center !justify-between !gap-3">
+        <div className="!min-w-0 !flex-1">
           <p className="!text-[10px] !font-medium !text-slate-400">Employee</p>
-          <p className="!mt-0.5 !text-[13px] !font-bold !text-slate-900">
+          <p className="!mt-0.5 !truncate !text-[13px] !font-bold !text-slate-900">
             {mpd.activeShift.employee?.name || "Unknown"}
           </p>
         </div>
-        <div>
+        <div className="!shrink-0">
           <p className="!text-[10px] !font-medium !text-slate-400">Started</p>
           <p className="!mt-0.5 !text-[13px] !font-bold !text-slate-900">
             {formatTime(mpd.activeShift.startedAt)}
           </p>
         </div>
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="!h-4 !w-4 !text-slate-400"
-        >
-          <path d="M9 18l6-6-6-6" />
-        </svg>
+        <div className="!shrink-0">
+          <button
+            type="button"
+            onClick={() => onForceEndShift?.(mpd.activeShift, mpd)}
+            className="!inline-flex !items-center !gap-1.5 !rounded-[10px] !border !border-rose-200 !bg-rose-50 !px-3 !py-1.5 !text-[11px] !font-bold !text-rose-700 !shadow-[0_1px_3px_rgba(225,29,72,0.08)] hover:!bg-rose-100 hover:!border-rose-300 hover:!text-rose-800 active:!scale-95 !transition-all"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              className="!h-3.5 !w-3.5 !text-rose-600"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span>{t ? t("manager.forceEndShift", "Force End Shift") : "Force End Shift"}</span>
+          </button>
+        </div>
       </div>
     ) : (
       <div className="mt-4 flex items-center justify-between pr-2">
@@ -594,7 +646,12 @@ const ShiftCard = ({ shift, t, active = false, onClick }) => {
           </div>
         </div>
 
-        <div className="!flex-1 !text-right">
+        <div className="!flex-1 !text-right !flex !items-center !justify-end !gap-1.5">
+          {(shift.status === "FORCE_CLOSED" || shift.isForceEnded) && (
+            <span className="!rounded-full !bg-amber-50 !border !border-amber-200/80 !px-2 !py-0.5 !text-[9px] !font-extrabold !text-amber-700 !tracking-wide">
+              {t("manager.forcedEnd", "Forced End")}
+            </span>
+          )}
           <p className="!text-[11px] !font-bold !text-slate-400 !whitespace-nowrap">
             {statusLabel(shift.status, t)}
           </p>
@@ -647,6 +704,7 @@ const ShiftDetailView = ({
   loading,
   error,
   onBack,
+  onForceEndShift,
   t,
 }) => {
   const [showCashModal, setShowCashModal] = useState(false);
@@ -764,12 +822,19 @@ const ShiftDetailView = ({
             )}
           </div>
 
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[8px] font-bold text-slate-600">
-            {statusLabel(
-              shift.status,
-              t,
+          <div className="flex items-center gap-1.5">
+            {(shift.status === "FORCE_CLOSED" || shift.isForceEnded) && (
+              <span className="rounded-full bg-amber-50 border border-amber-200/80 px-2.5 py-1 text-[8px] font-extrabold text-amber-700 tracking-wide">
+                {t("manager.forcedEnd", "Forced End")}
+              </span>
             )}
-          </span>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[8px] font-bold text-slate-600">
+              {statusLabel(
+                shift.status,
+                t,
+              )}
+            </span>
+          </div>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">
@@ -813,6 +878,27 @@ const ShiftDetailView = ({
             }
           />
         </div>
+
+        {shift.status === "IN_PROGRESS" && (
+          <div className="!mt-4 !border-t !border-slate-100 !pt-3">
+            <button
+              type="button"
+              onClick={() => onForceEndShift?.(shift, shift.mpd)}
+              className="!flex !min-h-[48px] !h-[48px] !w-full !items-center !justify-center !gap-2 !rounded-[14px] !border !border-rose-200 !bg-rose-50 !px-4 !text-[13px] !font-bold !text-rose-700 !shadow-[0_2px_8px_rgba(225,29,72,0.08)] hover:!bg-rose-100 hover:!border-rose-300 hover:!text-rose-800 active:!scale-98 !transition-all"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className="!h-4 !w-4 !text-rose-600"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>{t("manager.forceEndShift", "Force End Shift")}</span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Fuel sales */}

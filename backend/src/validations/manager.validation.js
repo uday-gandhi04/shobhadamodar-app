@@ -12,3 +12,19 @@ export const getManagerAccountingSchema = z.object({
     date: businessDate,
   }),
 });
+
+export const forceEndShiftSchema = z.object({
+  params: z.object({
+    shiftId: z.string().min(1, "Shift ID is required"),
+  }),
+  body: z.object({
+    readings: z
+      .array(
+        z.object({
+          nozzleId: z.string().min(1, "Nozzle ID is required"),
+          closingReading: z.coerce.number().min(0, "Closing reading must be non-negative"),
+        }),
+      )
+      .min(1, "At least one nozzle reading is required"),
+  }),
+});
