@@ -5,6 +5,7 @@ import UdhariTransaction from "../models/UdhariTransaction.js";
 import Shift from "../models/Shift.js";
 import FuelRate from "../models/FuelRate.js";
 import Mpd from "../models/Mpd.js";
+import { getEffectiveFuelRate, resolveEventInstant } from "../services/fuelRateService.js";
 
 const roundTwo = (value) => {
   return Math.round(value * 100) / 100;
@@ -68,19 +69,13 @@ export const addUdhariTransaction = async (req, res, next) => {
     }
 
     /*
-     * 3. Get applicable rate.
-     *
-     * We use the shift's business date.
+     * 3. Get applicable rate at the time of recording via centralized rate resolution.
      */
-    const rates = await FuelRate.findOne({
-      businessDate: {
-        $lte: shift.businessDate,
-      },
-    })
-      .sort({
-        businessDate: -1,
-      })
-      .lean();
+    const eventInstant = resolveEventInstant({
+      businessDate: shift.businessDate,
+      occurredAt: req.body.occurredAt || req.body.timestamp || req.body.createdAt,
+    });
+    const rates = await getEffectiveFuelRate(eventInstant);
 
     if (!rates) {
       return res.status(400).json({

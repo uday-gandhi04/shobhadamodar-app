@@ -4,6 +4,7 @@ import FuelRate from '../models/FuelRate.js';
 import Station from '../models/Station.js';
 import Customer from '../models/Customer.js';
 import Shift from '../models/Shift.js';
+import { getEffectiveFuelRate, getBusinessDateFromInstant, resolveEventInstant } from '../services/fuelRateService.js';
 
 
 /**
@@ -12,7 +13,7 @@ import Shift from '../models/Shift.js';
  */
 export const bootstrapDevice = async (req, res, next) => {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getBusinessDateFromInstant(new Date());
 
     // 1. Get Station details
     const station = await Station.findOne({ isActive: true });
@@ -20,8 +21,8 @@ export const bootstrapDevice = async (req, res, next) => {
     // 2. Get active MPDs
     const mpds = await Mpd.find({ isActive: true }).select('-createdAt -updatedAt -__v');
 
-    // 3. Get Today's Rates
-    const rates = await FuelRate.findOne({ businessDate: today }).sort({ createdAt: -1 });
+    // 3. Get Active Rate via centralized 6:00 AM rate resolution
+    const rates = await getEffectiveFuelRate(new Date());
 
     // 4. Get Udhari Customers
     const customers = await Customer.find().select('name vehicleNumber outstandingBalance');
@@ -91,8 +92,12 @@ export const submitShift = async (req, res, next) => {
       });
     }
 
-    // 2. Fetch required master data
-    const rates = await FuelRate.findOne({ businessDate }).sort({ createdAt: -1 });
+    // 2. Fetch required master data via centralized rate resolution, respecting actual shift end/event time
+    const eventInstant = resolveEventInstant({
+      businessDate,
+      endedAt: req.body.endedAt || req.body.timestamp || req.body.shiftEndedAt,
+    });
+    const rates = await getEffectiveFuelRate(eventInstant);
     if (!rates) {
       return res.status(400).json({ success: false, message: 'Fuel rates not found for this date.' });
     }

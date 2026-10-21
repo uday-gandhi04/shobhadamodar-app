@@ -1522,11 +1522,48 @@ const Stock = () => {
 
         {/* TAB 3: RATES */}
         {tab === "rates" && (() => {
-          const applicableRate = rates.find(r => r.businessDate <= date);
+          const todayStr = getBusinessDate();
+          const now = new Date();
+
+          // Scheduled rates: explicit status "SCHEDULED" or effectiveAt in the future
+          const isRateInFuture = (r) => {
+            if (r.status === "SCHEDULED") return true;
+            const effectiveTime = r.effectiveAt
+              ? new Date(r.effectiveAt)
+              : (r.businessDate ? new Date(`${r.businessDate}T06:00:00+05:30`) : null);
+            if (effectiveTime) return effectiveTime > now;
+            return r.businessDate > todayStr;
+          };
+
+          const scheduledRates = rates.filter(isRateInFuture);
+
+          // Find current active rate: latest rate whose effective timestamp <= now
+          const activeRate = rates.find((r) => !isRateInFuture(r));
+
+          // If the manager selected a date in the date picker:
+          // For today or future dates, the current applicable rate is the currently active rate (not scheduled!)
+          // For past dates (date < todayStr), find the rate that was applicable on that past date
+          const applicableRate = date >= todayStr
+            ? activeRate
+            : (rates.find((r) => r.businessDate <= date && !isRateInFuture(r)) || activeRate);
+
+          const isSelectedDateConfigured = rates.some((r) => r.businessDate === rate.businessDate);
+
           return (
             <>
+              {/* CURRENT APPLICABLE RATE */}
               <section className="!rounded-[16px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100">
-                <h2 className="!text-[14px] !font-bold !text-slate-900 !mb-4">{t("manager.stockLabels.currentApplicableRate", "Current Applicable Rate")}</h2>
+                <div className="flex items-center justify-between !mb-4">
+                  <h2 className="!text-[14px] !font-bold !text-slate-900">
+                    {t("manager.stockLabels.currentApplicableRate", "Current Applicable Rate")}
+                  </h2>
+                  {applicableRate && (
+                    <span className="!text-[10px] !font-extrabold !text-emerald-700 !bg-emerald-50 !border !border-emerald-200 !px-2.5 !py-0.5 !rounded-full !flex !items-center !gap-1">
+                      <span className="!h-1.5 !w-1.5 !rounded-full !bg-emerald-500"></span>
+                      {t("manager.stockLabels.activeRate", "Currently Active")}
+                    </span>
+                  )}
+                </div>
                 {applicableRate ? (
                   <div className="!grid !grid-cols-2 !gap-3">
                     <div className="!rounded-[12px] !bg-rose-50/50 !border !border-rose-100 !p-3">
@@ -1537,9 +1574,11 @@ const Stock = () => {
                       <p className="!text-[10px] !font-bold !text-blue-600">{t("manager.diesel", "Diesel (HSD)")}</p>
                       <p className="!mt-1 !text-[16px] !font-extrabold !text-slate-900">₹{(applicableRate.dieselRatePaise / 100).toFixed(2)} <span className="!text-[10px] !font-bold !text-slate-500">/ L</span></p>
                     </div>
-                    <div className="!col-span-2 !mt-1 !bg-slate-50 !rounded-[10px] !p-2 !flex !items-center !justify-between">
+                    <div className="!col-span-2 !mt-1 !bg-slate-50 !rounded-[10px] !p-2.5 !flex !items-center !justify-between">
                       <span className="!text-[10px] !font-bold !text-slate-500">{t("manager.stockLabels.effectiveFrom", "Effective From")}</span>
-                      <span className="!text-[11px] !font-extrabold !text-slate-800">{applicableRate.businessDate}</span>
+                      <span className="!text-[11px] !font-extrabold !text-slate-800">
+                        {applicableRate.businessDate} • 06:00 AM IST
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -1549,43 +1588,154 @@ const Stock = () => {
                 )}
               </section>
 
+              {/* SCHEDULED RATES PREVIEW (IF ANY FUTURE/PENDING RATES EXIST) */}
+              {scheduledRates.length > 0 && (
+                <section className="!rounded-[16px] !bg-amber-50/40 !p-4 !border !border-amber-200/80 !shadow-[0_4px_16px_rgba(245,158,11,0.04)]">
+                  <div className="flex items-center justify-between !mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="!h-2 !w-2 !rounded-full !bg-amber-500 !animate-pulse"></span>
+                      <h2 className="!text-[13px] !font-bold !text-amber-900">
+                        {t("manager.stockLabels.scheduledRatesTitle", "Upcoming Scheduled Rates")}
+                      </h2>
+                    </div>
+                    <span className="!text-[10px] !font-extrabold !text-amber-800 !bg-amber-100 !px-2 !py-0.5 !rounded-md">
+                      Takes effect at 06:00 AM IST
+                    </span>
+                  </div>
+
+                  <div className="!space-y-2">
+                    {scheduledRates.map((sched) => (
+                      <div
+                        key={sched._id}
+                        className="!rounded-[12px] !bg-white !p-3 !border !border-amber-100 !flex !items-center !justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="!text-[12px] !font-extrabold !text-slate-900">{sched.businessDate}</span>
+                            <span className="!text-[10px] !font-bold !text-amber-700 !bg-amber-50 !px-1.5 !py-0.5 !rounded">
+                              06:00 AM IST
+                            </span>
+                          </div>
+                          <p className="!text-[11px] !font-bold !text-slate-600 !mt-1">
+                            MS: <span className="!text-rose-600">₹{(sched.petrolRatePaise / 100).toFixed(2)}</span> / L
+                            {" • "}
+                            HSD: <span className="!text-blue-600">₹{(sched.dieselRatePaise / 100).toFixed(2)}</span> / L
+                          </p>
+                        </div>
+                        <span className="!text-[9px] !font-bold !text-slate-500">
+                          {sched.setBy?.name ? `By ${sched.setBy.name}` : "Scheduled"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* RATE SCHEDULING FORM */}
               <section className="!rounded-[16px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100">
-                <h2 className="!text-[14px] !font-bold !text-slate-900 !mb-4">{t("manager.stockLabels.addRate", "Update Fuel Rates")}</h2>
-                <Input type="date" label={t("manager.stockLabels.effectiveDate", "Effective Date")} value={rate.businessDate} onChange={change(setRate, "businessDate")} />
-                <div className="!grid !grid-cols-2 !gap-3">
-                  <Input type="number" label={t("manager.stockLabels.petrolRateRupees", "Petrol Rate (₹)")} value={rate.petrolRateRupees} onChange={change(setRate, "petrolRateRupees")} />
-                  <Input type="number" label={t("manager.stockLabels.dieselRateRupees", "Diesel Rate (₹)")} value={rate.dieselRateRupees} onChange={change(setRate, "dieselRateRupees")} />
+                <div className="!mb-3">
+                  <h2 className="!text-[14px] !font-bold !text-slate-900">{t("manager.stockLabels.addRate", "Update Fuel Rates")}</h2>
+                  <p className="!text-[11px] !text-slate-500 !mt-0.5">
+                    {t("manager.stockLabels.rateScheduleNotice", "Rates scheduled for a date become effective at 06:00 AM IST on that date.")}
+                  </p>
                 </div>
-                <div className="!mt-2">
-                  <Button disabled={!isRateValid || isSavingRate} onClick={saveRate}>
-                    {isSavingRate ? "Saving..." : t("manager.stockLabels.saveRate", "Save Rates")}
-                  </Button>
+
+                <div className="!space-y-3">
+                  <div>
+                    <Input
+                      type="date"
+                      label={t("manager.stockLabels.effectiveDate", "Effective Date")}
+                      value={rate.businessDate}
+                      onChange={change(setRate, "businessDate")}
+                    />
+                    <div className="!mt-1 !flex !items-center !justify-between !px-1">
+                      <p className="!text-[10px] !font-medium !text-emerald-700">
+                        ⚡ Effective at 06:00 AM IST on {rate.businessDate || "selected date"}
+                      </p>
+                      {isSelectedDateConfigured && (
+                        <p className="!text-[10px] !font-bold !text-amber-700">
+                          Note: Rate configured for this date.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="!grid !grid-cols-2 !gap-3">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      label={t("manager.stockLabels.petrolRateRupees", "Petrol Rate (₹)")}
+                      value={rate.petrolRateRupees}
+                      onChange={change(setRate, "petrolRateRupees")}
+                    />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      label={t("manager.stockLabels.dieselRateRupees", "Diesel Rate (₹)")}
+                      value={rate.dieselRateRupees}
+                      onChange={change(setRate, "dieselRateRupees")}
+                    />
+                  </div>
+
+                  <div className="!pt-1">
+                    <Button disabled={!isRateValid || isSavingRate} onClick={saveRate}>
+                      {isSavingRate ? "Saving..." : t("manager.stockLabels.saveRate", "Save Rates (Effective 6:00 AM IST)")}
+                    </Button>
+                  </div>
                 </div>
               </section>
 
+              {/* RATE HISTORY */}
               <section className="!mt-2">
                 <h2 className="!text-[13px] !font-bold !text-slate-800 !px-1 !mb-3">{t("manager.stockLabels.rateHistory", "Rate History")}</h2>
                 <div className="!space-y-3">
                   {rates.length === 0 && <p className="!text-[11px] !font-medium !text-slate-500 !px-1">No rate history found.</p>}
-                  {rates.map((item) => (
-                    <div key={item._id} className="!rounded-[14px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100">
-                      <div className="!flex !justify-between !items-center !mb-3 !pb-3 !border-b !border-slate-100">
-                        <span className="!text-[11px] !font-extrabold !text-slate-900">{item.businessDate}</span>
-                        {item.setBy?.name && <span className="!text-[9px] !font-bold !text-slate-500 !bg-slate-50 !px-2 !py-1 !rounded-md">By {item.setBy.name}</span>}
-                      </div>
-                      <div className="!flex !justify-between !items-center">
-                        <div className="!text-center">
-                          <p className="!text-[10px] !font-bold !text-slate-500">{t("manager.petrol", "Petrol")}</p>
-                          <p className="!text-[13px] !font-extrabold !text-rose-600">₹{(item.petrolRatePaise / 100).toFixed(2)}</p>
+                  {rates.map((item) => {
+                    const isFuture = isRateInFuture(item);
+                    const isCurrent = !isFuture && activeRate?._id === item._id;
+
+                    return (
+                      <div key={item._id} className="!rounded-[14px] !bg-white !p-4 !shadow-[0_4px_16px_rgba(15,23,42,0.03)] !border !border-slate-100">
+                        <div className="!flex !justify-between !items-center !mb-3 !pb-3 !border-b !border-slate-100">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="!text-[12px] !font-extrabold !text-slate-900">{item.businessDate}</span>
+                              {isFuture ? (
+                                <span className="!text-[9px] !font-extrabold !bg-amber-100 !text-amber-800 !px-2 !py-0.5 !rounded-full">
+                                  Scheduled (06:00 AM IST)
+                                </span>
+                              ) : isCurrent ? (
+                                <span className="!text-[9px] !font-extrabold !bg-emerald-100 !text-emerald-800 !px-2 !py-0.5 !rounded-full">
+                                  Currently Active
+                                </span>
+                              ) : (
+                                <span className="!text-[9px] !font-bold !bg-slate-100 !text-slate-600 !px-2 !py-0.5 !rounded-full">
+                                  Past Rate
+                                </span>
+                              )}
+                            </div>
+                            <p className="!text-[10px] !text-slate-400 !mt-0.5">
+                              Effective from 06:00:00 IST
+                            </p>
+                          </div>
+                          {item.setBy?.name && <span className="!text-[9px] !font-bold !text-slate-500 !bg-slate-50 !px-2 !py-1 !rounded-md">By {item.setBy.name}</span>}
                         </div>
-                        <div className="!h-8 !w-px !bg-slate-100"></div>
-                        <div className="!text-center">
-                          <p className="!text-[10px] !font-bold !text-slate-500">{t("manager.diesel", "Diesel")}</p>
-                          <p className="!text-[13px] !font-extrabold !text-blue-600">₹{(item.dieselRatePaise / 100).toFixed(2)}</p>
+                        <div className="!flex !justify-between !items-center">
+                          <div className="!text-center">
+                            <p className="!text-[10px] !font-bold !text-slate-500">{t("manager.petrol", "Petrol")}</p>
+                            <p className="!text-[13px] !font-extrabold !text-rose-600">₹{(item.petrolRatePaise / 100).toFixed(2)}</p>
+                          </div>
+                          <div className="!h-8 !w-px !bg-slate-100"></div>
+                          <div className="!text-center">
+                            <p className="!text-[10px] !font-bold !text-slate-500">{t("manager.diesel", "Diesel")}</p>
+                            <p className="!text-[13px] !font-extrabold !text-blue-600">₹{(item.dieselRatePaise / 100).toFixed(2)}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             </>

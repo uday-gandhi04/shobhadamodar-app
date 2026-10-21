@@ -5,6 +5,7 @@ import FuelRate from "../models/FuelRate.js";
 import Expense from "../models/Expense.js";
 import UdhariTransaction from "../models/UdhariTransaction.js";
 import { recordAuditLog } from "../utils/auditLog.js";
+import { getEffectiveFuelRate, getTargetInstantFromRequest, resolveEventInstant } from "../services/fuelRateService.js";
 
 const getBusinessDate = (value) => {
   if (value) return value;
@@ -17,12 +18,9 @@ const getBusinessDate = (value) => {
   }).format(new Date());
 };
 
-const getApplicableRate = async (businessDate) => {
-  return FuelRate.findOne({
-    businessDate: { $lte: businessDate },
-  })
-    .sort({ businessDate: -1 })
-    .lean();
+const getApplicableRate = async (businessDate, instant) => {
+  const targetInstant = instant || (businessDate ? getTargetInstantFromRequest({ query: { date: businessDate } }) : new Date());
+  return getEffectiveFuelRate(targetInstant);
 };
 
 const getRateForFuel = (fuelType, rate) => {
@@ -1192,10 +1190,9 @@ export const forceEndShift = async (req, res, next) => {
       }
     }
 
-    // Fuel rates lookup using shift's businessDate
-    const rates = await FuelRate.findOne({
-      businessDate: { $lte: shift.businessDate },
-    }).sort({ businessDate: -1 });
+    // Fuel rates lookup using centralized 6:00 AM rate resolution with shift event instant
+    const eventInstant = resolveEventInstant(shift);
+    const rates = await getEffectiveFuelRate(eventInstant);
 
     if (!rates) {
       return res.status(400).json({

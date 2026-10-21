@@ -2,6 +2,7 @@ import Shift from "../models/Shift.js";
 import Mpd from "../models/Mpd.js";
 import FuelRate from "../models/FuelRate.js";
 import UdhariTransaction from "../models/UdhariTransaction.js";
+import { getEffectiveFuelRate, resolveEventInstant } from "../services/fuelRateService.js";
 
 const DENOMINATIONS = [500, 200, 100, 50, 20, 10, 5, 2, 1];
 
@@ -91,11 +92,8 @@ const coinsPaise = Number(
 };
 
 const calculateFinalResult = async (shift, finalReadings, collections) => {
-  const rates = await FuelRate.findOne({
-    businessDate: { $lte: shift.businessDate },
-  }).sort({
-    businessDate: -1,
-  });
+  const eventInstant = resolveEventInstant(shift);
+  const rates = await getEffectiveFuelRate(eventInstant);
   if (!rates) {
     const error = new Error(`Fuel rates not found for ${shift.businessDate}.`);
     error.status = 400;
