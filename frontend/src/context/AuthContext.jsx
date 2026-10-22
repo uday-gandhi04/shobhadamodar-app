@@ -8,17 +8,41 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
+    try {
+      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
   });
   const [token, setToken] = useState(() => {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
   });
   const [isLoading] = useState(false);
 
-  // Check local storage for an existing session when the app boots
+  // Sync session state across tabs and clean up malformed session
   useEffect(() => {
-    // Session is already initialized in state synchronously
+    const handleStorageChange = (e) => {
+      if (e.key === 'token' || e.key === 'user') {
+        const currentToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+        let currentUser = null;
+        try {
+          const rawUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+          if (rawUser) {
+            currentUser = JSON.parse(rawUser);
+          }
+        } catch {
+          // ignore malformed JSON
+        }
+        setToken(currentToken);
+        setUser(currentUser);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const login = async (employeeId, password, persistSession = true) => {

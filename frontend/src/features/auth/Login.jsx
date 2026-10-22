@@ -1,6 +1,9 @@
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { IonContent, IonPage } from "@ionic/react";
 import { useTranslation } from "react-i18next";
 
+import { AuthContext } from "../../context/AuthContext";
 import LoginWelcome from "../../components/business/LoginWelcome";
 import LoginForm from "../../components/business/LoginForm";
 import LoginStationVisual from "../../components/business/LoginStationVisual";
@@ -8,6 +11,18 @@ import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
 
 const Login = () => {
   const { i18n } = useTranslation();
+  const { user, token } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token && user?.role) {
+      if (user.role === "MANAGER") {
+        navigate("/manager", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    }
+  }, [token, user, navigate]);
 
   const changeLanguage = (language) => {
     i18n.changeLanguage(language);
