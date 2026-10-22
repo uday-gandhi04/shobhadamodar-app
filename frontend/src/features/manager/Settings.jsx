@@ -3,6 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ManagerLayout from "./ManagerLayout";
 import api from "../../services/api";
+import {
+  getUpdaterState,
+  subscribeToUpdaterState,
+  checkForUpdate,
+  downloadUpdate,
+  applyUpdateIfSafe,
+  isSafeToRestart,
+} from "../../services/otaUpdateService";
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -11,6 +19,22 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [stationConfig, setStationConfig] = useState(null);
   const [error, setError] = useState("");
+  const [otaState, setOtaState] = useState(getUpdaterState);
+
+  useEffect(() => {
+    return subscribeToUpdaterState(setOtaState);
+  }, []);
+
+  const handleCheckUpdate = async () => {
+    const res = await checkForUpdate({ force: true });
+    if (res.updateAvailable && !res.alreadyQueued && res.manifest) {
+      await downloadUpdate(res.manifest);
+    }
+  };
+
+  const handleApplyUpdate = async () => {
+    await applyUpdateIfSafe();
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -157,6 +181,92 @@ const Settings = () => {
                   className="rounded-[10px] bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-800 border border-emerald-200 hover:bg-emerald-100 active:scale-95 transition"
                 >
                   {t("manager.stockLabels.manageTanks", "Manage Tanks")}
+                </button>
+              </div>
+            </section>
+
+            {/* LIVE OTA UPDATES CARD */}
+            <section className="rounded-[16px] bg-white p-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] border border-slate-100">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h2 className="text-[13px] font-extrabold text-slate-900">
+                    {t("manager.systemUpdates", "Live System Updates")}
+                  </h2>
+                  <p className="mt-0.5 text-[10px] font-medium text-slate-500">
+                    {t(
+                      "manager.systemUpdatesDesc",
+                      "Over-the-air (OTA) updates powered by GitHub Releases."
+                    )}
+                  </p>
+                </div>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[9px] font-bold text-slate-600">
+                  com.shobhadamodar.app
+                </span>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="rounded-[12px] bg-slate-50 p-2.5 border border-slate-100">
+                  <span className="text-[9px] font-bold uppercase text-slate-400 block">Current Web Bundle</span>
+                  <span className="font-mono font-extrabold text-slate-800 text-[12px]">v{otaState.currentVersion}</span>
+                </div>
+                <div className="rounded-[12px] bg-slate-50 p-2.5 border border-slate-100">
+                  <span className="text-[9px] font-bold uppercase text-slate-400 block">Native App Version</span>
+                  <span className="font-mono font-extrabold text-slate-800 text-[12px]">{otaState.nativeVersion}</span>
+                </div>
+              </div>
+
+              {otaState.lastError && (
+                <div className="mt-2.5 rounded-[10px] border border-amber-200 bg-amber-50 p-2 text-[10px] font-medium text-amber-800">
+                  {otaState.lastError}
+                </div>
+              )}
+
+              {otaState.status === "ready" && (
+                <div className="mt-2.5 rounded-[12px] border border-emerald-200 bg-emerald-50 p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-emerald-900 block">
+                        Update Ready: v{otaState.pendingUpdate?.version}
+                      </span>
+                      <span className="text-[10px] text-emerald-700">
+                        {isSafeToRestart()
+                          ? "Ready to apply immediately or on next launch."
+                          : "Shift records in progress: will apply on next restart."}
+                      </span>
+                    </div>
+                    {isSafeToRestart() && (
+                      <button
+                        type="button"
+                        onClick={handleApplyUpdate}
+                        className="rounded-[8px] bg-[#047857] px-3 py-1.5 text-[10px] font-bold text-white shadow hover:bg-emerald-700 active:scale-95 transition"
+                      >
+                        Restart Now
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 flex items-center justify-between pt-1">
+                <span className="text-[10px] text-slate-400">
+                  {otaState.status === "checking" && "Checking for releases…"}
+                  {otaState.status === "downloading" && "Downloading update bundle in background…"}
+                  {otaState.status === "up-to-date" && "Application is up to date."}
+                  {otaState.status === "available" && `Update v${otaState.availableManifest?.version} available.`}
+                  {otaState.status === "idle" && otaState.lastCheckedAt && `Checked at ${new Date(otaState.lastCheckedAt).toLocaleTimeString()}`}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={otaState.status === "checking" || otaState.status === "downloading"}
+                  onClick={handleCheckUpdate}
+                  className="rounded-[10px] bg-slate-900 px-3 py-1.5 text-[10px] font-bold text-white shadow-sm hover:bg-slate-800 active:scale-95 disabled:opacity-50 transition"
+                >
+                  {otaState.status === "checking"
+                    ? "Checking…"
+                    : otaState.status === "downloading"
+                    ? "Downloading…"
+                    : "Check for Updates"}
                 </button>
               </div>
             </section>

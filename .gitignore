@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 .test-credentials.json
+.capgo_key*
 node_modules/
 dist/
 build/

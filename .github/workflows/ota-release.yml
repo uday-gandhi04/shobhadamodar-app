@@ -1,0 +1,470 @@
+name: OTA Production Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "frontend/src/**"
+      - "frontend/public/**"
+      - "frontend/index.html"
+      - "frontend/package.json"
+      - "frontend/package-lock.json"
+      - "frontend/vite.config.*"
+      - "frontend/tsconfig*.json"
+      - "frontend/.env.production"
+    paths-ignore:
+      - "frontend/android/**"
+      - "android/**"
+      - "frontend/capacitor.config.*"
+
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: "Semantic version bump type (patch, minor, major)"
+        required: false
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: "Explicit custom version override (e.g. 1.0.5). Overrides bump type if provided."
+        required: false
+        type: string
+      acknowledge_ota_compatible:
+        description: "Confirm that this manual release contains only compatible web assets without native changes"
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: ota-production-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ======================================================
+      # 1. CHECKOUT REPOSITORY
+      # ======================================================
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ======================================================
+      # 2. NATIVE CHANGE COMPATIBILITY GUARD
+      # ======================================================
+      - name: Verify change is OTA-compatible
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Auditing changes for native Android and Capacitor plugin compatibility..."
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            PREV_COMMIT="${{ github.event.before }}"
+            if [ -z "$PREV_COMMIT" ] || [ "$PREV_COMMIT" = "0000000000000000000000000000000000000000" ]; then
+              PREV_COMMIT="HEAD~1"
+            fi
+
+            CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD || true)
+            echo "Changed files in commit:"
+            echo "$CHANGED_FILES"
+
+            # Check for native files or Capacitor config alterations
+            if echo "$CHANGED_FILES" | grep -E "(^frontend/android/|^android/|^frontend/capacitor\.config\.)"; then
+              echo "❌ BLOCKED: Native Android code or Capacitor configuration was changed in this commit."
+              echo "Over-The-Air updates can only deliver compatible web bundle assets."
+              echo "Changes to Gradle, Java/Kotlin, AndroidManifest, or capacitor.config require a new signed native APK/AAB."
+              echo "Aborting automatic OTA release."
+              exit 1
+            fi
+
+            # Check if package.json added or modified native Capacitor plugins
+            if echo "$CHANGED_FILES" | grep -q "^frontend/package\.json$"; then
+              PLUGIN_DIFF=$(git diff -U0 "$PREV_COMMIT" HEAD -- frontend/package.json | grep -E '^\+[[:space:]]*"(@capacit(or|y)|@capgo/capacitor-updater)' || true)
+              if [ -n "$PLUGIN_DIFF" ]; then
+                echo "❌ BLOCKED: Native plugin dependencies were modified in frontend/package.json:"
+                echo "$PLUGIN_DIFF"
+                echo "Native plugin additions or version upgrades require building a new signed native APK."
+                echo "Aborting automatic OTA release."
+                exit 1
+              fi
+            fi
+          fi
+
+          echo "✅ Change verified: pure web bundle update with no incompatible native modifications."
+
+      # ======================================================
+      # 3. SETUP NODE.JS ENVIRONMENT
+      # ======================================================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # ======================================================
+      # 4. DETERMINE NEXT OTA VERSION (ota-v* NAMESPACE)
+      # ======================================================
+      - name: Determine next OTA version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CUSTOM_VERSION="${{ github.event.inputs.custom_version || '' }}"
+          BUMP_TYPE="${{ github.event.inputs.version_bump || 'patch' }}"
+
+          if [ -n "$CUSTOM_VERSION" ]; then
+            # Validate semver pattern (X.Y.Z)
+            if [[ ! "$CUSTOM_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo "❌ Provided custom_version '$CUSTOM_VERSION' is not a valid semantic version."
+              exit 1
+            fi
+            NEXT_VERSION="$CUSTOM_VERSION"
+          else
+            # Find latest Git tag matching dedicated OTA namespace: ota-v*
+            LATEST_OTA_TAG=$(git tag -l "ota-v*" --sort=-v:refname | head -n 1 || true)
+
+            # Also inspect ota/latest.json if present
+            MANIFEST_VERSION=""
+            if [ -f "ota/latest.json" ]; then
+              MANIFEST_VERSION=$(jq -r '.version // empty' ota/latest.json 2>/dev/null || true)
+            fi
+
+            CURRENT_VERSION=""
+            if [ -n "$LATEST_OTA_TAG" ]; then
+              CURRENT_VERSION="${LATEST_OTA_TAG#ota-v}"
+            fi
+
+            # If manifest has a version, use the higher of the two
+            if [ -n "$MANIFEST_VERSION" ]; then
+              if [ -z "$CURRENT_VERSION" ]; then
+                CURRENT_VERSION="$MANIFEST_VERSION"
+              else
+                HIGHEST=$(printf "%s\n%s" "$CURRENT_VERSION" "$MANIFEST_VERSION" | sort -V | tail -n 1)
+                CURRENT_VERSION="$HIGHEST"
+              fi
+            fi
+
+            if [ -z "$CURRENT_VERSION" ]; then
+              NEXT_VERSION="1.0.0"
+            else
+              IFS='.' read -r MAJOR MINOR PATCH <<< "${CURRENT_VERSION%%-*}"
+              MAJOR=${MAJOR:-1}
+              MINOR=${MINOR:-0}
+              PATCH=${PATCH:-0}
+
+              case "$BUMP_TYPE" in
+                major)
+                  NEXT_VERSION="$((MAJOR + 1)).0.0"
+                  ;;
+                minor)
+                  NEXT_VERSION="$MAJOR.$((MINOR + 1)).0"
+                  ;;
+                patch|*)
+                  NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+                  ;;
+              esac
+            fi
+          fi
+
+          echo "Current base OTA version: ${CURRENT_VERSION:-none (initial release)}"
+          echo "Target OTA version: $NEXT_VERSION"
+          echo "Target Release tag: ota-v$NEXT_VERSION"
+
+          # Verify tag does not already exist to prevent version collision
+          if git rev-parse -q --verify "refs/tags/ota-v$NEXT_VERSION" >/dev/null; then
+            echo "❌ Git tag 'ota-v$NEXT_VERSION' already exists. Aborting to prevent version collision."
+            exit 1
+          fi
+
+          echo "version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=ota-v$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+
+      # ======================================================
+      # 5. UPDATE FRONTEND PACKAGE VERSION
+      # ======================================================
+      - name: Update frontend package version
+        working-directory: frontend
+        run: |
+          npm version "${{ steps.version.outputs.version }}" --no-git-tag-version
+
+      # ======================================================
+      # 6. INSTALL DEPENDENCIES REPRODUCIBLY
+      # ======================================================
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # ======================================================
+      # 7. RUN AUTOMATED CHECKS & TESTS
+      # ======================================================
+      - name: Run backend tests
+        working-directory: backend
+        run: npm test
+
+      - name: Run frontend lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Run frontend regression tests
+        working-directory: frontend
+        run: npm test
+
+      # ======================================================
+      # 8. BUILD PRODUCTION FRONTEND BUNDLE
+      # ======================================================
+      - name: Build frontend for production
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://shobhadamodar-api.onrender.com/api' }}
+          VITE_OTA_MANIFEST_URL: ${{ vars.VITE_OTA_MANIFEST_URL || 'https://raw.githubusercontent.com/uday-gandhi04/shobhadamodar-app/master/ota/latest.json' }}
+        run: npm run build
+
+      # ======================================================
+      # 9. VERIFY PRODUCTION BUILD INTEGRITY
+      # ======================================================
+      - name: Verify production build output
+        working-directory: frontend
+        env:
+          EXPECTED_API_URL: ${{ vars.VITE_API_URL || 'https://shobhadamodar-api.onrender.com/api' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Verifying production build output directory..."
+
+          if [ ! -d "dist" ]; then
+            echo "❌ 'dist' directory was not generated."
+            exit 1
+          fi
+
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ 'dist/index.html' is missing from web bundle."
+            exit 1
+          fi
+
+          echo "Verifying backend API endpoint in bundle..."
+          if grep -R -F -q "$EXPECTED_API_URL" dist; then
+            echo "✅ Verified: Production API URL ($EXPECTED_API_URL) is present in bundle."
+          else
+            echo "❌ Production API URL ($EXPECTED_API_URL) was NOT found in bundle."
+            exit 1
+          fi
+
+          echo "Verifying no local/test endpoints leaked into production bundle..."
+          DISALLOWED_PATTERNS=("http://localhost:5000" "http://10.0.2.2:5000" "shobhadamodar-api-test.onrender.com")
+          for pattern in "${DISALLOWED_PATTERNS[@]}"; do
+            if grep -R -F -q "$pattern" dist; then
+              echo "❌ Disallowed test/dev pattern '$pattern' was found in production bundle!"
+              exit 1
+            fi
+          done
+          echo "✅ Verified: No test or localhost endpoints present in production bundle."
+
+      # ======================================================
+      # 10. GENERATE OTA ZIP BUNDLE
+      # ======================================================
+      - name: Generate OTA bundle ZIP
+        working-directory: frontend
+        run: |
+          npx @capgo/cli bundle zip com.shobhadamodar.app \
+            --path ./dist \
+            --bundle "${{ steps.version.outputs.version }}" \
+            --json
+
+      # ======================================================
+      # 11. VALIDATE ARTIFACT & NAMING CONVENTION
+      # ======================================================
+      - name: Validate OTA ZIP bundle
+        id: bundle
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED_NAME="com.shobhadamodar.app_${{ steps.version.outputs.version }}.zip"
+
+          if [ ! -f "$EXPECTED_NAME" ]; then
+            echo "❌ Expected bundle file '$EXPECTED_NAME' was not found in frontend directory."
+            ls -la
+            exit 1
+          fi
+
+          BUNDLE_SIZE=$(stat -c%s "$EXPECTED_NAME" 2>/dev/null || stat -f%z "$EXPECTED_NAME")
+          if [ "$BUNDLE_SIZE" -le 1000 ]; then
+            echo "❌ Bundle file '$EXPECTED_NAME' is suspiciously small ($BUNDLE_SIZE bytes)."
+            exit 1
+          fi
+
+          echo "Verifying ZIP contents contain root index.html..."
+          unzip -l "$EXPECTED_NAME" | grep -E "(^|[[:space:]])index\.html$" || {
+            echo "❌ ZIP does not contain index.html at root level."
+            exit 1
+          }
+
+          echo "✅ Bundle verified: $EXPECTED_NAME ($BUNDLE_SIZE bytes)"
+          echo "file=frontend/$EXPECTED_NAME" >> "$GITHUB_OUTPUT"
+          echo "filename=$EXPECTED_NAME" >> "$GITHUB_OUTPUT"
+
+      # ======================================================
+      # 12. ENCRYPT OTA BUNDLE (CAPGO ENCRYPTION V2)
+      # ======================================================
+      - name: Encrypt bundle with Capgo Encryption V2
+        id: security
+        env:
+          CAPGO_PRIVATE_KEY: ${{ secrets.CAPGO_PRIVATE_KEY }}
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CAPGO_PRIVATE_KEY:-}" ]; then
+            echo "❌ BLOCKED: CAPGO_PRIVATE_KEY secret is required for production OTA releases."
+            echo "The mobile application embeds an RSA public key in capacitor.config.json and strictly requires Capgo Encryption V2 bundles."
+            echo "Publishing an unencrypted bundle will cause mobile clients to reject the update with 'Session key required'."
+            echo "Please configure the RSA private key in GitHub Secrets as CAPGO_PRIVATE_KEY."
+            exit 1
+          fi
+
+          PLAIN_FILENAME="${{ steps.bundle.outputs.filename }}"
+          echo "Calculating initial plain SHA-256 for $PLAIN_FILENAME..."
+          PLAIN_CHECKSUM=$(sha256sum "$PLAIN_FILENAME" | awk '{print $1}')
+          echo "Plain bundle SHA-256: $PLAIN_CHECKSUM"
+
+          KEY_FILE=$(mktemp)
+          echo "$CAPGO_PRIVATE_KEY" > "$KEY_FILE"
+
+          echo "Encrypting bundle via Capgo CLI V2 encryption..."
+          ENCRYPT_OUTPUT=$(npx @capgo/cli bundle encrypt "$PLAIN_FILENAME" "$PLAIN_CHECKSUM" --key "$KEY_FILE" --json)
+          rm -f "$KEY_FILE"
+
+          echo "Parsing Capgo Encryption V2 output..."
+          ENCRYPTED_FILENAME=$(node -e 'const fs=require("fs"); const m=fs.readFileSync(0, "utf8").match(/\{[\s\S]*\}/); if(!m) process.exit(1); console.log(JSON.parse(m[0]).filename)' <<< "$ENCRYPT_OUTPUT")
+          ENCRYPTED_CHECKSUM=$(node -e 'const fs=require("fs"); const m=fs.readFileSync(0, "utf8").match(/\{[\s\S]*\}/); if(!m) process.exit(1); console.log(JSON.parse(m[0]).checksum)' <<< "$ENCRYPT_OUTPUT")
+          IV_SESSION_KEY=$(node -e 'const fs=require("fs"); const m=fs.readFileSync(0, "utf8").match(/\{[\s\S]*\}/); if(!m) process.exit(1); console.log(JSON.parse(m[0]).ivSessionKey)' <<< "$ENCRYPT_OUTPUT")
+
+          if [ -z "$ENCRYPTED_FILENAME" ] || [ ! -f "$ENCRYPTED_FILENAME" ]; then
+            echo "❌ Encrypted bundle file '$ENCRYPTED_FILENAME' was not created."
+            exit 1
+          fi
+
+          if [ -z "$ENCRYPTED_CHECKSUM" ] || [ "${#ENCRYPTED_CHECKSUM}" -ne 512 ]; then
+            echo "❌ Encrypted checksum must be 512 hexadecimal characters (RSA-2048), received length: ${#ENCRYPTED_CHECKSUM}."
+            exit 1
+          fi
+
+          if [[ ! "$IV_SESSION_KEY" =~ ^[A-Za-z0-9+/=]+:[A-Za-z0-9+/=]+$ ]]; then
+            echo "❌ Malformed ivSessionKey format (expected IV_BASE64:SESSION_KEY_BASE64)."
+            exit 1
+          fi
+
+          # Replace the plain unencrypted ZIP with the encrypted ZIP under the canonical release filename
+          mv -f "$ENCRYPTED_FILENAME" "$PLAIN_FILENAME"
+
+          FINAL_SIZE=$(stat -c%s "$PLAIN_FILENAME" 2>/dev/null || stat -f%z "$PLAIN_FILENAME")
+          echo "✅ Production bundle successfully encrypted with Capgo V2: $PLAIN_FILENAME ($FINAL_SIZE bytes)"
+          echo "Encrypted Checksum (512-hex): $ENCRYPTED_CHECKSUM"
+          echo "ivSessionKey: $IV_SESSION_KEY"
+
+          echo "checksum=$ENCRYPTED_CHECKSUM" >> "$GITHUB_OUTPUT"
+          echo "session_key=$IV_SESSION_KEY" >> "$GITHUB_OUTPUT"
+          echo "signing_mode=capgo_v2_encrypted" >> "$GITHUB_OUTPUT"
+
+      # ======================================================
+      # 13. CREATE GITHUB RELEASE (ota-v* NAMESPACE)
+      # ======================================================
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create \
+            "${{ steps.version.outputs.tag }}" \
+            "${{ steps.bundle.outputs.file }}" \
+            --title "OTA v${{ steps.version.outputs.version }}" \
+            --generate-notes
+
+      # ======================================================
+      # 14. ATOMICALLY UPDATE OTA MANIFEST
+      # ======================================================
+      - name: Update OTA manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ota
+
+          RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.bundle.outputs.filename }}"
+          SESSION_KEY="${{ steps.security.outputs.session_key }}"
+          CHECKSUM="${{ steps.security.outputs.checksum }}"
+
+          cat > ota/latest.json.tmp <<EOF
+          {
+            "version": "${{ steps.version.outputs.version }}",
+            "url": "$RELEASE_URL",
+            "checksum": "$CHECKSUM",
+            "sessionKey": "$SESSION_KEY",
+            "releaseDate": "$RELEASE_DATE"
+          }
+          EOF
+
+          # Validate valid JSON syntax
+          jq . ota/latest.json.tmp >/dev/null
+          mv ota/latest.json.tmp ota/latest.json
+
+          echo "✅ Updated ota/latest.json:"
+          cat ota/latest.json
+
+      # ======================================================
+      # 15. COMMIT AND PUSH RELEASE METADATA
+      # ======================================================
+      - name: Commit release metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            frontend/package.json \
+            frontend/package-lock.json \
+            ota/latest.json
+
+          if git diff --cached --quiet; then
+            echo "No release metadata changes to commit"
+          else
+            git commit -m "chore(release): publish ShobhaDamodar OTA v${{ steps.version.outputs.version }} [skip ci]"
+            git push origin HEAD:master
+          fi
+
+      # ======================================================
+      # 16. PUBLICATION SUMMARY
+      # ======================================================
+      - name: Publication summary
+        shell: bash
+        run: |
+          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+          # 🚀 ShobhaDamodar Petroleum — OTA Release Published
+
+          | Attribute | Value |
+          |---|---|
+          | **Version** | \`${{ steps.version.outputs.version }}\` |
+          | **Commit SHA** | \`${{ github.sha }}\` |
+          | **Release Tag** | \`${{ steps.version.outputs.tag }}\` |
+          | **Release Asset** | [${{ steps.bundle.outputs.filename }}](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.bundle.outputs.filename }}) |
+          | **Manifest URL** | \`https://raw.githubusercontent.com/${{ github.repository }}/master/ota/latest.json\` |
+          | **SHA-256 Checksum** | \`${{ steps.security.outputs.checksum }}\` |
+          | **Authentication Mode** | \`${{ steps.security.outputs.signing_mode }}\` |
+          EOF
