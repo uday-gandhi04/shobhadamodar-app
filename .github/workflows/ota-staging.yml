@@ -1,0 +1,195 @@
+name: OTA Staging Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_version:
+        description: "Staging Semantic Version with prerelease tag (e.g. 1.0.0-test.1)"
+        required: true
+        default: "1.0.0-test.1"
+      test_api_url:
+        description: "Isolated Test Backend API URL"
+        required: true
+        default: "https://shobhadamodar-api-test.onrender.com/api"
+
+concurrency:
+  group: ota-staging-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  staging-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Validate staging version (ota-v* namespace)
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_VERSION="${{ github.event.inputs.test_version }}"
+
+          if [[ ! "$TEST_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
+            echo "❌ Staging version '$TEST_VERSION' must include a pre-release identifier (e.g. 1.0.0-test.1)."
+            exit 1
+          fi
+
+          echo "Target Staging Version: $TEST_VERSION"
+          echo "Target Staging Tag: ota-v$TEST_VERSION"
+          echo "version=$TEST_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=ota-v$TEST_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run backend checks
+        working-directory: backend
+        run: npm test
+
+      - name: Run frontend lint & tests
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm test
+
+      - name: Build frontend for test environment
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ github.event.inputs.test_api_url }}
+          VITE_OTA_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/master/ota/test-latest.json
+        run: npm run build:test
+
+      - name: Verify staging build separation
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Verifying test endpoint separation..."
+
+          if [ ! -d "dist" ]; then
+            echo "❌ 'dist' directory missing."
+            exit 1
+          fi
+
+          PROD_URL="https://shobhadamodar-api.onrender.com/api"
+          if grep -R -F -q "$PROD_URL" dist; then
+            echo "❌ Production API URL was accidentally found in staging build!"
+            exit 1
+          fi
+
+          echo "✅ Staging bundle strictly isolated from production backend."
+
+      - name: Generate staging bundle ZIP
+        working-directory: frontend
+        run: |
+          npx @capgo/cli bundle zip com.shobhadamodar.app \
+            --path ./dist \
+            --bundle "${{ steps.version.outputs.version }}" \
+            --json
+
+      - name: Validate staging ZIP
+        id: bundle
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED_NAME="com.shobhadamodar.app_${{ steps.version.outputs.version }}.zip"
+
+          if [ ! -f "$EXPECTED_NAME" ]; then
+            echo "❌ Expected bundle '$EXPECTED_NAME' not found."
+            exit 1
+          fi
+
+          echo "file=frontend/$EXPECTED_NAME" >> "$GITHUB_OUTPUT"
+          echo "filename=$EXPECTED_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate artifact checksum
+        id: checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHECKSUM=$(sha256sum "${{ steps.bundle.outputs.file }}" | awk '{print $1}')
+          echo "SHA-256 Checksum: $CHECKSUM"
+          echo "checksum=$CHECKSUM" >> "$GITHUB_OUTPUT"
+
+      - name: Publish Staging Pre-Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create \
+            "${{ steps.version.outputs.tag }}" \
+            "${{ steps.bundle.outputs.file }}" \
+            --title "OTA Staging v${{ steps.version.outputs.version }}" \
+            --prerelease \
+            --notes "Staging OTA Update ${{ steps.version.outputs.version }} for isolated test environments."
+
+      - name: Update staging manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ota
+
+          RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.bundle.outputs.filename }}"
+
+          cat > ota/test-latest.json.tmp <<EOF
+          {
+            "version": "${{ steps.version.outputs.version }}",
+            "url": "$RELEASE_URL",
+            "checksum": "${{ steps.checksum.outputs.checksum }}",
+            "releaseDate": "$RELEASE_DATE"
+          }
+          EOF
+
+          jq . ota/test-latest.json.tmp >/dev/null
+          mv ota/test-latest.json.tmp ota/test-latest.json
+
+      - name: Commit staging manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add ota/test-latest.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(ota): update staging manifest ${{ steps.version.outputs.version }} [skip ci]"
+            git push origin HEAD:master
+          fi
+
+      - name: Staging publication summary
+        shell: bash
+        run: |
+          cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+          # 🧪 ShobhaDamodar Petroleum — Staging OTA Release Published
+
+          | Attribute | Value |
+          |---|---|
+          | **Staging Version** | \`${{ steps.version.outputs.version }}\` |
+          | **Release Tag** | \`${{ steps.version.outputs.tag }}\` (Pre-Release) |
+          | **Release Asset** | [${{ steps.bundle.outputs.filename }}](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.bundle.outputs.filename }}) |
+          | **Staging Manifest** | \`https://raw.githubusercontent.com/${{ github.repository }}/master/ota/test-latest.json\` |
+          | **SHA-256 Checksum** | \`${{ steps.checksum.outputs.checksum }}\` |
+          EOF
