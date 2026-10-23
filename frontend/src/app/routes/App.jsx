@@ -35,6 +35,7 @@ import Settings from "../../features/manager/Settings";
 import MpdConfig from "../../features/manager/MpdConfig";
 import NotFound from "../../features/common/NotFound";
 import { getCurrentShift } from "../../services/shiftApi";
+import { initializeOtaUpdater } from "../../services/otaUpdateService";
 setupIonicReact();
 
 export const LoadingFallback = () => (
@@ -206,9 +207,25 @@ const NativeBackButtonHandler = () => {
   return null;
 };
 
+/**
+ * Signals Capgo runtime that React root has mounted successfully.
+ * Disarms the native 10-second watchdog timer (appReadyTimeout)
+ * and safely initiates background update checks without blocking app rendering.
+ */
+export const OtaLifecycleHandler = () => {
+  useEffect(() => {
+    initializeOtaUpdater().catch((err) => {
+      console.warn("[OTA] Lifecycle initialization warning:", err);
+    });
+  }, []);
+
+  return null;
+};
+
 function App() {
   return (
     <IonApp>
+      <OtaLifecycleHandler />
       <AuthProvider>
         <SyncProvider>
           <IonReactRouter>
