@@ -23,6 +23,13 @@ android/.gradle/
 android/app/build/
 ios/App/Pods/
 
+# Security, keys, certificates and credentials
+.capgo_key*
+*.pem
+*.key
+*.keystore
+*.jks
+
 # Test and coverage output
 coverage/
 *.tsbuildinfo

@@ -8,3 +8,10 @@ dist/
 build/
 *.log
 *.xlsx
+
+# Security, keys, certificates and credentials
+.capgo_key*
+*.pem
+*.key
+*.keystore
+*.jks
