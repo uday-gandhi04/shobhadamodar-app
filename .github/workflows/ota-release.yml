@@ -13,10 +13,9 @@ on:
       - "frontend/vite.config.*"
       - "frontend/tsconfig*.json"
       - "frontend/.env.production"
-    paths-ignore:
-      - "frontend/android/**"
-      - "android/**"
-      - "frontend/capacitor.config.*"
+      - "!frontend/android/**"
+      - "!android/**"
+      - "!frontend/capacitor.config.*"
 
   workflow_dispatch:
     inputs:
@@ -70,35 +69,47 @@ jobs:
           set -euo pipefail
           echo "Auditing changes for native Android and Capacitor plugin compatibility..."
 
+          BASE_REF=""
           if [ "${{ github.event_name }}" = "push" ]; then
             PREV_COMMIT="${{ github.event.before }}"
-            if [ -z "$PREV_COMMIT" ] || [ "$PREV_COMMIT" = "0000000000000000000000000000000000000000" ]; then
-              PREV_COMMIT="HEAD~1"
+            if [ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" != "0000000000000000000000000000000000000000" ]; then
+              BASE_REF="$PREV_COMMIT"
+            else
+              BASE_REF="HEAD~1"
             fi
+          else
+            # For manual workflow_dispatch, find the most recent release tag (ota-v* or v*)
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+            if [ -n "$LATEST_TAG" ]; then
+              BASE_REF="$LATEST_TAG"
+            else
+              BASE_REF="HEAD~1"
+            fi
+          fi
 
-            CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD || true)
-            echo "Changed files in commit:"
-            echo "$CHANGED_FILES"
+          echo "Comparing changes between $BASE_REF and HEAD..."
+          CHANGED_FILES=$(git diff --name-only "$BASE_REF" HEAD || true)
+          echo "Changed files in scope:"
+          echo "$CHANGED_FILES"
 
-            # Check for native files or Capacitor config alterations
-            if echo "$CHANGED_FILES" | grep -E "(^frontend/android/|^android/|^frontend/capacitor\.config\.)"; then
-              echo "❌ BLOCKED: Native Android code or Capacitor configuration was changed in this commit."
-              echo "Over-The-Air updates can only deliver compatible web bundle assets."
-              echo "Changes to Gradle, Java/Kotlin, AndroidManifest, or capacitor.config require a new signed native APK/AAB."
-              echo "Aborting automatic OTA release."
+          # Check for native files or Capacitor config alterations
+          if echo "$CHANGED_FILES" | grep -E "(^frontend/android/|^android/|^frontend/capacitor\.config\.)"; then
+            echo "❌ BLOCKED: Native Android code, Gradle, AndroidManifest, or Capacitor configuration was changed between $BASE_REF and HEAD."
+            echo "Over-The-Air updates can only deliver compatible web bundle assets."
+            echo "Changes to Gradle, Java/Kotlin, AndroidManifest, or capacitor.config require a new signed native APK/AAB."
+            echo "Aborting OTA release. Please build and distribute a new signed native APK."
+            exit 1
+          fi
+
+          # Check if package.json added or modified native Capacitor plugins
+          if echo "$CHANGED_FILES" | grep -q "^frontend/package\.json$"; then
+            PLUGIN_DIFF=$(git diff -U0 "$BASE_REF" HEAD -- frontend/package.json | grep -E '^\+[[:space:]]*"(@capacit(or|y)|@capgo/capacitor-updater)' || true)
+            if [ -n "$PLUGIN_DIFF" ]; then
+              echo "❌ BLOCKED: Native plugin dependencies were modified in frontend/package.json between $BASE_REF and HEAD:"
+              echo "$PLUGIN_DIFF"
+              echo "Native plugin additions or version upgrades require building a new signed native APK."
+              echo "Aborting OTA release."
               exit 1
-            fi
-
-            # Check if package.json added or modified native Capacitor plugins
-            if echo "$CHANGED_FILES" | grep -q "^frontend/package\.json$"; then
-              PLUGIN_DIFF=$(git diff -U0 "$PREV_COMMIT" HEAD -- frontend/package.json | grep -E '^\+[[:space:]]*"(@capacit(or|y)|@capgo/capacitor-updater)' || true)
-              if [ -n "$PLUGIN_DIFF" ]; then
-                echo "❌ BLOCKED: Native plugin dependencies were modified in frontend/package.json:"
-                echo "$PLUGIN_DIFF"
-                echo "Native plugin additions or version upgrades require building a new signed native APK."
-                echo "Aborting automatic OTA release."
-                exit 1
-              fi
             fi
           fi
 
@@ -278,30 +289,52 @@ jobs:
           echo "✅ Verified: No test or localhost endpoints present in production bundle."
 
       # ======================================================
-      # 10. GENERATE OTA ZIP BUNDLE
+      # 10. GENERATE OTA ZIP BUNDLE (V2 MODE)
       # ======================================================
       - name: Generate OTA bundle ZIP
+        id: zip_bundle
         working-directory: frontend
+        shell: bash
         run: |
-          npx @capgo/cli bundle zip com.shobhadamodar.app \
+          set -euo pipefail
+          echo "Generating bundle ZIP using Capgo CLI V2 mode..."
+          ZIP_OUTPUT=$(npx @capgo/cli bundle zip com.shobhadamodar.app \
             --path ./dist \
             --bundle "${{ steps.version.outputs.version }}" \
-            --json
+            --key-v2 \
+            --json)
+
+          ZIP_FILENAME=$(node -e 'const fs=require("fs"); const m=fs.readFileSync(0, "utf8").match(/\{[\s\S]*\}/); if(!m) process.exit(1); console.log(JSON.parse(m[0]).filename)' <<< "$ZIP_OUTPUT")
+          ZIP_CHECKSUM=$(node -e 'const fs=require("fs"); const m=fs.readFileSync(0, "utf8").match(/\{[\s\S]*\}/); if(!m) process.exit(1); console.log(JSON.parse(m[0]).checksum)' <<< "$ZIP_OUTPUT")
+
+          if [ -z "$ZIP_FILENAME" ] || [ ! -f "$ZIP_FILENAME" ]; then
+            echo "❌ Bundle ZIP was not generated."
+            exit 1
+          fi
+
+          if [ -z "$ZIP_CHECKSUM" ] || [ "${#ZIP_CHECKSUM}" -ne 64 ]; then
+            echo "❌ Invalid bundle checksum format from Capgo CLI (expected 64-hex SHA-256)."
+            exit 1
+          fi
+
+          echo "Generated ZIP: $ZIP_FILENAME"
+          echo "Plain V2 Checksum: $ZIP_CHECKSUM"
+          echo "filename=$ZIP_FILENAME" >> "$GITHUB_OUTPUT"
+          echo "checksum=$ZIP_CHECKSUM" >> "$GITHUB_OUTPUT"
+          echo "file=frontend/$ZIP_FILENAME" >> "$GITHUB_OUTPUT"
 
       # ======================================================
       # 11. VALIDATE ARTIFACT & NAMING CONVENTION
       # ======================================================
       - name: Validate OTA ZIP bundle
-        id: bundle
         working-directory: frontend
         shell: bash
         run: |
           set -euo pipefail
-          EXPECTED_NAME="com.shobhadamodar.app_${{ steps.version.outputs.version }}.zip"
+          EXPECTED_NAME="${{ steps.zip_bundle.outputs.filename }}"
 
           if [ ! -f "$EXPECTED_NAME" ]; then
             echo "❌ Expected bundle file '$EXPECTED_NAME' was not found in frontend directory."
-            ls -la
             exit 1
           fi
 
@@ -317,9 +350,7 @@ jobs:
             exit 1
           }
 
-          echo "✅ Bundle verified: $EXPECTED_NAME ($BUNDLE_SIZE bytes)"
-          echo "file=frontend/$EXPECTED_NAME" >> "$GITHUB_OUTPUT"
-          echo "filename=$EXPECTED_NAME" >> "$GITHUB_OUTPUT"
+          echo "✅ Plain bundle verified: $EXPECTED_NAME ($BUNDLE_SIZE bytes)"
 
       # ======================================================
       # 12. ENCRYPT OTA BUNDLE (CAPGO ENCRYPTION V2)
@@ -341,17 +372,16 @@ jobs:
             exit 1
           fi
 
-          PLAIN_FILENAME="${{ steps.bundle.outputs.filename }}"
-          echo "Calculating initial plain SHA-256 for $PLAIN_FILENAME..."
-          PLAIN_CHECKSUM=$(sha256sum "$PLAIN_FILENAME" | awk '{print $1}')
-          echo "Plain bundle SHA-256: $PLAIN_CHECKSUM"
+          PLAIN_FILENAME="${{ steps.zip_bundle.outputs.filename }}"
+          PLAIN_CHECKSUM="${{ steps.zip_bundle.outputs.checksum }}"
 
           KEY_FILE=$(mktemp)
+          trap 'rm -f "$KEY_FILE"' EXIT INT TERM
           echo "$CAPGO_PRIVATE_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
 
           echo "Encrypting bundle via Capgo CLI V2 encryption..."
           ENCRYPT_OUTPUT=$(npx @capgo/cli bundle encrypt "$PLAIN_FILENAME" "$PLAIN_CHECKSUM" --key "$KEY_FILE" --json)
-          rm -f "$KEY_FILE"
 
           echo "Parsing Capgo Encryption V2 output..."
           ENCRYPTED_FILENAME=$(node -e 'const fs=require("fs"); const m=fs.readFileSync(0, "utf8").match(/\{[\s\S]*\}/); if(!m) process.exit(1); console.log(JSON.parse(m[0]).filename)' <<< "$ENCRYPT_OUTPUT")
@@ -360,6 +390,12 @@ jobs:
 
           if [ -z "$ENCRYPTED_FILENAME" ] || [ ! -f "$ENCRYPTED_FILENAME" ]; then
             echo "❌ Encrypted bundle file '$ENCRYPTED_FILENAME' was not created."
+            exit 1
+          fi
+
+          ENCRYPTED_SIZE=$(stat -c%s "$ENCRYPTED_FILENAME" 2>/dev/null || stat -f%z "$ENCRYPTED_FILENAME")
+          if [ "$ENCRYPTED_SIZE" -le 1000 ]; then
+            echo "❌ Encrypted bundle file '$ENCRYPTED_FILENAME' is suspiciously small ($ENCRYPTED_SIZE bytes)."
             exit 1
           fi
 
@@ -373,14 +409,15 @@ jobs:
             exit 1
           fi
 
-          # Replace the plain unencrypted ZIP with the encrypted ZIP under the canonical release filename
-          mv -f "$ENCRYPTED_FILENAME" "$PLAIN_FILENAME"
+          # Securely remove the unencrypted plain bundle so it cannot be accidentally published
+          rm -f "$PLAIN_FILENAME"
 
-          FINAL_SIZE=$(stat -c%s "$PLAIN_FILENAME" 2>/dev/null || stat -f%z "$PLAIN_FILENAME")
-          echo "✅ Production bundle successfully encrypted with Capgo V2: $PLAIN_FILENAME ($FINAL_SIZE bytes)"
+          echo "✅ Production bundle successfully encrypted with Capgo V2: $ENCRYPTED_FILENAME ($ENCRYPTED_SIZE bytes)"
           echo "Encrypted Checksum (512-hex): $ENCRYPTED_CHECKSUM"
           echo "ivSessionKey: $IV_SESSION_KEY"
 
+          echo "file=frontend/$ENCRYPTED_FILENAME" >> "$GITHUB_OUTPUT"
+          echo "filename=$ENCRYPTED_FILENAME" >> "$GITHUB_OUTPUT"
           echo "checksum=$ENCRYPTED_CHECKSUM" >> "$GITHUB_OUTPUT"
           echo "session_key=$IV_SESSION_KEY" >> "$GITHUB_OUTPUT"
           echo "signing_mode=capgo_v2_encrypted" >> "$GITHUB_OUTPUT"
@@ -392,11 +429,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
+          echo "Publishing GitHub Release for ${{ steps.version.outputs.tag }}..."
           gh release create \
             "${{ steps.version.outputs.tag }}" \
-            "${{ steps.bundle.outputs.file }}" \
+            "${{ steps.security.outputs.file }}" \
             --title "OTA v${{ steps.version.outputs.version }}" \
             --generate-notes
+
+          echo "Verifying published release asset exists on GitHub..."
+          gh release view "${{ steps.version.outputs.tag }}" --json assets --jq '.assets[].name' | grep -Fx "${{ steps.security.outputs.filename }}" || {
+            echo "❌ Release asset '${{ steps.security.outputs.filename }}' was not found in GitHub Release."
+            exit 1
+          }
+          echo "✅ Release asset verified on GitHub Release."
 
       # ======================================================
       # 14. ATOMICALLY UPDATE OTA MANIFEST
@@ -408,7 +454,7 @@ jobs:
           mkdir -p ota
 
           RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.bundle.outputs.filename }}"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.security.outputs.filename }}"
           SESSION_KEY="${{ steps.security.outputs.session_key }}"
           CHECKSUM="${{ steps.security.outputs.checksum }}"
 
@@ -463,8 +509,8 @@ jobs:
           | **Version** | \`${{ steps.version.outputs.version }}\` |
           | **Commit SHA** | \`${{ github.sha }}\` |
           | **Release Tag** | \`${{ steps.version.outputs.tag }}\` |
-          | **Release Asset** | [${{ steps.bundle.outputs.filename }}](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.bundle.outputs.filename }}) |
+          | **Release Asset** | [${{ steps.security.outputs.filename }}](https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/${{ steps.security.outputs.filename }}) |
           | **Manifest URL** | \`https://raw.githubusercontent.com/${{ github.repository }}/master/ota/latest.json\` |
-          | **SHA-256 Checksum** | \`${{ steps.security.outputs.checksum }}\` |
+          | **Encrypted Checksum** | \`${{ steps.security.outputs.checksum }}\` |
           | **Authentication Mode** | \`${{ steps.security.outputs.signing_mode }}\` |
           EOF

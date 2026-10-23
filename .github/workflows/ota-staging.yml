@@ -31,6 +31,48 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Verify change is OTA-compatible
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Auditing changes for native Android and Capacitor plugin compatibility..."
+
+          # For manual workflow_dispatch, find the most recent release tag (ota-v* or v*)
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -n "$LATEST_TAG" ]; then
+            BASE_REF="$LATEST_TAG"
+          else
+            BASE_REF="HEAD~1"
+          fi
+
+          echo "Comparing changes between $BASE_REF and HEAD..."
+          CHANGED_FILES=$(git diff --name-only "$BASE_REF" HEAD || true)
+          echo "Changed files in scope:"
+          echo "$CHANGED_FILES"
+
+          # Check for native files or Capacitor config alterations
+          if echo "$CHANGED_FILES" | grep -E "(^frontend/android/|^android/|^frontend/capacitor\.config\.)"; then
+            echo "❌ BLOCKED: Native Android code, Gradle, AndroidManifest, or Capacitor configuration was changed between $BASE_REF and HEAD."
+            echo "Over-The-Air updates can only deliver compatible web bundle assets."
+            echo "Changes to Gradle, Java/Kotlin, AndroidManifest, or capacitor.config require a new signed native APK/AAB."
+            echo "Aborting staging OTA release. Please build and distribute a new signed native APK."
+            exit 1
+          fi
+
+          # Check if package.json added or modified native Capacitor plugins
+          if echo "$CHANGED_FILES" | grep -q "^frontend/package\.json$"; then
+            PLUGIN_DIFF=$(git diff -U0 "$BASE_REF" HEAD -- frontend/package.json | grep -E '^\+[[:space:]]*"(@capacit(or|y)|@capgo/capacitor-updater)' || true)
+            if [ -n "$PLUGIN_DIFF" ]; then
+              echo "❌ BLOCKED: Native plugin dependencies were modified in frontend/package.json between $BASE_REF and HEAD:"
+              echo "$PLUGIN_DIFF"
+              echo "Native plugin additions or version upgrades require building a new signed native APK."
+              echo "Aborting staging OTA release."
+              exit 1
+            fi
+          fi
+
+          echo "✅ Change verified: pure web bundle update with no incompatible native modifications."
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

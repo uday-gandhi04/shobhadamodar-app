@@ -16,6 +16,7 @@ import {
   downloadUpdate,
   applyUpdateIfSafe,
   initializeOtaUpdater,
+  getUpdaterState,
   _resetUpdaterStateForTesting,
 } from "./otaUpdateService.js";
 
@@ -499,4 +500,45 @@ test("applyUpdateIfSafe: safely defers when active shift is in progress and relo
 
   assert.equal(safeResult.applied, true);
   assert.equal(mockNative.reloadCalled, true);
+});
+
+/* =====================================================================
+   5. STARTUP LIFECYCLE & READINESS NOTIFICATION REGRESSION TESTS
+   ===================================================================== */
+test("initializeOtaUpdater: handles notifyAppReady rejection gracefully without throwing or error loops", async () => {
+  const baseMock = createMockUpdater("1.0.0");
+  const errorMock = {
+    ...baseMock,
+    async notifyAppReady() {
+      throw new Error("Simulated native watchdog IPC exception");
+    },
+  };
+
+  // Must not reject or throw unhandled exceptions
+  await assert.doesNotReject(async () => {
+    await initializeOtaUpdater({ nativeUpdater: errorMock, autoCheck: false });
+  });
+});
+
+test("initializeOtaUpdater: detects rollback bundle from getFailedUpdate and updates state.lastError", async () => {
+  _resetUpdaterStateForTesting("1.0.0");
+  const baseMock = createMockUpdater("1.0.0");
+  const rollbackMock = {
+    ...baseMock,
+    async getFailedUpdate() {
+      return { bundle: { id: "faulty-bundle-99", version: "1.0.99" } };
+    },
+  };
+
+  await initializeOtaUpdater({ nativeUpdater: rollbackMock, autoCheck: false });
+  const state = getUpdaterState();
+  assert.ok(state.lastError);
+  assert.match(state.lastError, /1\.0\.99.*failed to initialize and was rolled back/);
+});
+
+test("initializeOtaUpdater: safely skips native calls in non-native browser environment", async () => {
+  // In web browsers, initializeOtaUpdater should never throw or require native plugins
+  await assert.doesNotReject(async () => {
+    await initializeOtaUpdater({ autoCheck: false });
+  });
 });

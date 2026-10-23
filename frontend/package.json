@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
-    "@capgo/cli": "^8.92.2",
+    "@capgo/cli": "8.92.2",
     "@eslint/js": "^10.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/postcss": "^4.3.3",
