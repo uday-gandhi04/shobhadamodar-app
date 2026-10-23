@@ -18,6 +18,11 @@ test.before(async () => {
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(uri);
   }
+  const stationCount = await Station.countDocuments();
+  if (stationCount === 0) {
+    const { seedTestDatabase } = await import("../utils/seedTestDb.js");
+    await seedTestDatabase(uri);
+  }
 });
 
 test.after(async () => {

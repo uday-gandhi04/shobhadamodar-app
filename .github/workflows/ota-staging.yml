@@ -24,6 +24,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -105,8 +116,37 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Wait for MongoDB service
+        shell: bash
+        run: |
+          echo "Waiting for isolated MongoDB service to accept connections..."
+          for i in {1..30}; do
+            if node -e "import('node:net').then(n => { const s = n.createConnection(27017, '127.0.0.1', () => { s.end(); process.exit(0); }); s.on('error', () => process.exit(1)); })" 2>/dev/null; then
+              echo "✅ MongoDB service is ready on port 27017."
+              exit 0
+            fi
+            echo "Waiting for MongoDB... ($i/30)"
+            sleep 1
+          done
+          echo "❌ Timed out waiting for MongoDB service."
+          exit 1
+
+      - name: Seed test database
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          USE_TEST_DB: "true"
+          MONGODB_URI_TEST: mongodb://127.0.0.1:27017/shobhadamodar_ci_test
+          MONGODB_URI: mongodb://127.0.0.1:27017/shobhadamodar_ci_test
+        run: npm run seed:test
+
       - name: Run backend checks
         working-directory: backend
+        env:
+          NODE_ENV: test
+          USE_TEST_DB: "true"
+          MONGODB_URI_TEST: mongodb://127.0.0.1:27017/shobhadamodar_ci_test
+          MONGODB_URI: mongodb://127.0.0.1:27017/shobhadamodar_ci_test
         run: npm test
 
       - name: Run frontend lint & tests
