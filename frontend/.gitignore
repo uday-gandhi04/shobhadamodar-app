@@ -22,6 +22,10 @@ dist-ssr/
 .capacitor/
 android/.gradle/
 android/app/build/
+android/app/release/
+android/release/
+*.dm
+output-metadata.json
 ios/App/Pods/
 
 # Security, keys, certificates and credentials

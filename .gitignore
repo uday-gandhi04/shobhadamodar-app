@@ -9,6 +9,7 @@ dist/
 build/
 *.log
 *.xlsx
+*.dm
 
 # Security, keys, certificates and credentials
 .capgo_key*

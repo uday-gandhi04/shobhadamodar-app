@@ -62,8 +62,11 @@ jobs:
           echo "$CHANGED_FILES"
 
           # Check for native files or Capacitor config alterations
-          if echo "$CHANGED_FILES" | grep -E "(^frontend/android/|^android/|^frontend/capacitor\.config\.)"; then
-            echo "❌ BLOCKED: Native Android code, Gradle, AndroidManifest, or Capacitor configuration was changed between $BASE_REF and HEAD."
+          # Excludes generated build and release artifacts (e.g. build directories, release outputs, .dm profiles, output-metadata.json) and gitignores
+          NATIVE_DIFF=$(echo "$CHANGED_FILES" | grep -E "(^frontend/android/|^android/|^frontend/capacitor\.config\.)" | grep -v -E "(/(build|release|\.gradle)/|\.(apk|aab|aar|dm)$|output-metadata\.json$|\.gitignore$)" || true)
+          if [ -n "$NATIVE_DIFF" ]; then
+            echo "❌ BLOCKED: Native Android code, Gradle, AndroidManifest, or Capacitor configuration was changed between $BASE_REF and HEAD:"
+            echo "$NATIVE_DIFF"
             echo "Over-The-Air updates can only deliver compatible web bundle assets."
             echo "Changes to Gradle, Java/Kotlin, AndroidManifest, or capacitor.config require a new signed native APK/AAB."
             echo "Aborting staging OTA release. Please build and distribute a new signed native APK."
