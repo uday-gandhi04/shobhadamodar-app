@@ -257,7 +257,8 @@ jobs:
 
           cp ota/test-latest.json /tmp/test-latest.json
           git fetch origin master
-          git checkout master
+          git checkout -f master
+          git reset --hard origin/master
           cp /tmp/test-latest.json ota/test-latest.json
           git add ota/test-latest.json
 
