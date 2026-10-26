@@ -255,13 +255,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          cp ota/test-latest.json /tmp/test-latest.json
+          git fetch origin master
+          git checkout master
+          cp /tmp/test-latest.json ota/test-latest.json
           git add ota/test-latest.json
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
             git commit -m "chore(ota): update staging manifest ${{ steps.version.outputs.version }} [skip ci]"
-            git push origin HEAD:master
+            git push origin master
           fi
 
       - name: Staging publication summary
