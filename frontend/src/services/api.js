@@ -27,6 +27,11 @@ export const resolveApiBaseUrl = (
   }
 
   // Production release API
+  // In Vite test build mode, this static condition allows Rollup DCE to eliminate the production URL
+  if (import.meta.env?.MODE === 'test') {
+    return 'https://shobhadamodar-api-test.onrender.com/api';
+  }
+
   return 'https://shobhadamodar-api.onrender.com/api';
 };
 
