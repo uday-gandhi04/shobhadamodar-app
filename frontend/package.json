@@ -21,7 +21,8 @@
     "test:ota": "node --test src/services/otaUpdateService.test.js",
     "test:sqlite": "node --test src/database/sqlite.regression.test.js",
     "test:api": "node --test src/services/api.regression.test.js",
-    "test": "node --test src/app/routes/routing.regression.test.js src/services/otaUpdateService.test.js src/database/sqlite.regression.test.js src/services/api.regression.test.js",
+    "test:logo": "node --test src/features/auth/loginLogo.regression.test.js",
+    "test": "node --test src/app/routes/routing.regression.test.js src/services/otaUpdateService.test.js src/database/sqlite.regression.test.js src/services/api.regression.test.js src/features/auth/loginLogo.regression.test.js",
     "bundle:ota": "npx @capgo/cli bundle zip com.shobhadamodar.app --path ./dist --json",
     "preview": "vite preview"
   },
