@@ -15,8 +15,10 @@ import '@fontsource/mukta/600.css';
 import '@fontsource/mukta/700.css';
 
 import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
+import { logApiStartupConfig } from './services/api';
 
 jeepSqlite(window);
+logApiStartupConfig();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

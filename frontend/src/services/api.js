@@ -1,11 +1,77 @@
 // src/services/api.js
 import axios from 'axios';
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV
-    ? 'http://localhost:5000/api'
-    : 'https://shobhadamodar-api.onrender.com/api');
+export const resolveApiBaseUrl = (
+  env = import.meta.env,
+  windowObj = typeof window !== 'undefined' ? window : null
+) => {
+  if (env?.VITE_API_URL) {
+    return env.VITE_API_URL;
+  }
+
+  const mode = env?.MODE || (env?.DEV ? 'development' : 'production');
+
+  if (mode === 'test') {
+    // Dedicated isolated test backend (connected to shobhadamodar_test_sep2026)
+    return 'https://shobhadamodar-api-test.onrender.com/api';
+  }
+
+  if (mode === 'development' || env?.DEV) {
+    // In local browser development (http://localhost:5173), http://localhost:5000/api is appropriate
+    const isHttpsOrigin = windowObj?.location?.protocol === 'https:';
+    if (isHttpsOrigin) {
+      // In a secure origin (e.g. Android WebView on https://localhost), default to HTTPS staging to avoid mixed content
+      return 'https://shobhadamodar-api-test.onrender.com/api';
+    }
+    return 'http://localhost:5000/api';
+  }
+
+  // Production release API
+  return 'https://shobhadamodar-api.onrender.com/api';
+};
+
+export const API_BASE_URL = resolveApiBaseUrl();
+
+/**
+ * Returns safe environment and configuration metadata without any sensitive data.
+ */
+export const getApiConfigInfo = (
+  baseUrl = API_BASE_URL,
+  env = import.meta.env,
+  windowObj = typeof window !== 'undefined' ? window : null
+) => {
+  const mode = env?.MODE || (env?.DEV ? 'development' : 'production');
+  const origin = windowObj?.location?.origin || 'unknown';
+  const isHttpsOrigin = windowObj?.location?.protocol === 'https:';
+  const isMixedContentRisk = isHttpsOrigin && baseUrl.startsWith('http://');
+
+  return {
+    baseUrl,
+    mode,
+    origin,
+    isHttpsOrigin,
+    isMixedContentRisk,
+  };
+};
+
+/**
+ * Safe startup configuration check that logs the active base URL and environment
+ * without logging tokens, passwords, or sensitive payloads.
+ */
+export const logApiStartupConfig = (
+  baseUrl = API_BASE_URL,
+  env = import.meta.env,
+  windowObj = typeof window !== 'undefined' ? window : null
+) => {
+  const info = getApiConfigInfo(baseUrl, env, windowObj);
+  console.log(`[API Startup] Mode: "${info.mode}" | API Base URL: ${info.baseUrl} | Origin: ${info.origin}`);
+  if (info.isMixedContentRisk) {
+    console.warn(
+      `[API Startup WARNING] Insecure cleartext API (${info.baseUrl}) requested from secure origin (${info.origin}). Mixed-content requests will be blocked by Android WebView.`
+    );
+  }
+  return info;
+};
 
 const api = axios.create({
   baseURL: API_BASE_URL,

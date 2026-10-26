@@ -14,15 +14,23 @@ export const SyncProvider = ({ children }) => {
 
   // 1. Initialize SQLite when the app boots
   useEffect(() => {
+    let isMounted = true;
     const initDB = async () => {
       try {
         await dbService.initialize();
-        setIsDbReady(true);
+        if (isMounted) {
+          setIsDbReady(true);
+        }
       } catch (error) {
-        console.error("Failed to initialize SQLite:", error);
+        if (isMounted) {
+          console.error("Failed to initialize SQLite:", error);
+        }
       }
     };
     initDB();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // 2. The function to pull data from backend and save it locally
