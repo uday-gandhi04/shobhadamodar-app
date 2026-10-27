@@ -13,6 +13,7 @@ import udhariRoutes from './src/routes/udhari.routes.js';
 import fuelRateRoutes from './src/routes/fuelRate.routes.js';
 import expenseRoutes from './src/routes/expense.routes.js';
 import managerRoutes from "./src/routes/manager.routes.js";
+import updateRoutes from './src/routes/update.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,8 @@ app.use('/api/udhari',udhariRoutes,);
 app.use('/api/fuel-rates', fuelRateRoutes);
 
 app.use('/api/expenses', expenseRoutes);
+
+app.use('/api/updates', updateRoutes);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {

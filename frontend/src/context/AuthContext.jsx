@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Login failed. Please try again.' 
+        message: error.response?.data?.message || error.message || 'Login failed. Please try again.' 
       };
     }
   };

@@ -58,9 +58,9 @@ test("isValidV2SessionKey: rejects invalid formats, bad lengths, and non-base64 
   assert.equal(isValidV2SessionKey(`${VALID_V2_IV_B64}:${shortKeyB64}`), false);
 });
 
-test("hasConfiguredPublicKey: confirms embedded RSA public key is configured", () => {
-  assert.equal(hasConfiguredPublicKey(), true);
-  assert.ok(EMBEDDED_PUBLIC_KEY.includes("BEGIN RSA PUBLIC KEY"));
+test("hasConfiguredPublicKey: confirms public key is empty in unencrypted MoBoxd architecture", () => {
+  assert.equal(hasConfiguredPublicKey(), false);
+  assert.equal(EMBEDDED_PUBLIC_KEY, "");
 });
 
 /* =====================================================================

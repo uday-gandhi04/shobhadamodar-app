@@ -8,6 +8,7 @@ import LoginWelcome from "../../components/business/LoginWelcome";
 import LoginForm from "../../components/business/LoginForm";
 import LoginStationVisual from "../../components/business/LoginStationVisual";
 import LanguageSwitcher from "../../components/ui/LanguageSwitcher";
+import officialLogo from "../../../assets/branding/web-app-manifest-512x512.png";
 
 const Login = () => {
   const { i18n } = useTranslation();
@@ -78,27 +79,17 @@ const Login = () => {
                   w-10
                   shrink-0
                   place-items-center
+                  overflow-hidden
                   rounded-[12px]
-                  bg-bpcl-navy
+                  bg-white
                   shadow-[0_5px_14px_rgba(30,58,138,0.18)]
                 "
               >
-                <span
-                  className="
-                    grid
-                    h-7
-                    w-7
-                    place-items-center
-                    rounded-full
-                    border-2
-                    border-bpcl-gold
-                    text-[9px]
-                    font-bold
-                    text-bpcl-gold
-                  "
-                >
-                  SP
-                </span>
+                <img
+                  src={officialLogo}
+                  alt="Shobhadamodar Petroleum"
+                  className="h-full w-full object-contain"
+                />
               </div>
 
               <div>

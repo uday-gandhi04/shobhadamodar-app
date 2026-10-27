@@ -8,9 +8,8 @@ export const DEFAULT_PROD_MANIFEST_URL =
 // Default embedded version fallback when running in non-native / initial state
 export const DEFAULT_FALLBACK_VERSION = "1.0.0";
 
-// Embedded RSA-2048 public key from capacitor.config.json for Capgo Encryption V2
-export const EMBEDDED_PUBLIC_KEY =
-  "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAtjQWrCfeOK7VySnXya69hIELt+sILesqYQ9wMOuT2+fMRa0GG54u\n17dTfMnmGgc0Dxyz2sBZwMhpSjS/5oPwksSV8CwNY0zBjrrArIxFmeYs6RqsH/JI\nolk3PRTpBGje+CFRebId/mFXegkNGs7ot8yOJr3jsQ6100iJ6aBb7wIweCe5sY5v\n8fr/MQc2TA7ujg7dIt8D+CZoANBp4Cn99YXXMKNCX9AOaQPToGpsXIxbxnPXuRzm\nEg7SU7kncEwYX8cEJvMxIK2OAZXBwr/EzPFJdD6mrk87aGYtbdZ4Pm2d2+n1MEHZ\nEFltamrBy5lcK2RfO+VMdQbcWUlySJBGmQIDAQAB\n-----END RSA PUBLIC KEY-----\n";
+// Embedded RSA-2048 public key from capacitor.config.json (empty for unencrypted MoBoxd-style architecture)
+export const EMBEDDED_PUBLIC_KEY = "";
 
 /**
  * Checks if the mobile application has a configured RSA public key for encrypted updates.

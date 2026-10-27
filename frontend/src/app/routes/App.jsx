@@ -36,6 +36,7 @@ import MpdConfig from "../../features/manager/MpdConfig";
 import NotFound from "../../features/common/NotFound";
 import { getCurrentShift } from "../../services/shiftApi";
 import { initializeOtaUpdater } from "../../services/otaUpdateService";
+import { notifyLiveUpdateReady } from "../../utils/liveUpdate";
 setupIonicReact();
 
 export const LoadingFallback = () => (
@@ -214,6 +215,7 @@ const NativeBackButtonHandler = () => {
  */
 export const OtaLifecycleHandler = () => {
   useEffect(() => {
+    notifyLiveUpdateReady();
     initializeOtaUpdater().catch((err) => {
       console.warn("[OTA] Lifecycle initialization warning:", err);
     });
