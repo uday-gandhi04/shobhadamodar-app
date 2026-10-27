@@ -1,8 +1,5 @@
 {
-  "version": "1.0.0",
-  "url": "https://github.com/uday-gandhi04/shobhadamodar-app/releases/download/ota-v1.0.0/com.shobhadamodar.app_1.0.0.zip_encrypted.zip",
-  "checksum": "07722d803017f93eb9cd52215b39449eb005a1e76a3e05c2f225a0b56cf3940d41869f92212c8a5d05247f873e49cac0ff9fcddee16e78db2e0e09f775468c460539df55e67f118cd27601a1f399ead24a7cdf2a4d45ca7c0e71a05100b25904655a4a007c83510c9514f82c42e5f9a44cbc75d987be821d3b5fda861fec5c5138001ddcb165795f7cd21265645da9177cd4d7a10063d50f2074ff91d1e77282866b4d2071eb5784fe0342501c535b597b05eb50aefb25c1111c3617d80c4bd862ed365ca7265c762f223412f856726867eb8fc0d4f6701d205cd290d5917a8ea73a9134fb9d687d63c34ec2209120728d94e8a69c48326d30ca52bb953c5542",
-  "sessionKey": "NXZsoVX1/zx66r/58FIZVQ==:oCUqgvt98Ohtya/96A625tzw5aoCRwQK85RbDm911oRZQCj/o1KkLreknDcErKmtTM4brGe4JhrSVgEX6qv6Dccwr0rMr51Q074LmeU3zZtfv/d6Nc+tH3ZHf0iaUY7aPHLGLPANPKzmMBcudS9+rAseH6qGNaLjgGxiQyu4yrvhPZtXWR9JnaghmAYY6wLhckjpCAJ4czoZ3a5EiKH4TiPndFG+HjCwtAiQa37KN+Zp5bjCJw2jKuQ6oWNPzKGi2N90FHvbeM6SvjL7PZ3Vpcko+ZcrEr3lUph2hqH49yBUs1u+s9G1tZvvbhkN2OfxxVD5En9RGzX6bMxbSXB8aQ==",
-  "releaseDate": "2026-10-22T16:00:00Z"
+  "version": "1.0.1",
+  "url": "https://github.com/uday-gandhi04/shobhadamodar-app/releases/download/v1.0.1/com.shobhadamodar.app_1.0.1.zip",
+  "checksum": "34c99aef3ef72f75f457c62da34f12cfae758a7007cbc73bd96d10b25f263db2"
 }
-
