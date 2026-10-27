@@ -2,18 +2,18 @@
   "appId": "com.shobhadamodar.app",
   "appName": "ShobhaDamodarPetroleum",
   "webDir": "dist",
+  "bundledWebRuntime": false,
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "hostname": "localhost"
   },
   "plugins": {
     "CapacitorUpdater": {
-      "autoUpdate": false,
-      "statsUrl": "",
-      "appReadyTimeout": 10000,
-      "resetWhenUpdate": true,
-      "autoDeleteFailed": true,
-      "autoDeletePrevious": true,
-      "publicKey": "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAtjQWrCfeOK7VySnXya69hIELt+sILesqYQ9wMOuT2+fMRa0GG54u\n17dTfMnmGgc0Dxyz2sBZwMhpSjS/5oPwksSV8CwNY0zBjrrArIxFmeYs6RqsH/JI\nolk3PRTpBGje+CFRebId/mFXegkNGs7ot8yOJr3jsQ6100iJ6aBb7wIweCe5sY5v\n8fr/MQc2TA7ujg7dIt8D+CZoANBp4Cn99YXXMKNCX9AOaQPToGpsXIxbxnPXuRzm\nEg7SU7kncEwYX8cEJvMxIK2OAZXBwr/EzPFJdD6mrk87aGYtbdZ4Pm2d2+n1MEHZ\nEFltamrBy5lcK2RfO+VMdQbcWUlySJBGmQIDAQAB\n-----END RSA PUBLIC KEY-----\n"
+      "appId": "com.shobhadamodar.app",
+      "updateUrl": "https://shobhadamodar-api.onrender.com/api/updates",
+      "autoUpdate": "atBackground",
+      "defaultChannel": "production",
+      "resetWhenUpdate": true
     },
     "SplashScreen": {
       "launchShowDuration": 1500,
