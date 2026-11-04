@@ -361,3 +361,29 @@ test("16. Existing shift lifecycle, manager Operations, and employee functionali
     assert.ok(appContent.includes(`path="${r}"`), `App.jsx must retain employee route ${r}`);
   }
 });
+
+test("17. Settings back button navigates back to manager dashboard (/manager)", () => {
+  const settingsPath = path.resolve(__dirname, "../../features/manager/Settings.jsx");
+  const settingsContent = fs.readFileSync(settingsPath, "utf-8");
+
+  // Verify that Settings.jsx configures onBack to navigate to /manager
+  assert.match(
+    settingsContent,
+    /onBack=\{\(\)\s*=>\s*navigate\(["']\/manager["']\)\}/,
+    "Settings.jsx must explicitly navigate to /manager on back click"
+  );
+  assert.doesNotMatch(
+    settingsContent,
+    /onBack=\{\(\)\s*=>\s*navigate\(-1\)\}/,
+    "Settings.jsx must NOT use navigate(-1) which can cause loops or exit manager workflow"
+  );
+
+  // Verify NativeBackButtonHandler handles /manager/settings
+  const appPath = path.resolve(__dirname, "App.jsx");
+  const appContent = fs.readFileSync(appPath, "utf-8");
+  assert.ok(
+    appContent.includes('currentPath === "/manager/settings"'),
+    "NativeBackButtonHandler must explicitly handle /manager/settings back action"
+  );
+});
+

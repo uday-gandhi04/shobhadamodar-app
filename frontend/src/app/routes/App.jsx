@@ -187,6 +187,11 @@ const NativeBackButtonHandler = () => {
           return;
         }
 
+        if (currentPath === "/manager/settings") {
+          navigate("/manager");
+          return;
+        }
+
         // 4. Safely navigate back in inner workflow
         if (canGoBack || window.history.length > 1) {
           navigate(-1);

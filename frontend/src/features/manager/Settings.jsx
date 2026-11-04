@@ -64,7 +64,7 @@ const Settings = () => {
     <ManagerLayout
       title={t("manager.settings", "Settings")}
       showBack
-      onBack={() => navigate(-1)}
+      onBack={() => navigate("/manager")}
     >
       <div className="space-y-4">
         {error && (
