@@ -14,19 +14,18 @@ import {
   getDailyRegister
 } from "./stockRegisterService.js";
 import { getMonthlyRegisterReportData } from "./exportRegisterService.js";
+import { connectDB } from "../config/db.js";
 
 dotenv.config();
 
-const uri = process.env.MONGODB_URI_TEST || process.env.MONGODB_URI;
-
 test.before(async () => {
   if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(uri);
+    await connectDB();
   }
   const stationCount = await Station.countDocuments();
   if (stationCount === 0) {
     const { seedTestDatabase } = await import("../utils/seedTestDb.js");
-    await seedTestDatabase(uri);
+    await seedTestDatabase();
   }
 });
 

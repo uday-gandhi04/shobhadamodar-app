@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { resolveDatabaseConfig } from '../config/db.js';
 
 dotenv.config();
 
@@ -14,14 +15,20 @@ export async function seedTestDatabase(customUri = null) {
   if (mongoose.connection.readyState === 1) {
     conn = mongoose;
   } else {
-    const uri = customUri || process.env.MONGODB_URI_TEST || process.env.MONGODB_URI;
-    if (!uri) {
-      throw new Error('Cannot seed test database: Neither MONGODB_URI_TEST nor MONGODB_URI is set.');
+    let uri;
+    if (customUri) {
+      uri = customUri;
+    } else {
+      const config = resolveDatabaseConfig();
+      if (!config.isTest) {
+        throw new Error('Safety Guard: seedTestDatabase can only run in TEST mode. Refusing to seed production database.');
+      }
+      uri = config.uri;
     }
 
     // Safety check: ensure we never touch production
     if (!uri.toLowerCase().includes('test')) {
-      throw new Error(`Safety Guard: Database URI '${uri}' does not contain 'test'. Aborting test seeding.`);
+      throw new Error(`Safety Guard: Database URI does not contain 'test'. Aborting test seeding.`);
     }
 
     conn = await mongoose.connect(uri);

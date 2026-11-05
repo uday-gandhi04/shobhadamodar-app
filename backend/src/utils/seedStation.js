@@ -7,13 +7,13 @@ import FuelRate from '../models/FuelRate.js';
 import User from '../models/User.js';
 import Tank from '../models/Tank.js';
 import { seedTankCalibrations } from './seedCalibration.js';
+import { connectDB } from '../config/db.js';
 
 dotenv.config();
 
 const seedStationData = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
-    console.log('MongoDB Connected for Seeding...');
+    await connectDB();
 
     // 1. Clear existing physical config to prevent duplicates
     await Station.deleteMany();

@@ -1,14 +1,13 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
+import { connectDB } from '../config/db.js';
 
 dotenv.config();
 
 const createTestUsers = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
-
-    console.log('MongoDB connected');
+    await connectDB();
 
     // -------------------------
     // 1. Create Manager
